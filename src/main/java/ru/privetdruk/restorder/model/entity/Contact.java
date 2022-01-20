@@ -18,7 +18,7 @@ public class Contact {
     private Long id;
 
     /**
-     * Владелец
+     * Владелец (пользователь)
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -28,6 +28,7 @@ public class Contact {
      * Тип
      */
     @Column(name = "type")
+    @Enumerated(EnumType.STRING)
     private ContractType type;
 
     /**

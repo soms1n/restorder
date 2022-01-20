@@ -1,17 +1,23 @@
 package ru.privetdruk.restorder.model.entity;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import ru.privetdruk.restorder.model.enums.Role;
 
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * Пользователь системы
  */
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "users")
 public class User {
@@ -40,7 +46,7 @@ public class User {
     /**
      * Контакты
      */
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(FetchMode.SUBSELECT)
     private Set<Contact> contacts = new HashSet<>();
 
@@ -55,4 +61,36 @@ public class User {
      */
     @Column(name = "blocked")
     private Boolean blocked = false;
+
+    /**
+     * Роли
+     */
+    @ElementCollection(targetClass = Role.class)
+    @CollectionTable(name = "user_to_role", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<Role> roles = new HashSet<>();
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", telegramId=" + telegramId +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(telegramId, user.telegramId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(telegramId);
+    }
 }
