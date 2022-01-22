@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 /**
- * Контакт пользователя
+ * Контакт
  */
 @Data
 @Entity
@@ -18,16 +18,24 @@ public class Contact {
     private Long id;
 
     /**
-     * Владелец
+     * Владелец (пользователь)
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
     /**
+     * Владелец (заведение)
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tavern_id")
+    private Tavern tavern;
+
+    /**
      * Тип
      */
     @Column(name = "type")
+    @Enumerated(EnumType.STRING)
     private ContractType type;
 
     /**
