@@ -1,11 +1,14 @@
 package ru.privetdruk.restorder.model.entity;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import ru.privetdruk.restorder.model.enums.Role;
+import ru.privetdruk.restorder.model.enums.State;
+import ru.privetdruk.restorder.model.enums.SubState;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -20,7 +23,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
-public class User {
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -72,6 +75,31 @@ public class User {
     @Fetch(FetchMode.SUBSELECT)
     private Set<Role> roles = new HashSet<>();
 
+    /**
+     * Состояние
+     */
+    @Column(name = "state")
+    @Enumerated(EnumType.STRING)
+    private State state;
+
+    /**
+     * Подсостояние
+     */
+    @Column(name = "sub_state")
+    @Enumerated(EnumType.STRING)
+    private SubState subState;
+
+    @Builder
+    public UserEntity(Long telegramId, State state, SubState subState) {
+        this.telegramId = telegramId;
+        this.state = state;
+        this.subState = subState;
+    }
+
+    public void addRole(Role role) {
+        getRoles().add(role);
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -85,7 +113,7 @@ public class User {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
+        UserEntity user = (UserEntity) o;
         return Objects.equals(telegramId, user.telegramId);
     }
 

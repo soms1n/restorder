@@ -2,10 +2,12 @@ package ru.privetdruk.restorder.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.privetdruk.restorder.model.entity.User;
+import ru.privetdruk.restorder.model.entity.UserEntity;
+import ru.privetdruk.restorder.model.enums.Role;
+import ru.privetdruk.restorder.model.enums.State;
 import ru.privetdruk.restorder.repository.UserRepository;
 
-import java.util.Iterator;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -16,12 +18,31 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public User findByTelegramId(Long telegramId) {
-        return userRepository.findByTelegramId(telegramId);
+    public Optional<UserEntity> findByTelegramId(Long telegramId) {
+        return Optional.ofNullable(userRepository.findByTelegramId(telegramId));
     }
 
     @Transactional
-    public void save(User user) {
+    public void save(UserEntity user) {
         userRepository.save(user);
+    }
+
+    /**
+     * Создать администратора заведения
+     *
+     * @param telegramId Идентификатор в телеграм
+     * @return Созданного пользователя
+     */
+    @Transactional
+    public UserEntity createClientAdmin(Long telegramId) {
+        UserEntity user = UserEntity.builder()
+                .telegramId(telegramId)
+                .state(State.REGISTRATION)
+                .subState(State.REGISTRATION.getInitialSubState())
+                .build();
+
+        user.addRole(Role.CLIENT_ADMIN);
+
+        return userRepository.save(user);
     }
 }

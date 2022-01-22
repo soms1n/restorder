@@ -1,5 +1,6 @@
 package ru.privetdruk.restorder.model.entity;
 
+import lombok.Builder;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -20,7 +21,7 @@ public class Tavern {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User owner;
+    private UserEntity owner;
 
     /**
      * Название
@@ -39,4 +40,10 @@ public class Tavern {
             optional = false
     )
     private Address address;
+
+    @Builder
+    public Tavern(UserEntity owner, String name) {
+        this.owner = owner;
+        this.name = name;
+    }
 }

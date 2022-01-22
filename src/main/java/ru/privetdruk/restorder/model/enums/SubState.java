@@ -5,16 +5,41 @@ import ru.privetdruk.restorder.model.consts.MessageText;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum SubState {
-    ENTER_FULL_NAME(MessageText.ENTER_FULL_NAME),
-    ENTER_TAVERN_NAME(MessageText.ENTER_TAVERN_NAME),
-    CHOICE_CITY(MessageText.CHOICE_CITY),
-    ENTER_ADDRESS(MessageText.ENTER_ADDRESS),
-    ENTER_PHONE_NUMBER(MessageText.ENTER_PHONE_NUMBER);
+    ENTER_FULL_NAME(MessageText.ENTER_FULL_NAME) {
+        @Override
+        public SubState getNextSubState() {
+            return SubState.ENTER_TAVERN_NAME;
+        }
+    },
+    ENTER_TAVERN_NAME(MessageText.ENTER_TAVERN_NAME) {
+        @Override
+        public SubState getNextSubState() {
+            return SubState.CHOICE_CITY;
+        }
+    },
+    CHOICE_CITY(MessageText.CHOICE_CITY) {
+        @Override
+        public SubState getNextSubState() {
+            return SubState.ENTER_ADDRESS;
+        }
+    },
+    ENTER_ADDRESS(MessageText.ENTER_ADDRESS) {
+        @Override
+        public SubState getNextSubState() {
+            return SubState.ENTER_PHONE_NUMBER;
+        }
+    },
+    ENTER_PHONE_NUMBER(MessageText.ENTER_PHONE_NUMBER) {
+        @Override
+        public SubState getNextSubState() {
+            return null;
+        }
+    };
 
-    private final String text;
+    private final String message;
 
-    SubState(String text) {
-        this.text = text;
+    SubState(String message) {
+        this.message = message;
     }
 
     public static SubState fromName(String name) {
@@ -29,7 +54,9 @@ public enum SubState {
         return name();
     }
 
-    public String getText() {
-        return text;
+    public String getMessage() {
+        return message;
     }
+
+    public abstract SubState getNextSubState();
 }

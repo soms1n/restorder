@@ -6,4 +6,7 @@ public interface MessageText {
     String CHOICE_CITY = "Выберите город";
     String ENTER_ADDRESS = "Введите адрес";
     String ENTER_PHONE_NUMBER = "Введите номер телефона";
+    String ENTER_EMPTY_VALUE = "Вы ввели пустое значение";
+    String FIRST_MIDDLE_NAME_IS_EMPTY = "Вы не ввели Имя и Отчество";
+    String MIDDLE_NAME_IS_EMPTY = "Вы не ввели Имя и Отчество";
 }

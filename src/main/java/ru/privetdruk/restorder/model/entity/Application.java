@@ -21,7 +21,7 @@ public class Application {
      */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private UserEntity user;
 
     /**
      * Признак одобренной заявки
