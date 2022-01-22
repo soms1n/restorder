@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum State {
-    REGISTRATION(SubState.ENTER_FULL_NAME);
+    REGISTRATION(SubState.SHOW_REGISTER_BUTTON),
+    WAITING_APPROVE_APPLICATION(SubState.WAITING_APPROVE_APPLICATION),
+    MAIN_MENU(SubState.VIEW_MAIN_MENU);
 
     private final SubState initialSubState;
 

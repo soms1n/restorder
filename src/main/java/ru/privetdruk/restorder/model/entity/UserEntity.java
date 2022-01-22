@@ -109,6 +109,10 @@ public class UserEntity {
         getRoles().add(role);
     }
 
+    public void addContact(ContactEntity contact) {
+        getContacts().add(contact);
+    }
+
     @Override
     public String toString() {
         return "User{" +

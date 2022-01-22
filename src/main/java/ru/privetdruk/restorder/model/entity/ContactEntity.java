@@ -1,6 +1,8 @@
 package ru.privetdruk.restorder.model.entity;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.privetdruk.restorder.model.enums.ContractType;
 
 import javax.persistence.*;
@@ -10,6 +12,7 @@ import java.time.LocalDateTime;
  * Контакт
  */
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name = "contact")
 public class ContactEntity {
@@ -48,17 +51,24 @@ public class ContactEntity {
      * Признак главного
      */
     @Column(name = "main")
-    private Boolean main;
+    private Boolean main = true;
 
     /**
      * Признак действующего
      */
     @Column(name = "active")
-    private Boolean active;
+    private Boolean active = true;
 
     /**
      * Дата и время создания
      */
     @Column(name = "create_date")
     private LocalDateTime createDate = LocalDateTime.now();
+
+    @Builder
+    public ContactEntity(UserEntity user, ContractType type, String value) {
+        this.user = user;
+        this.type = type;
+        this.value = value;
+    }
 }
