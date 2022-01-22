@@ -1,5 +1,6 @@
 package ru.privetdruk.restorder.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -15,6 +16,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ClientBotService {
     private final UserService userService;
     private final Map<State, MessageHandler> handlers;

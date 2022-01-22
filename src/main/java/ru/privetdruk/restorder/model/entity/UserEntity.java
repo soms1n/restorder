@@ -51,7 +51,7 @@ public class UserEntity {
      */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<Contact> contacts = new HashSet<>();
+    private Set<ContactEntity> contacts = new HashSet<>();
 
     /**
      * Идентификатор в telegram
@@ -74,6 +74,15 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     @Fetch(FetchMode.SUBSELECT)
     private Set<Role> roles = new HashSet<>();
+
+    /**
+     * Заведение
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinTable(name = "tavern_to_employee",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "tavern_id"))
+    private TavernEntity tavern;
 
     /**
      * Состояние

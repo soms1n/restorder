@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "contact")
-public class Contact {
+public class ContactEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,7 +29,7 @@ public class Contact {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tavern_id")
-    private Tavern tavern;
+    private TavernEntity tavern;
 
     /**
      * Тип

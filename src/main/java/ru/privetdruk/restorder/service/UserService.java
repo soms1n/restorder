@@ -1,5 +1,6 @@
 package ru.privetdruk.restorder.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.privetdruk.restorder.model.entity.UserEntity;
@@ -10,12 +11,9 @@ import ru.privetdruk.restorder.repository.UserRepository;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Transactional(readOnly = true)
     public Optional<UserEntity> findByTelegramId(Long telegramId) {
