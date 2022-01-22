@@ -11,7 +11,7 @@ import javax.persistence.*;
 @Data
 @Entity
 @Table(name = "address")
-public class Address {
+public class AddressEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,7 +21,7 @@ public class Address {
      */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tavern_id")
-    private Tavern tavern;
+    private TavernEntity tavern;
 
     /**
      * Город
