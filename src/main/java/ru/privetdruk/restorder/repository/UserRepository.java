@@ -6,4 +6,5 @@ import ru.privetdruk.restorder.model.entity.User;
 
 @Repository
 public interface UserRepository extends CrudRepository<User, Long> {
+    User findByTelegramId(Long telegramId);
 }
