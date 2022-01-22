@@ -20,7 +20,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
-public class User {
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -48,7 +48,7 @@ public class User {
      */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<Contact> contacts = new HashSet<>();
+    private Set<ContactEntity> contacts = new HashSet<>();
 
     /**
      * Идентификатор в telegram
@@ -72,6 +72,15 @@ public class User {
     @Fetch(FetchMode.SUBSELECT)
     private Set<Role> roles = new HashSet<>();
 
+    /**
+     * Заведение
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinTable(name = "tavern_to_employee",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "tavern_id"))
+    private TavernEntity tavern;
+
     @Override
     public String toString() {
         return "User{" +
@@ -85,7 +94,7 @@ public class User {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
+        UserEntity user = (UserEntity) o;
         return Objects.equals(telegramId, user.telegramId);
     }
 

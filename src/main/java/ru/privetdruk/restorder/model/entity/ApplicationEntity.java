@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "application")
-public class Application {
+public class ApplicationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,7 +21,14 @@ public class Application {
      */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private UserEntity user;
+
+    /**
+     * Заведение
+     */
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tavern_id")
+    private TavernEntity tavern;
 
     /**
      * Признак одобренной заявки
