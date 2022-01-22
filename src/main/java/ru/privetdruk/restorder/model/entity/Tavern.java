@@ -31,6 +31,12 @@ public class Tavern {
     /**
      * Адрес
      */
-    @OneToOne(mappedBy = "tavern", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(
+            mappedBy = "tavern",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            optional = false
+    )
     private Address address;
 }
