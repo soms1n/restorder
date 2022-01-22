@@ -1,4 +1,12 @@
 spring:
+  main:
+    banner-mode: off
+  jpa:
+    properties:
+      hibernate:
+        types:
+          print:
+            banner: false
   flyway:
     enabled: true
   datasource:
