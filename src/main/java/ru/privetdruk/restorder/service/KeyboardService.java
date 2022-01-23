@@ -6,9 +6,9 @@ import ru.privetdruk.restorder.model.enums.Button;
 
 @Service
 public class KeyboardService {
-    public InlineKeyboardButton createButton(Button cancel) {
-        InlineKeyboardButton cancelButton = new InlineKeyboardButton(cancel.getText());
-        cancelButton.setCallbackData(cancel.name());
-        return cancelButton;
+    public InlineKeyboardButton createButton(Button button) {
+        InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton(button.getText());
+        inlineKeyboardButton.setCallbackData(button.name());
+        return inlineKeyboardButton;
     }
 }

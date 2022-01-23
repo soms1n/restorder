@@ -78,7 +78,8 @@ public class UserEntity {
     /**
      * Заведение
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    //TODO тут надо разобраться со связью. Без каскадирования не работает, с каскадированием создает лишние записи
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinTable(name = "tavern_to_employee",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "tavern_id"))

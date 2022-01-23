@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.entity.AddressEntity;
@@ -21,7 +22,11 @@ import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.MessageService;
 import ru.privetdruk.restorder.service.UserService;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
@@ -29,6 +34,7 @@ public class RegistrationHandler implements MessageHandler {
     private final static int LAST_NAME_INDEX = 0;
     private final static int FIRST_NAME_INDEX = 1;
     private final static int MIDDLE_NAME_INDEX = 2;
+    private final static int MAX_BUTTONS_PER_ROW = 8;
 
     private final KeyboardService keyboardService;
     private final MessageService messageService;
@@ -94,7 +100,24 @@ public class RegistrationHandler implements MessageHandler {
             }
             case CHOICE_CITY: {
                 if (callback == null) {
-                    return messageService.configureMessage(chatId, MessageText.CITY_IS_EMPTY); // TODO добавить кнопки
+                    InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
+                    SendMessage sendMessage = messageService.configureMessage(chatId, MessageText.CHOICE_CITY);
+                    final AtomicInteger counter = new AtomicInteger(0);
+
+                    //Список городов по MAX_BUTTONS_PER_ROW на строку
+                    List<List<InlineKeyboardButton>> citiesForSelect = new ArrayList<>(Arrays.stream(City.values())
+                            .map(city -> {
+                                InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton(city.getDescription());
+                                inlineKeyboardButton.setCallbackData(city.getName());
+                                return inlineKeyboardButton;
+                            })
+                            .collect(Collectors.groupingBy(e -> counter.getAndIncrement() / MAX_BUTTONS_PER_ROW))
+                            .values());
+
+                    keyboard.setKeyboard(citiesForSelect);
+
+                    sendMessage.setReplyMarkup(keyboard);
+                    return sendMessage;
                 }
 
                 String data = callback.getData();
@@ -143,7 +166,8 @@ public class RegistrationHandler implements MessageHandler {
 
                 break;
             }
-            default: break;
+            default:
+                break;
         }
 
         SubState nextSubState = subState.getNextSubState();

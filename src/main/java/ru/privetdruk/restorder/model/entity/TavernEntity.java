@@ -55,8 +55,7 @@ public class TavernEntity {
             mappedBy = "tavern",
             fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            optional = false
+            orphanRemoval = true
     )
     private AddressEntity address;
 
