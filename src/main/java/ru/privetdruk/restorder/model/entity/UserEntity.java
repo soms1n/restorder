@@ -1,11 +1,14 @@
 package ru.privetdruk.restorder.model.entity;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import ru.privetdruk.restorder.model.enums.Role;
+import ru.privetdruk.restorder.model.enums.State;
+import ru.privetdruk.restorder.model.enums.SubState;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -75,11 +78,41 @@ public class UserEntity {
     /**
      * Заведение
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    //TODO тут надо разобраться со связью. Без каскадирования не работает, с каскадированием создает лишние записи
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinTable(name = "tavern_to_employee",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "tavern_id"))
     private TavernEntity tavern;
+
+    /**
+     * Состояние
+     */
+    @Column(name = "state")
+    @Enumerated(EnumType.STRING)
+    private State state;
+
+    /**
+     * Подсостояние
+     */
+    @Column(name = "sub_state")
+    @Enumerated(EnumType.STRING)
+    private SubState subState;
+
+    @Builder
+    public UserEntity(Long telegramId, State state, SubState subState) {
+        this.telegramId = telegramId;
+        this.state = state;
+        this.subState = subState;
+    }
+
+    public void addRole(Role role) {
+        getRoles().add(role);
+    }
+
+    public void addContact(ContactEntity contact) {
+        getContacts().add(contact);
+    }
 
     @Override
     public String toString() {

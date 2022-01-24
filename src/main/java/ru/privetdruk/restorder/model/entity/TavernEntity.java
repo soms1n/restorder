@@ -1,6 +1,8 @@
 package ru.privetdruk.restorder.model.entity;
 
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -15,6 +17,7 @@ import java.util.Set;
  */
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "tavern")
 public class TavernEntity {
@@ -52,8 +55,7 @@ public class TavernEntity {
             mappedBy = "tavern",
             fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            optional = false
+            orphanRemoval = true
     )
     private AddressEntity address;
 
@@ -74,6 +76,16 @@ public class TavernEntity {
      */
     @OneToMany(mappedBy = "tavern", orphanRemoval = true)
     private Set<TableEntity> tables = new HashSet<>();
+
+    @Builder
+    public TavernEntity(UserEntity owner, String name) {
+        this.owner = owner;
+        this.name = name;
+    }
+
+    public void addEmployee(UserEntity employee) {
+        getEmployees().add(employee);
+    }
 
     @Override
     public boolean equals(Object o) {
