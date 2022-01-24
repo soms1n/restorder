@@ -2,6 +2,7 @@ package ru.privetdruk.restorder.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -23,6 +24,8 @@ public class ClientBotService {
         this.handlers = handlerService.loadHandlers();
     }
 
+    //TODO Transactional отсюда перенести минимум в handler, а лучше в конкретный сервис, надо обсуждать, как лучше. Чтобы долго не стопориться оставляю пока тут
+    @Transactional
     public SendMessage handleUpdate(Update update) {
         Message message = update.getMessage();
         CallbackQuery callback = update.getCallbackQuery();
