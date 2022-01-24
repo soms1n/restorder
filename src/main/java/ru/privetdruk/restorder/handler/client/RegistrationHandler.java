@@ -45,11 +45,14 @@ public class RegistrationHandler implements MessageHandler {
         String messageText = message.getText();
         Long chatId = message.getChatId();
         SubState subState = user.getSubState();
+        SubState nextSubState = null;
 
         switch (subState) {
             case SHOW_REGISTER_BUTTON: {
                 if (callback != null) {
                     subState = subState.getNextSubState();
+                    nextSubState = changeState(user, subState);
+
                     break;
                 }
 
@@ -81,6 +84,8 @@ public class RegistrationHandler implements MessageHandler {
                 user.setFirstName(fullName[FIRST_NAME_INDEX]);
                 user.setMiddleName(fullName[MIDDLE_NAME_INDEX]);
 
+                nextSubState = changeState(user, subState);
+
                 break;
             }
             case ENTER_TAVERN_NAME: {
@@ -96,30 +101,29 @@ public class RegistrationHandler implements MessageHandler {
                 tavern.addEmployee(user);
                 user.setTavern(tavern);
 
-                break;
+                changeState(user, subState);
+
+                InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
+                SendMessage sendMessage = messageService.configureMessage(chatId, MessageText.CHOICE_CITY);
+                final AtomicInteger counter = new AtomicInteger(0);
+
+                //Список городов по MAX_BUTTONS_PER_ROW на строку
+                List<List<InlineKeyboardButton>> citiesForSelect = new ArrayList<>(Arrays.stream(City.values())
+                        .map(city -> {
+                            InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton(city.getDescription());
+                            inlineKeyboardButton.setCallbackData(city.getName());
+                            return inlineKeyboardButton;
+                        })
+                        .collect(Collectors.groupingBy(e -> counter.getAndIncrement() / MAX_BUTTONS_PER_ROW))
+                        .values());
+
+                keyboard.setKeyboard(citiesForSelect);
+
+                sendMessage.setReplyMarkup(keyboard);
+
+                return sendMessage;
             }
             case CHOICE_CITY: {
-                if (callback == null) {
-                    InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
-                    SendMessage sendMessage = messageService.configureMessage(chatId, MessageText.CHOICE_CITY);
-                    final AtomicInteger counter = new AtomicInteger(0);
-
-                    //Список городов по MAX_BUTTONS_PER_ROW на строку
-                    List<List<InlineKeyboardButton>> citiesForSelect = new ArrayList<>(Arrays.stream(City.values())
-                            .map(city -> {
-                                InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton(city.getDescription());
-                                inlineKeyboardButton.setCallbackData(city.getName());
-                                return inlineKeyboardButton;
-                            })
-                            .collect(Collectors.groupingBy(e -> counter.getAndIncrement() / MAX_BUTTONS_PER_ROW))
-                            .values());
-
-                    keyboard.setKeyboard(citiesForSelect);
-
-                    sendMessage.setReplyMarkup(keyboard);
-                    return sendMessage;
-                }
-
                 String data = callback.getData();
                 City city = City.fromName(data);
 
@@ -136,6 +140,10 @@ public class RegistrationHandler implements MessageHandler {
 
                 tavern.setAddress(address);
 
+                userService.save(user);
+
+                nextSubState = changeState(user, subState);
+
                 break;
             }
             case ENTER_ADDRESS: {
@@ -146,6 +154,7 @@ public class RegistrationHandler implements MessageHandler {
 
                 AddressEntity address = user.getTavern().getAddress();
                 address.setStreet(messageText);
+                nextSubState = changeState(user, subState);
 
                 break;
             }
@@ -164,19 +173,24 @@ public class RegistrationHandler implements MessageHandler {
 
                 user.addContact(contact);
 
+                nextSubState = changeState(user, subState);
+
                 break;
             }
             default:
                 break;
         }
 
-        SubState nextSubState = subState.getNextSubState();
+        return messageService.configureMessage(chatId, nextSubState.getMessage());
+    }
 
+    private SubState changeState(UserEntity user, SubState subState) {
+        SubState nextSubState = subState.getNextSubState();
         user.setState(nextSubState.getState());
         user.setSubState(nextSubState);
 
         userService.save(user);
 
-        return messageService.configureMessage(chatId, nextSubState.getMessage());
+        return nextSubState;
     }
 }
