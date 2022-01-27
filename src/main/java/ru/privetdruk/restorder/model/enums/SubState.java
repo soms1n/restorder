@@ -79,6 +79,28 @@ public enum SubState {
 
         @Override
         public SubState getNextSubState() {
+            return REGISTRATION_APPROVING;
+        }
+    },
+    REGISTRATION_APPROVING(null) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION;
+        }
+
+        @Override
+        public SubState getNextSubState() {
+            return WAITING_APPROVE_APPLICATION;
+        }
+    },
+    REGISTRATION_EDITING(null) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION;
+        }
+
+        @Override
+        public SubState getNextSubState() {
             return null;
         }
     },
@@ -97,6 +119,16 @@ public enum SubState {
         @Override
         public State getState() {
             return State.MAIN_MENU;
+        }
+
+        @Override
+        public SubState getNextSubState() {
+            return null;
+        }
+    }, EDIT_PERSONAL_DATA(null) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION;
         }
 
         @Override

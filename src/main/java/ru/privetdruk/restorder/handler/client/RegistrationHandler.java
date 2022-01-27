@@ -22,11 +22,14 @@ import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.MessageService;
 import ru.privetdruk.restorder.service.UserService;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static ru.privetdruk.restorder.model.consts.MessageText.SELECT_ELEMENT_FOR_EDIT;
+import static ru.privetdruk.restorder.model.enums.SubState.EDIT_PERSONAL_DATA;
 
 @RequiredArgsConstructor
 @Component
@@ -45,27 +48,26 @@ public class RegistrationHandler implements MessageHandler {
         String messageText = message.getText();
         Long chatId = message.getChatId();
         SubState subState = user.getSubState();
-        SubState nextSubState = null;
+        SubState nextSubState;
+        SendMessage sendMessage = new SendMessage();
 
         switch (subState) {
             case SHOW_REGISTER_BUTTON: {
                 if (callback != null) {
                     subState = subState.getNextSubState();
-                    nextSubState = changeState(user, subState);
+                    changeState(user, subState);
 
                     break;
                 }
 
-                SendMessage sendMessage = messageService.configureMessage(chatId, subState.getMessage());
+                sendMessage = messageService.configureMessage(chatId, subState.getMessage());
 
-                InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
-                keyboard.setKeyboard(List.of(List.of(
-                        keyboardService.createButton(Button.REGISTRATION)
-                )));
+                sendMessage.setReplyMarkup(InlineKeyboardMarkup
+                        .builder()
+                        .keyboard(List.of(List.of(keyboardService.createButton(Button.REGISTRATION))))
+                        .build());
 
-                sendMessage.setReplyMarkup(keyboard);
-
-                return sendMessage;
+                break;
             }
             case ENTER_FULL_NAME: {
                 if (!StringUtils.hasText(messageText)) {
@@ -86,6 +88,8 @@ public class RegistrationHandler implements MessageHandler {
 
                 nextSubState = changeState(user, subState);
 
+                sendMessage = messageService.configureMessage(chatId, nextSubState.getMessage());
+
                 break;
             }
             case ENTER_TAVERN_NAME: {
@@ -104,31 +108,25 @@ public class RegistrationHandler implements MessageHandler {
                 changeState(user, subState);
 
                 InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
-                SendMessage sendMessage = messageService.configureMessage(chatId, MessageText.CHOICE_CITY);
-                final AtomicInteger counter = new AtomicInteger(0);
+                sendMessage = messageService.configureMessage(chatId, MessageText.CHOICE_CITY);
 
-                //Список городов по MAX_BUTTONS_PER_ROW на строку
-                List<List<InlineKeyboardButton>> citiesForSelect = new ArrayList<>(Arrays.stream(City.values())
-                        .map(city -> {
-                            InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton(city.getDescription());
-                            inlineKeyboardButton.setCallbackData(city.getName());
-                            return inlineKeyboardButton;
-                        })
-                        .collect(Collectors.groupingBy(e -> counter.getAndIncrement() / MAX_BUTTONS_PER_ROW))
-                        .values());
+                List<List<InlineKeyboardButton>> citiesForSelect = keyboardService.createButtonList(
+                        Arrays.stream(City.values()).collect(Collectors.toMap(City::getDescription, City::getName)),
+                        MAX_BUTTONS_PER_ROW
+                );
 
                 keyboard.setKeyboard(citiesForSelect);
 
                 sendMessage.setReplyMarkup(keyboard);
 
-                return sendMessage;
+                break;
             }
             case CHOICE_CITY: {
                 String data = callback.getData();
                 City city = City.fromName(data);
 
                 if (city == null) {
-                    return messageService.configureMessage(chatId, MessageText.UNABLE_DETERMINE_CITY); // TODO добавить кнопки
+                    return messageService.configureMessage(chatId, MessageText.CITY_IS_EMPTY);
                 }
 
                 TavernEntity tavern = user.getTavern();
@@ -144,6 +142,8 @@ public class RegistrationHandler implements MessageHandler {
 
                 nextSubState = changeState(user, subState);
 
+                sendMessage = messageService.configureMessage(chatId, nextSubState.getMessage());
+
                 break;
             }
             case ENTER_ADDRESS: {
@@ -151,10 +151,11 @@ public class RegistrationHandler implements MessageHandler {
                     return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }
 
-
                 AddressEntity address = user.getTavern().getAddress();
                 address.setStreet(messageText);
                 nextSubState = changeState(user, subState);
+
+                sendMessage = messageService.configureMessage(chatId, nextSubState.getMessage());
 
                 break;
             }
@@ -173,15 +174,83 @@ public class RegistrationHandler implements MessageHandler {
 
                 user.addContact(contact);
 
-                nextSubState = changeState(user, subState);
+                changeState(user, subState);
+
+                String yourPersonalData = "Ваши данные:" + System.lineSeparator() +
+                        "Имя: " + user.getFirstName() + System.lineSeparator() +
+                        "Заведение: " + user.getTavern().getName() + System.lineSeparator() +
+                        "Адрес: " + user.getTavern().getAddress().getStreet() + System.lineSeparator() +
+                        "Номер телефона: " + user.getContacts()
+                        .stream()
+                        .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
+                        .findFirst().get().getValue() + System.lineSeparator();
+
+                InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
+
+                keyboard.setKeyboard(List.of(List.of(keyboardService.createButton(Button.EDIT),
+                        keyboardService.createButton(Button.APPROVE))));
+
+                sendMessage = messageService.configureMessage(chatId, yourPersonalData);
+                sendMessage.setReplyMarkup(keyboard);
 
                 break;
+            }
+            case REGISTRATION_APPROVING: {
+                if (callback != null) {
+                    if (Button.fromName(callback.getData()) == Button.APPROVE) {
+                        changeState(user, subState);
+                        sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
+
+                    } else {
+                        sendMessage = messageService.configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
+
+                        List<List<InlineKeyboardButton>> buttons = keyboardService.createButtonList(
+                                Stream.of(Button.NAME, Button.TAVERN, Button.PHONE_NUMBER, Button.COMPLETE_REGISTRATION)
+                                        .collect(Collectors.toMap(Button::getText, Button::getName)),
+                                1);
+
+                        sendMessage.setReplyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build());
+
+                        user.setSubState(EDIT_PERSONAL_DATA);
+                        userService.save(user);
+                    }
+                }
+                break;
+            }
+            case EDIT_PERSONAL_DATA: {
+                if (callback != null) {
+                    switch (Objects.requireNonNull(Button.fromName(callback.getData()))) {
+                        case NAME: {
+                            changeState(user, SubState.ENTER_FULL_NAME);
+                            sendMessage = messageService.configureMessage(chatId, SubState.ENTER_FULL_NAME.getMessage());
+                            break;
+                        }
+                        case TAVERN: {
+                            changeState(user, SubState.ENTER_TAVERN_NAME);
+                            sendMessage = messageService.configureMessage(chatId, SubState.ENTER_TAVERN_NAME.getMessage());
+                            break;
+                        }
+                        case PHONE_NUMBER: {
+                            changeState(user, SubState.ENTER_PHONE_NUMBER);
+                            sendMessage = messageService.configureMessage(chatId, SubState.ENTER_PHONE_NUMBER.getMessage());
+                            break;
+                        }
+                        case COMPLETE_REGISTRATION: {
+                            changeState(user, SubState.WAITING_APPROVE_APPLICATION);
+                            sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
+                    }
+                }
             }
             default:
                 break;
         }
 
-        return messageService.configureMessage(chatId, nextSubState.getMessage());
+        return sendMessage;
     }
 
     private SubState changeState(UserEntity user, SubState subState) {

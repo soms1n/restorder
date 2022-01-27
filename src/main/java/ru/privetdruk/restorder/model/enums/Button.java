@@ -4,7 +4,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum Button {
-    REGISTRATION("Регистрация");
+    REGISTRATION("Регистрация"),
+    EDIT("Редактировать"),
+    APPROVE("Утвердить"),
+    NAME("Имя"),
+    TAVERN("Заведение"),
+    PHONE_NUMBER("Номер телефона"),
+    COMPLETE_REGISTRATION("Завершить регистрацию");
 
     private final String text;
 
