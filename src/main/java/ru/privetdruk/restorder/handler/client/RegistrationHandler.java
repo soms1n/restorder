@@ -2,6 +2,7 @@ package ru.privetdruk.restorder.handler.client;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -41,6 +42,7 @@ public class RegistrationHandler implements MessageHandler {
     private final UserService userService;
 
     @Override
+    @Transactional
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
         String messageText = message.getText();
         Long chatId = message.getChatId();
@@ -60,7 +62,7 @@ public class RegistrationHandler implements MessageHandler {
 
                 InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
                 keyboard.setKeyboard(List.of(List.of(
-                        keyboardService.createButton(Button.REGISTRATION)
+                        keyboardService.createInlineButton(Button.REGISTRATION)
                 )));
 
                 sendMessage.setReplyMarkup(keyboard);

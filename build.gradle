@@ -33,7 +33,6 @@ dependencies {
 	implementation "org.telegram:telegrambots-spring-boot-starter:$telegramApiVersion"
 	implementation "org.flywaydb:flyway-core:$flywayVersion"
 	implementation "com.vladmihalcea:hibernate-types-55:$hibernateTypesVersion"
-    implementation 'org.projectlombok:lombok:1.18.20'
     compileOnly "org.projectlombok:lombok:$lombokVersion"
 	runtimeOnly "org.postgresql:postgresql:$postgresVersion"
 	annotationProcessor "org.projectlombok:lombok:$lombokVersion"

@@ -13,4 +13,5 @@ public interface MessageText {
     String UNABLE_DETERMINE_CITY = "Вы не выбрали город";
     String WAITING_APPROVE_APPLICATION = "Спасибо за регистрацию, ваша заявка на модерации.";
     String REGISTER = "Пройдите регистрацию, чтобы получить доступ к функционалу бота.";
+    String TAVERN_INVALID = "Добавьте в настройках хотя-бы один стол и номер телефона, чтобы было доступно управление заведением.";
 }

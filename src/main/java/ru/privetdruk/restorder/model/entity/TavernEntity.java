@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -20,6 +22,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @Table(name = "tavern")
+@Cacheable
 public class TavernEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,29 +55,30 @@ public class TavernEntity {
      * Адрес
      */
     @OneToOne(
-            mappedBy = "tavern",
             fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @JoinColumn(name = "address_id")
     private AddressEntity address;
 
     /**
      * График работы
      */
-    @OneToMany(mappedBy = "tavern", orphanRemoval = true)
+    @OneToMany(mappedBy = "tavern", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ScheduleEntity> schedules = new HashSet<>();
 
     /**
      * Контакты
      */
-    @OneToMany(mappedBy = "tavern", orphanRemoval = true)
+    @OneToMany(mappedBy = "tavern", cascade = CascadeType.ALL, orphanRemoval = true)
+    @NotFound(action = NotFoundAction.IGNORE)
     private Set<ContactEntity> contacts = new HashSet<>();
 
     /**
      * Столы
      */
-    @OneToMany(mappedBy = "tavern", orphanRemoval = true)
+    @OneToMany(mappedBy = "tavern", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TableEntity> tables = new HashSet<>();
 
     @Builder
@@ -85,6 +89,10 @@ public class TavernEntity {
 
     public void addEmployee(UserEntity employee) {
         getEmployees().add(employee);
+    }
+
+    public void addContact(ContactEntity contact) {
+        getContacts().add(contact);
     }
 
     @Override

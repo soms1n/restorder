@@ -76,11 +76,6 @@ public enum SubState {
         public State getState() {
             return State.REGISTRATION;
         }
-
-        @Override
-        public SubState getNextSubState() {
-            return null;
-        }
     },
     WAITING_APPROVE_APPLICATION(MessageText.WAITING_APPROVE_APPLICATION) {
         @Override
@@ -98,10 +93,119 @@ public enum SubState {
         public State getState() {
             return State.MAIN_MENU;
         }
+    },
+    VIEW_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+    },
+    VIEW_GENERAL_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
 
         @Override
-        public SubState getNextSubState() {
-            return null;
+        public Button getParentButton() {
+            return Button.SETTINGS;
+        }
+    },
+    VIEW_TAVERN_NAME_GENERAL_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public Button getParentButton() {
+            return Button.GENERAL;
+        }
+    },
+    CHANGE_TAVERN_NAME_GENERAL_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public Button getParentButton() {
+            return Button.GENERAL;
+        }
+
+        @Override
+        public Button getAfterChangeButton() {
+            return Button.TAVERN_NAME;
+        }
+    },
+    VIEW_TAVERN_ADDRESS_GENERAL_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public Button getParentButton() {
+            return Button.GENERAL;
+        }
+    },
+    CHANGE_TAVERN_ADDRESS_GENERAL_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public Button getParentButton() {
+            return Button.GENERAL;
+        }
+
+        @Override
+        public Button getAfterChangeButton() {
+            return Button.TAVERN_ADDRESS;
+        }
+    },
+    VIEW_TAVERN_PHONES_GENERAL_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public Button getParentButton() {
+            return Button.GENERAL;
+        }
+    },
+    ADD_TAVERN_PHONES_GENERAL_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public Button getParentButton() {
+            return Button.GENERAL;
+        }
+
+        @Override
+        public Button getAfterChangeButton() {
+            return Button.TAVERN_PHONES;
+        }
+    },
+    DELETE_TAVERN_PHONES_GENERAL_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public Button getParentButton() {
+            return Button.GENERAL;
+        }
+
+        @Override
+        public Button getAfterChangeButton() {
+            return Button.TAVERN_PHONES;
         }
     };
 
@@ -127,6 +231,19 @@ public enum SubState {
         return message;
     }
 
-    public abstract State getState();
-    public abstract SubState getNextSubState();
+    public State getState() {
+        return null;
+    }
+
+    public SubState getNextSubState() {
+        return null;
+    }
+
+    public Button getParentButton() {
+        return null;
+    }
+
+    public Button getAfterChangeButton() {
+        return null;
+    }
 }

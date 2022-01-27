@@ -6,7 +6,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public enum State {
     REGISTRATION(SubState.SHOW_REGISTER_BUTTON),
     WAITING_APPROVE_APPLICATION(SubState.WAITING_APPROVE_APPLICATION),
-    MAIN_MENU(SubState.VIEW_MAIN_MENU);
+    MAIN_MENU(SubState.VIEW_MAIN_MENU),
+    SETTINGS(SubState.VIEW_SETTINGS);
 
     private final SubState initialSubState;
 

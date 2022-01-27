@@ -66,7 +66,8 @@ public class ContactEntity {
     private LocalDateTime createDate = LocalDateTime.now();
 
     @Builder
-    public ContactEntity(UserEntity user, ContractType type, String value) {
+    public ContactEntity(TavernEntity tavern, UserEntity user, ContractType type, String value) {
+        this.tavern = tavern;
         this.user = user;
         this.type = type;
         this.value = value;

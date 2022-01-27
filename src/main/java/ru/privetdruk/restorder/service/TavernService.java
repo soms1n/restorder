@@ -46,4 +46,14 @@ public class TavernService {
 
         return true;
     }
+
+    /**
+     * Сохранить заведение
+     *
+     * @param tavern Заведение
+     */
+    @Transactional
+    public TavernEntity save(TavernEntity tavern) {
+        return tavernRepository.save(tavern);
+    }
 }

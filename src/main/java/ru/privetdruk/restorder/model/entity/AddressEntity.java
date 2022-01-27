@@ -2,6 +2,7 @@ package ru.privetdruk.restorder.model.entity;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import ru.privetdruk.restorder.model.enums.City;
 
@@ -22,6 +23,7 @@ public class AddressEntity {
     /**
      * Заведение
      */
+    @EqualsAndHashCode.Exclude
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tavern_id")
     private TavernEntity tavern;

@@ -22,7 +22,7 @@ public class TableEntity {
      * Заведение
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "tavern_id")
     private TavernEntity tavern;
 
     /**
