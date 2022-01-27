@@ -11,8 +11,7 @@ public enum Button {
     NAME("Имя"),
     TAVERN("Заведение"),
     PHONE_NUMBER("Номер телефона"),
-    COMPLETE_REGISTRATION("Завершить регистрацию");
-    REGISTRATION("Регистрация"),
+    COMPLETE_REGISTRATION("Завершить регистрацию"),
     SETTINGS("⚙ Настройки"),
     INFORMATION("\uD83D\uDCAC Информация"),
     GENERAL("\uD83D\uDEE0 Основное"),

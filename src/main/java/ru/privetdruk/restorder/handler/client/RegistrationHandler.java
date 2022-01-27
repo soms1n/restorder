@@ -189,8 +189,8 @@ public class RegistrationHandler implements MessageHandler {
 
                 InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
 
-                keyboard.setKeyboard(List.of(List.of(keyboardService.createButton(Button.EDIT),
-                        keyboardService.createButton(Button.APPROVE))));
+                keyboard.setKeyboard(List.of(List.of(keyboardService.createInlineButton(Button.EDIT),
+                        keyboardService.createInlineButton(Button.APPROVE))));
 
                 sendMessage = messageService.configureMessage(chatId, yourPersonalData);
                 sendMessage.setReplyMarkup(keyboard);
