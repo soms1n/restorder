@@ -76,6 +76,28 @@ public enum SubState {
         public State getState() {
             return State.REGISTRATION;
         }
+
+        @Override
+        public SubState getNextSubState() {
+            return REGISTRATION_APPROVING;
+        }
+    },
+    REGISTRATION_APPROVING(null) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION;
+        }
+
+        @Override
+        public SubState getNextSubState() {
+            return WAITING_APPROVE_APPLICATION;
+        }
+    },
+    REGISTRATION_EDITING(null) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION;
+        }
     },
     WAITING_APPROVE_APPLICATION(MessageText.WAITING_APPROVE_APPLICATION) {
         @Override
@@ -92,6 +114,12 @@ public enum SubState {
         @Override
         public State getState() {
             return State.MAIN_MENU;
+        }
+    },
+    EDIT_PERSONAL_DATA(null) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION;
         }
     },
     VIEW_SETTINGS(null) {
@@ -208,7 +236,6 @@ public enum SubState {
             return Button.TAVERN_PHONES;
         }
     };
-
     private final String message;
 
     SubState(String message) {

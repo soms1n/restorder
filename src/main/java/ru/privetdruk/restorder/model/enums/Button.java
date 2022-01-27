@@ -6,6 +6,13 @@ import org.springframework.util.StringUtils;
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum Button {
     REGISTRATION("Регистрация"),
+    EDIT("Редактировать"),
+    APPROVE("Утвердить"),
+    NAME("Имя"),
+    TAVERN("Заведение"),
+    PHONE_NUMBER("Номер телефона"),
+    COMPLETE_REGISTRATION("Завершить регистрацию");
+    REGISTRATION("Регистрация"),
     SETTINGS("⚙ Настройки"),
     INFORMATION("\uD83D\uDCAC Информация"),
     GENERAL("\uD83D\uDEE0 Основное"),
