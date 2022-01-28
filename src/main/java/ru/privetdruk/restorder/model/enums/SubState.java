@@ -102,7 +102,7 @@ public enum SubState {
     WAITING_APPROVE_APPLICATION(MessageText.WAITING_APPROVE_APPLICATION) {
         @Override
         public State getState() {
-            return State.WAITING_APPROVE_APPLICATION;
+            return State.REGISTRATION;
         }
 
         @Override
@@ -117,6 +117,36 @@ public enum SubState {
         }
     },
     EDIT_PERSONAL_DATA(null) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION;
+        }
+    },
+    EDIT_NAME(null) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION;
+        }
+    },
+    EDIT_ADDRESS(null) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION;
+        }
+    },
+    EDIT_CITY(null) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION;
+        }
+    },
+    EDIT_TAVERN(null) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION;
+        }
+    },
+    EDIT_PHONE_NUMBER(null) {
         @Override
         public State getState() {
             return State.REGISTRATION;

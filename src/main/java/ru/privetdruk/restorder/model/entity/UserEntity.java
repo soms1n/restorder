@@ -30,22 +30,10 @@ public class UserEntity {
     private Long id;
 
     /**
-     * Фамилия
-     */
-    @Column(name = "last_name")
-    private String lastName;
-
-    /**
      * Имя
      */
     @Column(name = "first_name")
     private String firstName;
-
-    /**
-     * Отчество
-     */
-    @Column(name = "middle_name")
-    private String middleName;
 
     /**
      * Контакты
