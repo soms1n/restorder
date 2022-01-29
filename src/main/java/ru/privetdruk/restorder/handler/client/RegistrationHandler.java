@@ -47,7 +47,6 @@ public class RegistrationHandler implements MessageHandler {
     private final KeyboardService keyboardService;
     private final MessageService messageService;
     private final UserService userService;
-    private final TavernService tavernService;
 
     @Override
     @Transactional
@@ -59,7 +58,7 @@ public class RegistrationHandler implements MessageHandler {
         SendMessage sendMessage = new SendMessage();
 
         switch (subState) {
-            case SHOW_REGISTER_BUTTON: {
+            case SHOW_REGISTER_BUTTON -> {
                 if (callback != null) {
                     subState = subState.getNextSubState();
                     sendMessage = messageService.configureMessage(chatId, changeState(user, subState).getMessage());
@@ -73,10 +72,8 @@ public class RegistrationHandler implements MessageHandler {
                         .builder()
                         .keyboard(List.of(List.of(keyboardService.createInlineButton(Button.REGISTRATION))))
                         .build());
-
-                break;
             }
-            case ENTER_FULL_NAME: {
+            case ENTER_FULL_NAME -> {
                 if (!StringUtils.hasText(messageText)) {
                     return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }
@@ -84,10 +81,8 @@ public class RegistrationHandler implements MessageHandler {
                 user.setFirstName(messageText);
 
                 sendMessage = messageService.configureMessage(chatId, changeState(user, subState).getMessage());
-
-                break;
             }
-            case ENTER_TAVERN_NAME: {
+            case ENTER_TAVERN_NAME -> {
                 if (!StringUtils.hasText(messageText)) {
                     return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }
@@ -110,10 +105,8 @@ public class RegistrationHandler implements MessageHandler {
                                 MAX_BUTTONS_PER_ROW))
                         .build()
                 );
-
-                break;
             }
-            case CHOICE_CITY: {
+            case CHOICE_CITY -> {
                 if (callback != null) {
                     String data = callback.getData();
                     City city = City.fromName(data);
@@ -143,10 +136,8 @@ public class RegistrationHandler implements MessageHandler {
                             .build()
                     );
                 }
-
-                break;
             }
-            case ENTER_ADDRESS: {
+            case ENTER_ADDRESS -> {
                 if (!StringUtils.hasText(messageText)) {
                     return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }
@@ -156,10 +147,8 @@ public class RegistrationHandler implements MessageHandler {
                 nextSubState = changeState(user, subState);
 
                 sendMessage = messageService.configureMessage(chatId, nextSubState.getMessage());
-
-                break;
             }
-            case ENTER_PHONE_NUMBER: {
+            case ENTER_PHONE_NUMBER -> {
                 if (!StringUtils.hasText(messageText)) {
                     return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }
@@ -192,10 +181,8 @@ public class RegistrationHandler implements MessageHandler {
 
                 sendMessage = messageService.configureMessage(chatId, yourPersonalData);
                 sendMessage.setReplyMarkup(keyboard);
-
-                break;
             }
-            case REGISTRATION_APPROVING: {
+            case REGISTRATION_APPROVING -> {
                 if (callback != null) {
                     if (Button.fromName(callback.getData()) == Button.APPROVE) {
                         changeState(user, subState);
@@ -215,9 +202,8 @@ public class RegistrationHandler implements MessageHandler {
                         userService.save(user);
                     }
                 }
-                break;
             }
-            case EDIT_PERSONAL_DATA: {
+            case EDIT_PERSONAL_DATA -> {
                 sendMessage = messageService.configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
 
                 sendMessage.setReplyMarkup(
@@ -234,72 +220,67 @@ public class RegistrationHandler implements MessageHandler {
                                                 new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
                                 .build());
 
-                Button button = Button.fromText(messageText);
+                Button button = Button.fromText(messageText)
+                        .orElse(Button.NOTHING);
 
-                if (button != null) {
-                    switch (button) {
-                        case NAME: {
-                            sendMessage = messageService.configureMessage(chatId, SubState.ENTER_FULL_NAME.getMessage());
-                            user.setSubState(SubState.EDIT_NAME);
-                            userService.save(user);
+                switch (button) {
+                    case NAME -> {
+                        sendMessage = messageService.configureMessage(chatId, SubState.ENTER_FULL_NAME.getMessage());
+                        user.setSubState(SubState.EDIT_NAME);
+                        userService.save(user);
 
-                            sendMessage.setReplyMarkup(
-                                    ReplyKeyboardMarkup
-                                            .builder()
-                                            .keyboard(List.of(
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.EDIT_MENU.getText()),
-                                                            new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
-                                            .build());
-                            break;
-                        }
-                        case TAVERN: {
-                            sendMessage = messageService.configureMessage(chatId, SubState.ENTER_TAVERN_NAME.getMessage());
-                            user.setSubState(SubState.EDIT_TAVERN);
-                            userService.save(user);
+                        sendMessage.setReplyMarkup(
+                                ReplyKeyboardMarkup
+                                        .builder()
+                                        .keyboard(List.of(
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.EDIT_MENU.getText()),
+                                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
+                                        .build());
+                    }
+                    case TAVERN -> {
+                        sendMessage = messageService.configureMessage(chatId, SubState.ENTER_TAVERN_NAME.getMessage());
+                        user.setSubState(SubState.EDIT_TAVERN);
+                        userService.save(user);
 
-                            sendMessage.setReplyMarkup(
-                                    ReplyKeyboardMarkup
-                                            .builder()
-                                            .keyboard(List.of(
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.EDIT_MENU.getText()),
-                                                            new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
-                                            .build());
-                            break;
-                        }
-                        case PHONE_NUMBER: {
-                            sendMessage = messageService.configureMessage(chatId, SubState.ENTER_PHONE_NUMBER.getMessage());
-                            user.setSubState(SubState.EDIT_PHONE_NUMBER);
-                            userService.save(user);
+                        sendMessage.setReplyMarkup(
+                                ReplyKeyboardMarkup
+                                        .builder()
+                                        .keyboard(List.of(
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.EDIT_MENU.getText()),
+                                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
+                                        .build());
+                    }
+                    case PHONE_NUMBER -> {
+                        sendMessage = messageService.configureMessage(chatId, SubState.ENTER_PHONE_NUMBER.getMessage());
+                        user.setSubState(SubState.EDIT_PHONE_NUMBER);
+                        userService.save(user);
 
-                            sendMessage.setReplyMarkup(
-                                    ReplyKeyboardMarkup
-                                            .builder()
-                                            .keyboard(List.of(
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.EDIT_MENU.getText()),
-                                                            new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
-                                            .build());
+                        sendMessage.setReplyMarkup(
+                                ReplyKeyboardMarkup
+                                        .builder()
+                                        .keyboard(List.of(
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.EDIT_MENU.getText()),
+                                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
+                                        .build());
+                    }
+                    case ADDRESS -> {
+                        sendMessage = messageService.configureMessage(chatId, SubState.ENTER_ADDRESS.getMessage());
+                        user.setSubState(SubState.EDIT_ADDRESS);
+                        userService.save(user);
 
-                            break;
-                        }
-                        case ADDRESS: {
-                            sendMessage = messageService.configureMessage(chatId, SubState.ENTER_ADDRESS.getMessage());
-                            user.setSubState(SubState.EDIT_ADDRESS);
-                            userService.save(user);
+                        sendMessage.setReplyMarkup(
+                                ReplyKeyboardMarkup
+                                        .builder()
+                                        .keyboard(List.of(
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.EDIT_MENU.getText()),
+                                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
+                                        .build());
+                    }
 
-                            sendMessage.setReplyMarkup(
-                                    ReplyKeyboardMarkup
-                                            .builder()
-                                            .keyboard(List.of(
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.EDIT_MENU.getText()),
-                                                            new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
-                                            .build());
-
-                            break;
-                        }
                        /* case CITY: {
                             sendMessage = messageService.configureMessage(chatId, MessageText.CHOICE_CITY);
                             sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
@@ -309,59 +290,50 @@ public class RegistrationHandler implements MessageHandler {
 
                             return sendMessage;
                         }*/
-                        case COMPLETE_REGISTRATION: {
-                            user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
-                            userService.save(user);
+                    case COMPLETE_REGISTRATION -> {
+                        user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
+                        userService.save(user);
 
-                            sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
-                            sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
-                            break;
-                        }
-                        default: {
-                            break;
-                        }
+                        sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
+                        sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
                     }
                 }
-
-                break;
             }
-            case EDIT_NAME: {
+            case EDIT_NAME -> {
                 if (!StringUtils.hasText(messageText)) {
                     return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }
 
-                Button button = Button.fromText(messageText);
+                Button button = Button.fromText(messageText)
+                        .orElse(Button.NOTHING);
 
-                if (button != null) {
-                    switch (button) {
-                        case EDIT_MENU: {
-                            user.setSubState(SubState.EDIT_PERSONAL_DATA);
-                            userService.save(user);
-                            sendMessage = messageService.configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
-                            sendMessage.setReplyMarkup(
-                                    ReplyKeyboardMarkup
-                                            .builder()
-                                            .keyboard(List.of(
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.NAME.getText()),
-                                                            new KeyboardButton(Button.TAVERN.getText()))),
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.ADDRESS.getText()),
-                                                            new KeyboardButton(Button.PHONE_NUMBER.getText()))),
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
-                                            .build());
+                switch (button) {
+                    case EDIT_MENU -> {
+                        user.setSubState(SubState.EDIT_PERSONAL_DATA);
+                        userService.save(user);
+                        sendMessage = messageService.configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
+                        sendMessage.setReplyMarkup(
+                                ReplyKeyboardMarkup
+                                        .builder()
+                                        .keyboard(List.of(
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.NAME.getText()),
+                                                        new KeyboardButton(Button.TAVERN.getText()))),
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.ADDRESS.getText()),
+                                                        new KeyboardButton(Button.PHONE_NUMBER.getText()))),
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
+                                        .build());
 
-                            return sendMessage;
-                        }
-                        case COMPLETE_REGISTRATION: {
-                            user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
-                            userService.save(user);
+                        return sendMessage;
+                    }
+                    case COMPLETE_REGISTRATION -> {
+                        user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
+                        userService.save(user);
 
-                            sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
-                            sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
-                            break;
-                        }
+                        sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
+                        sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
                     }
                 }
 
@@ -375,45 +347,42 @@ public class RegistrationHandler implements MessageHandler {
                                                 new KeyboardButton(Button.EDIT_MENU.getText()),
                                                 new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
                                 .build());
-                break;
             }
-            case EDIT_TAVERN: {
+            case EDIT_TAVERN -> {
                 if (!StringUtils.hasText(messageText)) {
                     return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }
 
-                Button button = Button.fromText(messageText);
+                Button button = Button.fromText(messageText)
+                        .orElse(Button.NOTHING);
 
-                if (button != null) {
-                    switch (button) {
-                        case EDIT_MENU: {
-                            user.setSubState(SubState.EDIT_PERSONAL_DATA);
-                            userService.save(user);
-                            sendMessage = messageService.configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
-                            sendMessage.setReplyMarkup(
-                                    ReplyKeyboardMarkup
-                                            .builder()
-                                            .keyboard(List.of(
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.NAME.getText()),
-                                                            new KeyboardButton(Button.TAVERN.getText()))),
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.ADDRESS.getText()),
-                                                            new KeyboardButton(Button.PHONE_NUMBER.getText()))),
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
-                                            .build());
+                switch (button) {
+                    case EDIT_MENU -> {
+                        user.setSubState(SubState.EDIT_PERSONAL_DATA);
+                        userService.save(user);
+                        sendMessage = messageService.configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
+                        sendMessage.setReplyMarkup(
+                                ReplyKeyboardMarkup
+                                        .builder()
+                                        .keyboard(List.of(
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.NAME.getText()),
+                                                        new KeyboardButton(Button.TAVERN.getText()))),
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.ADDRESS.getText()),
+                                                        new KeyboardButton(Button.PHONE_NUMBER.getText()))),
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
+                                        .build());
 
-                            return sendMessage;
-                        }
-                        case COMPLETE_REGISTRATION: {
-                            user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
-                            userService.save(user);
+                        return sendMessage;
+                    }
+                    case COMPLETE_REGISTRATION -> {
+                        user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
+                        userService.save(user);
 
-                            sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
-                            sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
-                            break;
-                        }
+                        sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
+                        sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
                     }
                 }
 
@@ -427,103 +396,98 @@ public class RegistrationHandler implements MessageHandler {
                                                 new KeyboardButton(Button.EDIT_MENU.getText()),
                                                 new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
                                 .build());
-                break;
             }
-            case EDIT_PHONE_NUMBER: {
+            case EDIT_PHONE_NUMBER -> {
                 if (!StringUtils.hasText(messageText)) {
                     return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }
 
-                Button button = Button.fromText(messageText);
+                Button button = Button.fromText(messageText)
+                        .orElse(Button.NOTHING);
 
-                if (button != null) {
-                    switch (button) {
-                        case EDIT_MENU: {
-                            user.setSubState(SubState.EDIT_PERSONAL_DATA);
-                            userService.save(user);
-                            sendMessage = messageService.configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
-                            sendMessage.setReplyMarkup(
-                                    ReplyKeyboardMarkup
-                                            .builder()
-                                            .keyboard(List.of(
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.NAME.getText()),
-                                                            new KeyboardButton(Button.TAVERN.getText()))),
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.ADDRESS.getText()),
-                                                            new KeyboardButton(Button.PHONE_NUMBER.getText()))),
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
-                                            .build());
+                switch (button) {
+                    case EDIT_MENU -> {
+                        user.setSubState(SubState.EDIT_PERSONAL_DATA);
+                        userService.save(user);
+                        sendMessage = messageService.configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
+                        sendMessage.setReplyMarkup(
+                                ReplyKeyboardMarkup
+                                        .builder()
+                                        .keyboard(List.of(
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.NAME.getText()),
+                                                        new KeyboardButton(Button.TAVERN.getText()))),
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.ADDRESS.getText()),
+                                                        new KeyboardButton(Button.PHONE_NUMBER.getText()))),
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
+                                        .build());
 
-                            return sendMessage;
-                        }
-                        case COMPLETE_REGISTRATION: {
-                            user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
-                            userService.save(user);
+                        return sendMessage;
+                    }
+                    case COMPLETE_REGISTRATION -> {
+                        user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
+                        userService.save(user);
 
-                            sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
-                            sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
-                            break;
-                        }
+                        sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
+                        sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
                     }
                 }
 
                 // TODO валидация номера
 
-                ContactEntity contact = user.getContacts().stream().filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
-                        .findFirst().get();
+                ContactEntity contact = user.getContacts().stream()
+                        .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
+                        .findFirst()
+                        .get();
 
                 contact.setValue(messageText);
 
                 sendMessage.setReplyMarkup(
-                        ReplyKeyboardMarkup
-                                .builder()
+                        ReplyKeyboardMarkup.builder()
                                 .keyboard(List.of(
                                         new KeyboardRow(List.of(
                                                 new KeyboardButton(Button.EDIT_MENU.getText()),
                                                 new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
-                                .build());
-
-                break;
+                                .build()
+                );
             }
-            case EDIT_ADDRESS: {
+            case EDIT_ADDRESS -> {
                 if (!StringUtils.hasText(messageText)) {
                     return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }
 
-                Button button = Button.fromText(messageText);
+                Button button = Button.fromText(messageText)
+                        .orElse(Button.NOTHING);
 
-                if (button != null) {
-                    switch (button) {
-                        case EDIT_MENU: {
-                            user.setSubState(SubState.EDIT_PERSONAL_DATA);
-                            userService.save(user);
-                            sendMessage = messageService.configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
-                            sendMessage.setReplyMarkup(
-                                    ReplyKeyboardMarkup
-                                            .builder()
-                                            .keyboard(List.of(
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.NAME.getText()),
-                                                            new KeyboardButton(Button.TAVERN.getText()))),
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.ADDRESS.getText()),
-                                                            new KeyboardButton(Button.PHONE_NUMBER.getText()))),
-                                                    new KeyboardRow(List.of(
-                                                            new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
-                                            .build());
+                switch (button) {
+                    case EDIT_MENU -> {
+                        user.setSubState(SubState.EDIT_PERSONAL_DATA);
+                        userService.save(user);
+                        sendMessage = messageService.configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
+                        sendMessage.setReplyMarkup(
+                                ReplyKeyboardMarkup.builder()
+                                        .keyboard(List.of(
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.NAME.getText()),
+                                                        new KeyboardButton(Button.TAVERN.getText()))),
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.ADDRESS.getText()),
+                                                        new KeyboardButton(Button.PHONE_NUMBER.getText()))),
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
+                                        .build()
+                        );
 
-                            return sendMessage;
-                        }
-                        case COMPLETE_REGISTRATION: {
-                            user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
-                            userService.save(user);
+                        return sendMessage;
+                    }
+                    case COMPLETE_REGISTRATION -> {
+                        user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
+                        userService.save(user);
 
-                            sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
-                            sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
-                            break;
-                        }
+                        sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
+                        sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
                     }
                 }
 
@@ -539,9 +503,8 @@ public class RegistrationHandler implements MessageHandler {
                                                 new KeyboardButton(Button.EDIT_MENU.getText()),
                                                 new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
                                 .build());
-
-                break;
             }
+
     /*        case EDIT_CITY: {
                 Button button = Button.fromText(messageText);
 
@@ -609,20 +572,18 @@ public class RegistrationHandler implements MessageHandler {
                 }
             }
 */
-                default:
-                    break;
-            }
-
-            return sendMessage;
         }
 
-        private SubState changeState (UserEntity user, SubState subState){
-            SubState nextSubState = subState.getNextSubState();
-            user.setState(nextSubState.getState());
-            user.setSubState(nextSubState);
-
-            userService.save(user);
-
-            return nextSubState;
-        }
+        return sendMessage;
     }
+
+    private SubState changeState(UserEntity user, SubState subState) {
+        SubState nextSubState = subState.getNextSubState();
+        user.setState(nextSubState.getState());
+        user.setSubState(nextSubState);
+
+        userService.save(user);
+
+        return nextSubState;
+    }
+}

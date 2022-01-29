@@ -48,15 +48,15 @@ public class MainMenuHandler implements MessageHandler {
             sendMessage.setText(MessageText.TAVERN_INVALID);
         }
 
-        Button button = Button.fromText(message.getText());
-        if (button != null) {
+        Button button = Button.fromText(message.getText())
+                .orElse(Button.NOTHING);
+
+        if (button != Button.NOTHING) {
             switch (button) {
-                case SETTINGS: {
+                case SETTINGS -> {
                     return settingsHandler.handle(user, message, callback);
                 }
-                case INFORMATION: {
-                    sendMessage.setText("<b>Информация о вашем заведении:</b>");
-                }
+                case INFORMATION -> sendMessage.setText("<b>Информация о вашем заведении:</b>");
             }
         }
 
