@@ -165,105 +165,151 @@ public enum SubState {
         }
 
         @Override
-        public Button getParentButton() {
-            return Button.SETTINGS;
+        public SubState getParentSubState() {
+            return VIEW_SETTINGS;
         }
     },
-    VIEW_TAVERN_NAME_GENERAL_SETTINGS(null) {
+    VIEW_GENERAL_SETTINGS_TAVERN_NAME(null) {
         @Override
         public State getState() {
             return State.SETTINGS;
         }
 
         @Override
-        public Button getParentButton() {
-            return Button.GENERAL;
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS;
         }
     },
-    CHANGE_TAVERN_NAME_GENERAL_SETTINGS(null) {
+    CHANGE_GENERAL_SETTINGS_TAVERN_NAME(null) {
         @Override
         public State getState() {
             return State.SETTINGS;
         }
 
         @Override
-        public Button getParentButton() {
-            return Button.GENERAL;
-        }
-
-        @Override
-        public Button getAfterChangeButton() {
-            return Button.TAVERN_NAME;
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS_TAVERN_NAME;
         }
     },
-    VIEW_TAVERN_ADDRESS_GENERAL_SETTINGS(null) {
+    VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS(null) {
         @Override
         public State getState() {
             return State.SETTINGS;
         }
 
         @Override
-        public Button getParentButton() {
-            return Button.GENERAL;
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS;
         }
     },
-    CHANGE_TAVERN_ADDRESS_GENERAL_SETTINGS(null) {
+    CHANGE_GENERAL_SETTINGS_TAVERN_ADDRESS(null) {
         @Override
         public State getState() {
             return State.SETTINGS;
         }
 
         @Override
-        public Button getParentButton() {
-            return Button.GENERAL;
-        }
-
-        @Override
-        public Button getAfterChangeButton() {
-            return Button.TAVERN_ADDRESS;
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS;
         }
     },
-    VIEW_TAVERN_PHONES_GENERAL_SETTINGS(null) {
+    VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS(null) {
         @Override
         public State getState() {
             return State.SETTINGS;
         }
 
         @Override
-        public Button getParentButton() {
-            return Button.GENERAL;
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS;
         }
     },
-    ADD_TAVERN_PHONES_GENERAL_SETTINGS(null) {
+    ADD_GENERAL_SETTINGS_TAVERN_CONTACTS(null) {
         @Override
         public State getState() {
             return State.SETTINGS;
         }
 
         @Override
-        public Button getParentButton() {
-            return Button.GENERAL;
-        }
-
-        @Override
-        public Button getAfterChangeButton() {
-            return Button.TAVERN_PHONES;
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS;
         }
     },
-    DELETE_TAVERN_PHONES_GENERAL_SETTINGS(null) {
+    DELETE_GENERAL_SETTINGS_TAVERN_CONTACTS(null) {
         @Override
         public State getState() {
             return State.SETTINGS;
         }
 
         @Override
-        public Button getParentButton() {
-            return Button.GENERAL;
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS;
+        }
+    },
+    VIEW_PROFILE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
         }
 
         @Override
-        public Button getAfterChangeButton() {
-            return Button.TAVERN_PHONES;
+        public SubState getParentSubState() {
+            return VIEW_SETTINGS;
+        }
+    },
+    VIEW_PROFILE_SETTINGS_USER_NAME(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_PROFILE_SETTINGS;
+        }
+    },
+    CHANGE_PROFILE_SETTINGS_USER_NAME(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_PROFILE_SETTINGS_USER_NAME;
+        }
+    },
+    VIEW_PROFILE_SETTINGS_USER_CONTACTS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_PROFILE_SETTINGS;
+        }
+    },
+    ADD_PROFILE_SETTINGS_USER_CONTACTS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_PROFILE_SETTINGS_USER_CONTACTS;
+        }
+    },
+    DELETE_PROFILE_SETTINGS_USER_CONTACTS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_PROFILE_SETTINGS_USER_CONTACTS;
         }
     };
     private final String message;
@@ -296,11 +342,7 @@ public enum SubState {
         return null;
     }
 
-    public Button getParentButton() {
-        return null;
-    }
-
-    public Button getAfterChangeButton() {
+    public SubState getParentSubState() {
         return null;
     }
 }

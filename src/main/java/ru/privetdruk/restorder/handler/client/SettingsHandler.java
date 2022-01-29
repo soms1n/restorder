@@ -1,5 +1,6 @@
 package ru.privetdruk.restorder.handler.client;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -15,10 +16,7 @@ import ru.privetdruk.restorder.model.entity.AddressEntity;
 import ru.privetdruk.restorder.model.entity.ContactEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
-import ru.privetdruk.restorder.model.enums.Button;
-import ru.privetdruk.restorder.model.enums.ContractType;
-import ru.privetdruk.restorder.model.enums.State;
-import ru.privetdruk.restorder.model.enums.SubState;
+import ru.privetdruk.restorder.model.enums.*;
 import ru.privetdruk.restorder.service.ContactService;
 import ru.privetdruk.restorder.service.MessageService;
 import ru.privetdruk.restorder.service.TavernService;
@@ -29,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class SettingsHandler implements MessageHandler {
     private final MainMenuHandler mainMenuHandler;
@@ -41,9 +40,11 @@ public class SettingsHandler implements MessageHandler {
     private final ReplyKeyboardMarkup allKeyboard = new ReplyKeyboardMarkup();
     private final ReplyKeyboardMarkup generalKeyboard = new ReplyKeyboardMarkup();
     private final ReplyKeyboardMarkup tavernNameKeyboard = new ReplyKeyboardMarkup();
-    private final ReplyKeyboardMarkup tavernPhonesKeyboard = new ReplyKeyboardMarkup();
+    private final ReplyKeyboardMarkup tavernContactsKeyboard = new ReplyKeyboardMarkup();
     private final ReplyKeyboardMarkup tavernAddressKeyboard = new ReplyKeyboardMarkup();
     private final ReplyKeyboardMarkup profileKeyboard = new ReplyKeyboardMarkup();
+    private final ReplyKeyboardMarkup profileNameKeyboard = new ReplyKeyboardMarkup();
+    private final ReplyKeyboardMarkup userContactsKeyboard = new ReplyKeyboardMarkup();
     private final ReplyKeyboardMarkup employeeKeyboard = new ReplyKeyboardMarkup();
     private final ReplyKeyboardMarkup categoryKeyboard = new ReplyKeyboardMarkup();
     private final ReplyKeyboardMarkup scheduleKeyboard = new ReplyKeyboardMarkup();
@@ -62,25 +63,113 @@ public class SettingsHandler implements MessageHandler {
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
         SubState subState = user.getSubState();
         String messageText = message.getText();
-        Button button = Button.fromText(messageText);
+        Button button = Button.fromText(messageText)
+                .orElse(Button.NOTHING);
+        Long chatId = message.getChatId();
         TavernEntity tavern = user.getTavern();
 
-        if (button != Button.CANCEL) {
-            switch (subState) {
-                case CHANGE_TAVERN_NAME_GENERAL_SETTINGS: {
+        // обработка функциональных клавиш
+        switch (button) {
+            case BACK, CANCEL -> user.setSubState(subState.getParentSubState());
+            case MAIN_MENU -> {
+                user.setState(State.MAIN_MENU);
+                user.setSubState(SubState.VIEW_MAIN_MENU);
+                userService.save(user);
+
+                return mainMenuHandler.handle(user, message, callback);
+            }
+            case CHANGE -> {
+                switch (subState) {
+                    case VIEW_GENERAL_SETTINGS_TAVERN_NAME:
+                        return configureMessage(user, chatId, SubState.CHANGE_GENERAL_SETTINGS_TAVERN_NAME, "Введите новое название:");
+                    case VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS:
+                        return configureMessage(user, chatId, SubState.CHANGE_GENERAL_SETTINGS_TAVERN_ADDRESS, "Введите новый адрес:");
+                    case VIEW_PROFILE_SETTINGS_USER_NAME:
+                        return configureMessage(user, chatId, SubState.CHANGE_PROFILE_SETTINGS_USER_NAME, "Введите новое имя:");
+                }
+            }
+            case ADD -> {
+                switch (subState) {
+                    case VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS:
+                        return configureMessage(user, chatId, SubState.ADD_GENERAL_SETTINGS_TAVERN_CONTACTS, "Введите новый номер телефона:");
+                    case VIEW_PROFILE_SETTINGS_USER_CONTACTS:
+                        return configureMessage(user, chatId, SubState.ADD_PROFILE_SETTINGS_USER_CONTACTS, "Введите новый номер телефона:");
+                }
+            }
+            case DELETE -> {
+                switch (subState) {
+                    case VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS:
+                        return configureDeleteContacts(
+                                user,
+                                SubState.DELETE_GENERAL_SETTINGS_TAVERN_CONTACTS,
+                                chatId,
+                                tavern.getContacts(),
+                                tavernContactsKeyboard
+                        );
+                    case VIEW_PROFILE_SETTINGS_USER_CONTACTS:
+                        return configureDeleteContacts(
+                                user,
+                                SubState.DELETE_PROFILE_SETTINGS_USER_CONTACTS,
+                                chatId,
+                                user.getContacts(),
+                                userContactsKeyboard
+                        );
+                }
+            }
+        }
+
+        // обновление состояния
+        if (button != Button.BACK && button != Button.CANCEL) {
+            switch (user.getSubState()) {
+                case VIEW_MAIN_MENU -> {
+                    if (button == Button.SETTINGS) {
+                        user.setState(State.SETTINGS);
+                        user.setSubState(SubState.VIEW_SETTINGS);
+                        userService.save(user);
+                    }
+                }
+                case VIEW_SETTINGS -> {
+                    switch (button) {
+                        case GENERAL -> {
+                            user.setSubState(SubState.VIEW_GENERAL_SETTINGS);
+                            userService.save(user);
+                        }
+                        case PROFILE -> {
+                            user.setSubState(SubState.VIEW_PROFILE_SETTINGS);
+                            userService.save(user);
+                        }
+                    }
+                }
+                case VIEW_GENERAL_SETTINGS -> {
+                    switch (button) {
+                        case TAVERN_NAME -> {
+                            user.setSubState(SubState.VIEW_GENERAL_SETTINGS_TAVERN_NAME);
+                            userService.save(user);
+                        }
+                        case CONTACTS -> {
+                            user.setSubState(SubState.VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS);
+                            userService.save(user);
+                        }
+                        case TAVERN_ADDRESS -> {
+                            user.setSubState(SubState.VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS);
+                            userService.save(user);
+                        }
+                    }
+                }
+                case CHANGE_GENERAL_SETTINGS_TAVERN_NAME -> {
                     if (!StringUtils.hasText(messageText)) {
-                        return messageService.configureMessage(message.getChatId(), "Вы ввели пустое значение! Повторите попытку.");
+                        return messageService.configureMessage(chatId, "Вы ввели пустое значение! Повторите попытку.");
                     }
 
                     tavern.setName(messageText);
-
                     tavernService.save(tavern);
 
-                    break;
+                    user.setSubState(user.getSubState().getParentSubState());
+                    userService.save(user);
                 }
-                case ADD_TAVERN_PHONES_GENERAL_SETTINGS: {
+                case ADD_GENERAL_SETTINGS_TAVERN_CONTACTS -> {
                     if (!StringUtils.hasText(messageText)) {
-                        return messageService.configureMessage(message.getChatId(), "Вы ввели пустое значение! Повторите попытку.");
+                        return messageService.configureMessage(chatId, "Вы ввели пустое значение! Повторите попытку.");
                     }
 
                     // TODO валидация номера
@@ -92,187 +181,180 @@ public class SettingsHandler implements MessageHandler {
                             .build();
 
                     tavern.addContact(contact);
-
                     contactService.save(contact);
 
-                    break;
+                    user.setSubState(user.getSubState().getParentSubState());
+                    userService.save(user);
                 }
-                case DELETE_TAVERN_PHONES_GENERAL_SETTINGS: {
-                    if (!StringUtils.hasText(messageText)) {
-                        user.setSubState(SubState.VIEW_TAVERN_PHONES_GENERAL_SETTINGS);
-                        userService.save(user);
+                case DELETE_GENERAL_SETTINGS_TAVERN_CONTACTS -> {
+                    user.setSubState(user.getSubState().getParentSubState());
+                    userService.save(user);
 
-                        SendMessage sendMessage = messageService.configureMessage(message.getChatId(), "Вы не выбрали номер! Операция отменяется.");
-                        sendMessage.setReplyMarkup(tavernPhonesKeyboard);
-                        return sendMessage;
+                    if (!StringUtils.hasText(messageText)) {
+                        return messageService.configureMessage(chatId, "Вы не выбрали номер! Операция отменяется.");
                     }
 
                     tavern.getContacts().removeIf(contact -> contact.getValue().equals(messageText));
-
                     tavernService.save(tavern);
-
-                    break;
                 }
-                case CHANGE_TAVERN_ADDRESS_GENERAL_SETTINGS: {
+                case CHANGE_GENERAL_SETTINGS_TAVERN_ADDRESS -> {
                     if (!StringUtils.hasText(messageText)) {
-                        return messageService.configureMessage(message.getChatId(), "Вы ввели пустое значение! Повторите попытку.");
+                        return messageService.configureMessage(chatId, "Вы ввели пустое значение! Повторите попытку.");
                     }
 
                     tavern.getAddress().setStreet(messageText);
-
                     tavernService.save(tavern);
 
-                    break;
+                    user.setSubState(user.getSubState().getParentSubState());
+                    userService.save(user);
+                }
+
+                case VIEW_PROFILE_SETTINGS -> {
+                    switch (button) {
+                        case USER_NAME -> {
+                            user.setSubState(SubState.VIEW_PROFILE_SETTINGS_USER_NAME);
+                            userService.save(user);
+                        }
+                        case CONTACTS -> {
+                            user.setSubState(SubState.VIEW_PROFILE_SETTINGS_USER_CONTACTS);
+                            userService.save(user);
+                        }
+                    }
+                }
+
+                case CHANGE_PROFILE_SETTINGS_USER_NAME -> {
+                    if (!StringUtils.hasText(messageText)) {
+                        return messageService.configureMessage(chatId, "Вы ввели пустое значение! Повторите попытку.");
+                    }
+
+                    user.setFirstName(messageText);
+                    user.setSubState(user.getSubState().getParentSubState());
+                    userService.save(user);
+                }
+                case ADD_PROFILE_SETTINGS_USER_CONTACTS -> {
+                    if (!StringUtils.hasText(messageText)) {
+                        return messageService.configureMessage(chatId, "Вы ввели пустое значение! Повторите попытку.");
+                    }
+
+                    // TODO валидация номера
+
+                    ContactEntity contact = ContactEntity.builder()
+                            .user(user)
+                            .type(ContractType.MOBILE)
+                            .value(messageText)
+                            .build();
+
+                    user.addContact(contact);
+                    user.setSubState(user.getSubState().getParentSubState());
+                    userService.save(user);
+                }
+                case DELETE_PROFILE_SETTINGS_USER_CONTACTS -> {
+                    if (!StringUtils.hasText(messageText)) {
+                        user.setSubState(user.getSubState().getParentSubState());
+                        userService.save(user);
+
+                        return messageService.configureMessage(chatId, "Вы не выбрали номер! Операция отменяется.");
+                    }
+
+                    user.getContacts().removeIf(contact -> contact.getValue().equals(messageText));
+                    user.setSubState(user.getSubState().getParentSubState());
+                    userService.save(user);
                 }
             }
         }
 
-        Button afterChangeButton = subState.getAfterChangeButton();
-        if (afterChangeButton != null) {
-            button = afterChangeButton;
+        // отрисовка меню
+        return switch (user.getSubState()) {
+            case VIEW_SETTINGS -> messageService.configureMessage(chatId, "Открываем все настройки...", allKeyboard);
+            case VIEW_GENERAL_SETTINGS -> messageService.configureMessage(chatId, fillGeneralInfo(tavern), generalKeyboard);
+            case VIEW_GENERAL_SETTINGS_TAVERN_NAME -> messageService.configureMessage(chatId, fillTavernInfo(tavern.getName()), tavernNameKeyboard);
+            case VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS -> messageService.configureMessage(chatId, fillContactInfo(tavern.getContacts()), tavernContactsKeyboard);
+            case VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS -> messageService.configureMessage(chatId, fillAddressInfo(tavern.getAddress()), tavernAddressKeyboard);
+            case VIEW_PROFILE_SETTINGS -> messageService.configureMessage(chatId, fillProfileInfo(user), profileKeyboard);
+            case VIEW_PROFILE_SETTINGS_USER_NAME -> messageService.configureMessage(chatId, fillUserInfo(user.getFirstName()), profileNameKeyboard);
+            case VIEW_PROFILE_SETTINGS_USER_CONTACTS -> messageService.configureMessage(chatId, fillContactInfo(user.getContacts()), userContactsKeyboard);
+            default -> new SendMessage();
+        };
+    }
+
+    private SendMessage configureMessage(UserEntity user, Long chatId, SubState addGeneralSettingsTavernContacts, String s) {
+        user.setSubState(addGeneralSettingsTavernContacts);
+        userService.save(user);
+        return messageService.configureMessage(chatId, s, cancelKeyboard);
+    }
+
+    private SendMessage configureDeleteContacts(UserEntity user,
+                                                SubState subState,
+                                                Long chatId,
+                                                Set<ContactEntity> contacts,
+                                                ReplyKeyboardMarkup keyboard) {
+        if (CollectionUtils.isEmpty(contacts)) {
+            return messageService.configureMessage(chatId, "Нечего удалять.", keyboard);
         }
 
-        if (button == null) {
-            return new SendMessage();
+        user.setSubState(subState);
+        userService.save(user);
+
+        ReplyKeyboardMarkup contactKeyboard = new ReplyKeyboardMarkup();
+        List<KeyboardRow> rows = new ArrayList<>();
+
+        contacts.forEach(contact ->
+                rows.add(new KeyboardRow(List.of(new KeyboardButton(contact.getValue()))))
+        );
+
+        rows.add(new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()))));
+
+        contactKeyboard.setKeyboard(rows);
+        contactKeyboard.setResizeKeyboard(true);
+
+        return messageService.configureMessage(chatId, "Выберите номер телефона, который хотите удалить.", contactKeyboard);
+    }
+
+    private String fillProfileInfo(UserEntity user) {
+        return fillUserInfo(user.getFirstName()) + "\n\n" +
+                fillRoleInfo(user.getRoles()) + "\n\n" +
+                fillContactInfo(user.getContacts()) + "\n\n";
+    }
+
+    private String fillGeneralInfo(TavernEntity tavern) {
+        return fillTavernInfo(tavern.getName()) + "\n\n" +
+                fillContactInfo(tavern.getContacts()) + "\n\n" +
+                fillAddressInfo(tavern.getAddress());
+    }
+
+    private String fillTavernInfo(String name) {
+        return "Название вашего заведения: <b>" + name + "</b>";
+    }
+
+    private String fillUserInfo(String name) {
+        return "Ваше имя: <b>" + name + "</b>";
+    }
+
+    private String fillRoleInfo(Set<Role> roles) {
+        String rolesString = roles.stream()
+                .map(Role::getDescription)
+                .collect(Collectors.joining("\n"));
+
+        return "Роли: <b>" + rolesString + "</b>";
+    }
+
+    private String fillAddressInfo(AddressEntity address) {
+        if (address == null) {
+            return "Информация об адресе отсутствует.";
         }
 
-        if (button == Button.BACK) {
-            Button parentButton = subState.getParentButton();
-            if (parentButton != null) {
-                button = parentButton;
-            }
-        } else if (button == Button.CHANGE) {
-            if (subState == SubState.VIEW_TAVERN_NAME_GENERAL_SETTINGS) {
-                user.setSubState(SubState.CHANGE_TAVERN_NAME_GENERAL_SETTINGS);
-                userService.save(user);
-                SendMessage sendMessage = messageService.configureMessage(message.getChatId(), "Введите новое название:");
-                sendMessage.setReplyMarkup(cancelKeyboard);
-                return sendMessage;
-            } else if (subState == SubState.VIEW_TAVERN_ADDRESS_GENERAL_SETTINGS) {
-                user.setSubState(SubState.CHANGE_TAVERN_ADDRESS_GENERAL_SETTINGS);
-                userService.save(user);
-                SendMessage sendMessage = messageService.configureMessage(message.getChatId(), "Введите новый адрес:");
-                sendMessage.setReplyMarkup(cancelKeyboard);
-                return sendMessage;
-            }
-        } else if (button == Button.ADD) {
-            if (subState == SubState.VIEW_TAVERN_PHONES_GENERAL_SETTINGS) {
-                user.setSubState(SubState.ADD_TAVERN_PHONES_GENERAL_SETTINGS);
-                userService.save(user);
-                SendMessage sendMessage = messageService.configureMessage(message.getChatId(), "Введите новый номер телефона:");
-                sendMessage.setReplyMarkup(cancelKeyboard);
-                return sendMessage;
-            }
-        } else if (button == Button.DELETE) {
-            if (subState == SubState.VIEW_TAVERN_PHONES_GENERAL_SETTINGS) {
-                Set<ContactEntity> contacts = tavern.getContacts();
+        return "Адресная информация:\n<b>Город</b> -  " + address.getCity().getDescription() + "\n<b>Адрес</b> - " + address.getStreet();
 
-                if (CollectionUtils.isEmpty(contacts)) {
-                    SendMessage sendMessage = messageService.configureMessage(message.getChatId(), "Нечего удалять.");
-                    sendMessage.setReplyMarkup(tavernPhonesKeyboard);
-                    return sendMessage;
-                }
+    }
 
-                user.setSubState(SubState.DELETE_TAVERN_PHONES_GENERAL_SETTINGS);
-                userService.save(user);
-                SendMessage sendMessage = messageService.configureMessage(message.getChatId(), "Выберите номер телефона, который хотите удалить.");
-
-                final ReplyKeyboardMarkup phoneKeyboard = new ReplyKeyboardMarkup();
-                List<KeyboardRow> rows = new ArrayList<>();
-                contacts.forEach(contact ->
-                        rows.add(new KeyboardRow(List.of(new KeyboardButton(contact.getValue()))))
-                );
-                rows.add(new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()))));
-                phoneKeyboard.setKeyboard(rows);
-                phoneKeyboard.setResizeKeyboard(true);
-
-                sendMessage.setReplyMarkup(phoneKeyboard);
-                return sendMessage;
-            }
+    private String fillContactInfo(Set<ContactEntity> contacts) {
+        if (CollectionUtils.isEmpty(contacts)) {
+            return "Контактная информация отсутствует.";
         }
 
-        switch (button) {
-            case SETTINGS: {
-                SendMessage sendMessage = messageService.configureMessage(message.getChatId(), "Открываем все настройки...");
-                sendMessage.setReplyMarkup(allKeyboard);
-
-                user.setState(State.SETTINGS);
-                user.setSubState(SubState.VIEW_SETTINGS);
-                userService.save(user);
-
-                return sendMessage;
-            }
-            case GENERAL: {
-                SendMessage sendMessage = messageService.configureMessage(message.getChatId(), "Открываем основные настройки...");
-                sendMessage.setReplyMarkup(generalKeyboard);
-
-                user.setSubState(SubState.VIEW_GENERAL_SETTINGS);
-                userService.save(user);
-
-                return sendMessage;
-            }
-            case MAIN_MENU: {
-                user.setState(State.MAIN_MENU);
-                user.setSubState(State.MAIN_MENU.getInitialSubState());
-                userService.save(user);
-
-                return mainMenuHandler.handle(user, message, callback);
-            }
-            case TAVERN_NAME: {
-                user.setSubState(SubState.VIEW_TAVERN_NAME_GENERAL_SETTINGS);
-                userService.save(user);
-
-                SendMessage sendMessage = messageService.configureMessage(message.getChatId(), "Название вашего заведения: <b>" + user.getTavern().getName() + "</b>");
-                sendMessage.enableHtml(true);
-                sendMessage.setReplyMarkup(tavernNameKeyboard);
-
-                return sendMessage;
-            }
-            case TAVERN_PHONES: {
-                user.setSubState(SubState.VIEW_TAVERN_PHONES_GENERAL_SETTINGS);
-                userService.save(user);
-
-                SendMessage sendMessage = messageService.configureMessage(message.getChatId(), "");
-
-                Set<ContactEntity> contacts = user.getTavern().getContacts();
-                if (CollectionUtils.isEmpty(contacts)) {
-                    sendMessage.setText("Контактная информация отсутствует.");
-                } else {
-                    String text = contacts.stream()
-                            .map(contact -> contact.getType().getDescription() + " - <b>" + contact.getValue() + "</b>")
-                            .collect(Collectors.joining("\n"));
-
-                    sendMessage.setText("Контактная информация:\n" + text);
-                }
-
-                sendMessage.enableHtml(true);
-                sendMessage.setReplyMarkup(tavernPhonesKeyboard);
-
-                return sendMessage;
-            }
-            case TAVERN_ADDRESS: {
-                user.setSubState(SubState.VIEW_TAVERN_ADDRESS_GENERAL_SETTINGS);
-                userService.save(user);
-
-                SendMessage sendMessage = messageService.configureMessage(message.getChatId(), "");
-
-                AddressEntity address = user.getTavern().getAddress();
-                if (address == null) {
-                    sendMessage.setText("Информация об адресе отсутствует.");
-                } else {
-                    sendMessage.setText("<b>Город:</b> " + address.getCity().getDescription() + "\n<b>Адрес</b>: " + address.getStreet());
-                }
-
-                sendMessage.enableHtml(true);
-                sendMessage.setReplyMarkup(tavernAddressKeyboard);
-
-                return sendMessage;
-            }
-            default:
-                break;
-        }
-
-        return new SendMessage();
+        return "Контактная информация:\n" + contacts.stream()
+                .map(contact -> contact.getType().getDescription() + " - <b>" + contact.getValue() + "</b>")
+                .collect(Collectors.joining("\n"));
     }
 
     private void configureKeyboards() {
@@ -305,7 +387,7 @@ public class SettingsHandler implements MessageHandler {
         this.generalKeyboard.setKeyboard(List.of(
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.TAVERN_NAME.getText()),
-                        new KeyboardButton(Button.TAVERN_PHONES.getText()),
+                        new KeyboardButton(Button.CONTACTS.getText()),
                         new KeyboardButton(Button.TAVERN_ADDRESS.getText())
                 )),
                 new KeyboardRow(List.of(
@@ -337,7 +419,7 @@ public class SettingsHandler implements MessageHandler {
         ));
         this.tavernAddressKeyboard.setResizeKeyboard(true);
 
-        this.tavernPhonesKeyboard.setKeyboard(List.of(
+        this.tavernContactsKeyboard.setKeyboard(List.of(
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.ADD.getText()),
                         new KeyboardButton(Button.DELETE.getText())
@@ -347,6 +429,41 @@ public class SettingsHandler implements MessageHandler {
                         new KeyboardButton(Button.MAIN_MENU.getText())
                 ))
         ));
-        this.tavernPhonesKeyboard.setResizeKeyboard(true);
+        this.tavernContactsKeyboard.setResizeKeyboard(true);
+
+        this.profileKeyboard.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.USER_NAME.getText()),
+                        new KeyboardButton(Button.CONTACTS.getText())
+                )),
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.BACK.getText()),
+                        new KeyboardButton(Button.MAIN_MENU.getText())
+                ))
+        ));
+        this.profileKeyboard.setResizeKeyboard(true);
+
+        this.profileNameKeyboard.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.CHANGE.getText())
+                )),
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.BACK.getText()),
+                        new KeyboardButton(Button.MAIN_MENU.getText())
+                ))
+        ));
+        this.profileNameKeyboard.setResizeKeyboard(true);
+
+        this.userContactsKeyboard.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.ADD.getText()),
+                        new KeyboardButton(Button.DELETE.getText())
+                )),
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.BACK.getText()),
+                        new KeyboardButton(Button.MAIN_MENU.getText())
+                ))
+        ));
+        this.userContactsKeyboard.setResizeKeyboard(true);
     }
 }

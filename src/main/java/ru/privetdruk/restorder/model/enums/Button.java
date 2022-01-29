@@ -3,6 +3,8 @@ package ru.privetdruk.restorder.model.enums;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.util.StringUtils;
 
+import java.util.Optional;
+
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum Button {
     REGISTRATION("Регистрация"),
@@ -25,13 +27,15 @@ public enum Button {
     TABLES("\uD83E\uDE91 Управление столами"),
     BACK("⬅ Назад"),
     TAVERN_NAME("™ Название"),
-    TAVERN_PHONES("\uD83D\uDCDE Телефоны"),
+    CONTACTS("\uD83D\uDCDE Телефоны"),
     TAVERN_ADDRESS("\uD83C\uDFE2 Адрес"),
     MAIN_MENU("↩ Главное меню"),
     CHANGE("〰 Изменить"),
     CANCEL("⭕ Отменить"),
     DELETE("❌ Удалить"),
-    ADD("🟢 Добавить"),;
+    ADD("🟢 Добавить"),
+    USER_NAME("™ Имя"),
+    NOTHING(null);
 
     private final String text;
 
@@ -47,18 +51,18 @@ public enum Button {
         }
     }
 
-    public static Button fromText(String text) {
+    public static Optional<Button> fromText(String text) {
         if (!StringUtils.hasText(text)) {
-            return null;
+            return Optional.empty();
         }
 
         for (Button button : Button.values()) {
             if (text.equalsIgnoreCase(button.getText())) {
-                return button;
+                return Optional.of(button);
             }
         }
 
-        return null;
+        return Optional.empty();
     }
 
     public String getName() {
