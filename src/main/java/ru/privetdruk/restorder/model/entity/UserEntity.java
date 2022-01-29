@@ -81,6 +81,9 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private State state;
 
+    @Column(name = "chat_id")
+    private String chatId;
+
     /**
      * Подсостояние
      */
