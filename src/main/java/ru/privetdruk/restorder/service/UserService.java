@@ -8,6 +8,7 @@ import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
 import ru.privetdruk.restorder.repository.UserRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -42,5 +43,9 @@ public class UserService {
         user.addRole(Role.CLIENT_ADMIN);
 
         return userRepository.save(user);
+    }
+
+    public List<UserEntity> getUsersByRole(Role role) {
+        return userRepository.getUserEntitiesByRolesIsAndBlockedFalse(role);
     }
 }
