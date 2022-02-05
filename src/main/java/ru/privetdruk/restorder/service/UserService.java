@@ -22,6 +22,11 @@ public class UserService {
     }
 
     @Transactional
+    public Optional<UserEntity> findByTelegramIdWithLock(Long telegramId) {
+        return Optional.ofNullable(userRepository.getByTelegramId(telegramId));
+    }
+
+    @Transactional
     public void save(UserEntity user) {
         userRepository.save(user);
     }
@@ -45,6 +50,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public List<UserEntity> getUsersByRole(Role role) {
         return userRepository.getUserEntitiesByRolesIsAndBlockedFalse(role);
     }

@@ -35,6 +35,7 @@ public enum Button {
     DELETE("❌ Удалить"),
     ADD("🟢 Добавить"),
     USER_NAME("™ Имя"),
+    REGISTRATION_ACCEPT("Подтвердить регистрацию"),
     NOTHING(null);
 
     private final String text;

@@ -1,10 +1,14 @@
 package ru.privetdruk.restorder.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
 import java.util.Set;
@@ -37,11 +41,11 @@ public class MessageService {
         return sendMessage;
     }
 
-    public void sendMessageToUsers(Set<String> chatIds, String text, String botClientToken) {
+    public void sendMessageToUsers(Set<Long> telegramIds, String text, String botClientToken, @Nullable ReplyKeyboard replyKeyboard) {
         WebClient client = WebClient.create();
 
-        chatIds.forEach(chatId -> {
-            client.post()
+        telegramIds.forEach(chatId -> {
+            WebClient.RequestBodySpec requestBodySpec = client.post()
                     .uri(uriBuilder -> UriComponentsBuilder
                             .newInstance()
                             .scheme("https")
@@ -54,15 +58,30 @@ public class MessageService {
                             .encode()
                             .toUri()
                     )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON);
+
+            if (replyKeyboard != null) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setReplyMarkup(replyKeyboard);
+
+                ObjectMapper objectMapper = new ObjectMapper();
+
+                try {
+                    String payload = objectMapper.writeValueAsString(sendMessage);
+                    requestBodySpec.bodyValue(payload);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            requestBodySpec.accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .bodyToMono(String.class)
-                    .block();
+                    .subscribe();
         });
     }
 
-    public void sendMessageToUser(String chatId, String text, String botClientToken) {
-        sendMessageToUsers(Set.of(chatId), text, botClientToken);
+    public void sendMessageToUser(Long telegramId, String text, String botClientToken) {
+        sendMessageToUsers(Set.of(telegramId), text, botClientToken, null);
     }
 }
