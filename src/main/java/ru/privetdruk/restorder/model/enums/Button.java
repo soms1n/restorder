@@ -38,6 +38,7 @@ public enum Button {
     DELETE_PROFILE("❌ Удалить профиль"),
     YES("⭕ Да"),
     NO("🟢 Нет"),
+    REGISTRATION_ACCEPT("Подтвердить регистрацию"),
     NOTHING(null);
 
     private final String text;

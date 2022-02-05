@@ -36,7 +36,6 @@ public class ClientHandlerService {
     public Map<State, MessageHandler> loadHandlers() {
         return Map.of(
                 State.REGISTRATION, registrationHandler,
-                State.WAITING_APPROVE_APPLICATION, waitingApplicationApproveHandler,
                 State.SETTINGS, settingsHandler,
                 State.MAIN_MENU, mainMenuHandler
         );

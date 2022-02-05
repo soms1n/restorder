@@ -26,6 +26,11 @@ public class UserService {
         return userRepository.findByTelegramId(telegramId);
     }
 
+    @Transactional
+    public Optional<UserEntity> findByTelegramIdWithLock(Long telegramId) {
+        return Optional.ofNullable(userRepository.getByTelegramId(telegramId));
+    }
+
     /**
      * Сохранить пользователя
      * @param user Пользователь

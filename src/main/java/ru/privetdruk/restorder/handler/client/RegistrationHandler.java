@@ -56,6 +56,37 @@ public class RegistrationHandler implements MessageHandler {
         SubState nextSubState;
         SendMessage sendMessage = new SendMessage();
 
+        /*Если сообщение от админа с подтверждением регистрации, отправляем пользователю сообщение и
+        переводим в главное меню
+        */
+        if (user.getRoles().contains(Role.ADMIN) && messageText.matches("^Подтвердить регистрацию [0-9]+$")) {
+            String userId = messageText.substring(messageText.lastIndexOf(" ") + 1);
+            Long userTelegramId = Long.valueOf(userId);
+
+            Optional<UserEntity> optionalUserEntity = userService.findByTelegramIdWithLock(userTelegramId);
+
+            if (optionalUserEntity.isPresent()) {
+                UserEntity userEntity = optionalUserEntity.get();
+
+                if (userEntity.getSubState() == SubState.WAITING_APPROVE_APPLICATION) {
+                    messageService.sendMessageToUser(userTelegramId,
+                            MessageText.YOUR_CLAIM_WAS_APPROVED,
+                            botClientToken);
+                    //TODO С сообщением отправлять и панель с конпками меню
+                    //TODO отправлять Inline кнопки, а не встроенную клавиатуру, т.к. можно утвержить всего одного
+
+                    userEntity.setState(State.MAIN_MENU);
+                    userEntity.setSubState(SubState.VIEW_MAIN_MENU);
+                    userService.save(userEntity);
+
+                }
+            }
+
+            sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
+
+            return sendMessage;
+        }
+
         switch (subState) {
             case SHOW_REGISTER_BUTTON -> {
                 if (callback != null) {
@@ -302,10 +333,10 @@ public class RegistrationHandler implements MessageHandler {
     }
 
     private void sendClaimToApprove(UserEntity user) {
-        String message = "Пользователь с telegramId " + user.getTelegramId() + "запросил подтверждение регистрации. " + System.lineSeparator() + System.lineSeparator()
-                + "Данные пользователя: " + System.lineSeparator()
+        String message = "Пользователь с telegramId " + user.getTelegramId() + " запросил подтверждение регистрации. " + System.lineSeparator() + System.lineSeparator()
+                + "Данные пользователя " + System.lineSeparator() + System.lineSeparator()
                 + "Имя пользователя: " + user.getFirstName() + System.lineSeparator()
-                + "Город: " + user.getTavern().getAddress().getCity().getName() + System.lineSeparator()
+                + "Город: " + user.getTavern().getAddress().getCity().getDescription() + System.lineSeparator()
                 + "Название заведения: " + user.getTavern().getName() + System.lineSeparator()
                 + "Адрес: " + user.getTavern().getAddress().getStreet() + System.lineSeparator() + System.lineSeparator()
                 + "Необходимо проверить адрес на валидность и подтвердить регистрацию";
@@ -313,7 +344,12 @@ public class RegistrationHandler implements MessageHandler {
         userService.findUsersByRole(Role.ADMIN).stream()
                 .map(UserEntity::getTelegramId)
                 .forEach(id ->
-                        telegramApiService.sendMessage(id, message, botClientToken)
+                        telegramApiService.sendMessage(id, message, botClientToken,                         ReplyKeyboardMarkup
+                                        .builder()
+                                        .keyboard(List.of(
+                                                new KeyboardRow(List.of(
+                                                        new KeyboardButton(Button.REGISTRATION_ACCEPT.getText() + " " + user.getTelegramId())))))
+                                        .build())
                                 .subscribe()
                 );
     }
