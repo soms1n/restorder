@@ -1,11 +1,16 @@
 package ru.privetdruk.restorder.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import reactor.core.publisher.Mono;
 import ru.privetdruk.restorder.model.dto.telegram.SendMessageResponse;
 import ru.privetdruk.restorder.model.dto.telegram.UpdateWebhookResponse;
@@ -57,7 +62,7 @@ public class TelegramApiService {
      * @param token  Токен бота
      * @return Результат отправки
      */
-    public Mono<SendMessageResponse> sendMessage(Long chatId, String text, String token) {
+    public Mono<SendMessageResponse> sendMessage(Long chatId, String text, String token, @Nullable ReplyKeyboard replyKeyboard) {
         String uri = UriComponentsBuilder
                 .fromHttpUrl(TELEGRAM_API_URL)
                 .path(BOT_TOKEN_PATH)
@@ -67,9 +72,25 @@ public class TelegramApiService {
                 .buildAndExpand(token)
                 .toUriString();
 
-        return webClient.post()
+        WebClient.RequestBodySpec requestBodySpec = webClient.post()
                 .uri(uri)
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON);
+
+        if (replyKeyboard != null) {
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setReplyMarkup(replyKeyboard);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            try {
+                String payload = objectMapper.writeValueAsString(sendMessage);
+                requestBodySpec.bodyValue(payload);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return requestBodySpec
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(SendMessageResponse.class);

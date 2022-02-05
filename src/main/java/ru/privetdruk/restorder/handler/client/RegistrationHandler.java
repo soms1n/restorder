@@ -344,7 +344,7 @@ public class RegistrationHandler implements MessageHandler {
         userService.findUsersByRole(Role.ADMIN).stream()
                 .map(UserEntity::getTelegramId)
                 .forEach(id ->
-                        telegramApiService.sendMessage(id, message, botClientToken,                         ReplyKeyboardMarkup
+                        telegramApiService.sendMessage(id, message, botClientToken, ReplyKeyboardMarkup
                                         .builder()
                                         .keyboard(List.of(
                                                 new KeyboardRow(List.of(
