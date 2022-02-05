@@ -35,6 +35,9 @@ public enum Button {
     DELETE("❌ Удалить"),
     ADD("🟢 Добавить"),
     USER_NAME("™ Имя"),
+    DELETE_PROFILE("❌ Удалить профиль"),
+    YES("⭕ Да"),
+    NO("🟢 Нет"),
     NOTHING(null);
 
     private final String text;

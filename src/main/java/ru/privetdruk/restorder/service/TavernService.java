@@ -56,4 +56,14 @@ public class TavernService {
     public TavernEntity save(TavernEntity tavern) {
         return tavernRepository.save(tavern);
     }
+
+    /**
+     * Удалить заведение
+     *
+     * @param tavern Заведение
+     */
+    @Transactional
+    public void delete(TavernEntity tavern) {
+        tavernRepository.delete(tavern);
+    }
 }

@@ -311,6 +311,17 @@ public enum SubState {
         public SubState getParentSubState() {
             return VIEW_PROFILE_SETTINGS_USER_CONTACTS;
         }
+    },
+    DELETE_PROFILE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_PROFILE_SETTINGS;
+        }
     };
     private final String message;
 

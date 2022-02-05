@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import ru.privetdruk.restorder.handler.MessageHandler;
@@ -36,6 +37,8 @@ public class SettingsHandler implements MessageHandler {
     private final TavernService tavernService;
     private final ContactService contactService;
 
+    private final ReplyKeyboardRemove removeKeyboard = new ReplyKeyboardRemove();
+    private final ReplyKeyboardMarkup yesNoKeyboard = new ReplyKeyboardMarkup();
     private final ReplyKeyboardMarkup cancelKeyboard = new ReplyKeyboardMarkup();
     private final ReplyKeyboardMarkup allKeyboard = new ReplyKeyboardMarkup();
     private final ReplyKeyboardMarkup generalKeyboard = new ReplyKeyboardMarkup();
@@ -70,7 +73,18 @@ public class SettingsHandler implements MessageHandler {
 
         // обработка функциональных клавиш
         switch (button) {
-            case BACK, CANCEL -> user.setSubState(subState.getParentSubState());
+            case BACK, CANCEL, NO -> user.setSubState(subState.getParentSubState());
+            case YES -> {
+                if (subState == SubState.DELETE_PROFILE_SETTINGS) {
+                    if (user == tavern.getOwner()) {
+                        tavernService.delete(tavern);
+                    } else {
+                        userService.delete(user);
+                    }
+
+                    return messageService.configureMessage(chatId, "Данные успешно удалены. Хорошего дня!", removeKeyboard);
+                }
+            }
             case MAIN_MENU -> {
                 user.setState(State.MAIN_MENU);
                 user.setSubState(SubState.VIEW_MAIN_MENU);
@@ -119,7 +133,7 @@ public class SettingsHandler implements MessageHandler {
         }
 
         // обновление состояния
-        if (button != Button.BACK && button != Button.CANCEL) {
+        if (button != Button.BACK && button != Button.CANCEL && button != Button.NO) {
             switch (user.getSubState()) {
                 case VIEW_MAIN_MENU -> {
                     if (button == Button.SETTINGS) {
@@ -218,6 +232,16 @@ public class SettingsHandler implements MessageHandler {
                         case CONTACTS -> {
                             user.setSubState(SubState.VIEW_PROFILE_SETTINGS_USER_CONTACTS);
                             userService.save(user);
+                        }
+                        case DELETE_PROFILE -> {
+                            user.setSubState(SubState.DELETE_PROFILE_SETTINGS);
+                            userService.save(user);
+
+                            if (user != tavern.getOwner()) {
+                                return messageService.configureMessage(chatId, "Вы действительно хотите удалить профиль?", yesNoKeyboard);
+                            }
+
+                            return messageService.configureMessage(chatId, "Вы является владельцем заведения X. Вместе с вашим профилем будет удалено и заведение. Продолжить удаление?", yesNoKeyboard);
                         }
                     }
                 }
@@ -358,6 +382,14 @@ public class SettingsHandler implements MessageHandler {
     }
 
     private void configureKeyboards() {
+        this.yesNoKeyboard.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.YES.getText()),
+                        new KeyboardButton(Button.NO.getText())
+                ))
+        ));
+        this.yesNoKeyboard.setResizeKeyboard(true);
+
         this.cancelKeyboard.setKeyboard(List.of(
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.CANCEL.getText())
@@ -435,6 +467,9 @@ public class SettingsHandler implements MessageHandler {
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.USER_NAME.getText()),
                         new KeyboardButton(Button.CONTACTS.getText())
+                )),
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.DELETE_PROFILE.getText())
                 )),
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.BACK.getText()),

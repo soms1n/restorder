@@ -22,6 +22,7 @@ import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.*;
 import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.MessageService;
+import ru.privetdruk.restorder.service.TelegramApiService;
 import ru.privetdruk.restorder.service.UserService;
 
 import java.util.Arrays;
@@ -41,6 +42,7 @@ public class RegistrationHandler implements MessageHandler {
     private final KeyboardService keyboardService;
     private final MessageService messageService;
     private final UserService userService;
+    private final TelegramApiService telegramApiService;
 
     @Value("${bot.client.token}")
     private String botClientToken;
@@ -65,8 +67,7 @@ public class RegistrationHandler implements MessageHandler {
 
                 sendMessage = messageService.configureMessage(chatId, subState.getMessage());
 
-                sendMessage.setReplyMarkup(InlineKeyboardMarkup
-                        .builder()
+                sendMessage.setReplyMarkup(InlineKeyboardMarkup.builder()
                         .keyboard(List.of(List.of(keyboardService.createInlineButton(Button.REGISTRATION))))
                         .build());
             }
@@ -98,8 +99,7 @@ public class RegistrationHandler implements MessageHandler {
 
                 sendMessage.setReplyMarkup(InlineKeyboardMarkup.builder()
                         .keyboard(keyboardService.createButtonList(Arrays.stream(City.values())
-                                        .collect(toMap(City::getDescription, City::getName)),
-                                MAX_BUTTONS_PER_ROW))
+                                .collect(toMap(City::getDescription, City::getName)), MAX_BUTTONS_PER_ROW))
                         .build()
                 );
             }
@@ -128,10 +128,8 @@ public class RegistrationHandler implements MessageHandler {
                     sendMessage = messageService.configureMessage(chatId, subState.getMessage());
                     sendMessage.setReplyMarkup(InlineKeyboardMarkup.builder()
                             .keyboard(keyboardService.createButtonList(Arrays.stream(City.values())
-                                            .collect(toMap(City::getDescription, City::getName)),
-                                    MAX_BUTTONS_PER_ROW))
-                            .build()
-                    );
+                                    .collect(toMap(City::getDescription, City::getName)), MAX_BUTTONS_PER_ROW))
+                            .build());
                 }
             }
             case ENTER_ADDRESS -> {
@@ -171,7 +169,6 @@ public class RegistrationHandler implements MessageHandler {
                         sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
 
                         sendClaimToApprove(user);
-
                     } else {
                         sendMessage = messageService.configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
 
@@ -189,58 +186,59 @@ public class RegistrationHandler implements MessageHandler {
 
                 attachMainEditMenu(sendMessage);
 
-                Optional<Button> button = Button.fromText(messageText);
+                Button button = Button.fromText(messageText)
+                        .orElse(Button.NOTHING);
 
-                if (button.isPresent()) {
-                    switch (button.get()) {
-                        case NAME -> {
-                            sendMessage = messageService.configureMessage(chatId, SubState.ENTER_FULL_NAME.getMessage());
-                            user.setSubState(SubState.EDIT_NAME);
-                            userService.save(user);
+                switch (button) {
+                    case NAME -> {
+                        sendMessage = messageService.configureMessage(chatId, SubState.ENTER_FULL_NAME.getMessage());
+                        user.setSubState(SubState.EDIT_NAME);
+                        userService.save(user);
 
-                            attachEditMenu(sendMessage);
-                        }
-                        case TAVERN -> {
-                            sendMessage = messageService.configureMessage(chatId, SubState.ENTER_TAVERN_NAME.getMessage());
-                            user.setSubState(SubState.EDIT_TAVERN);
-                            userService.save(user);
+                        attachEditMenu(sendMessage);
+                    }
+                    case TAVERN -> {
+                        sendMessage = messageService.configureMessage(chatId, SubState.ENTER_TAVERN_NAME.getMessage());
+                        user.setSubState(SubState.EDIT_TAVERN);
+                        userService.save(user);
 
-                            attachEditMenu(sendMessage);
-                        }
-                        case PHONE_NUMBER -> {
-                            sendMessage = messageService.configureMessage(chatId, SubState.ENTER_PHONE_NUMBER.getMessage());
-                            user.setSubState(SubState.EDIT_PHONE_NUMBER);
-                            userService.save(user);
+                        attachEditMenu(sendMessage);
+                    }
+                    case PHONE_NUMBER -> {
+                        sendMessage = messageService.configureMessage(chatId, SubState.ENTER_PHONE_NUMBER.getMessage());
+                        user.setSubState(SubState.EDIT_PHONE_NUMBER);
+                        userService.save(user);
 
-                            attachEditMenu(sendMessage);
-                        }
-                        case ADDRESS -> {
-                            sendMessage = messageService.configureMessage(chatId, SubState.ENTER_ADDRESS.getMessage());
-                            user.setSubState(SubState.EDIT_ADDRESS);
-                            userService.save(user);
+                        attachEditMenu(sendMessage);
+                    }
+                    case ADDRESS -> {
+                        sendMessage = messageService.configureMessage(chatId, SubState.ENTER_ADDRESS.getMessage());
+                        user.setSubState(SubState.EDIT_ADDRESS);
+                        userService.save(user);
 
-                            attachEditMenu(sendMessage);
-                        }
-                        case CITY -> {
-                            sendMessage = messageService.configureMessage(chatId, MessageText.CHOICE_CITY);
-                            sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
+                        attachEditMenu(sendMessage);
+                    }
+                    case CITY -> {
+                        sendMessage = messageService.configureMessage(chatId, MessageText.CHOICE_CITY);
+                        sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder()
+                                .removeKeyboard(true)
+                                .build());
 
-                            user.setSubState(SubState.EDIT_CITY);
-                            userService.save(user);
+                        user.setSubState(SubState.EDIT_CITY);
+                        userService.save(user);
 
-                            return sendMessage;
-                        }
-                        case COMPLETE_REGISTRATION -> {
-                            user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
-                            userService.save(user);
+                        return sendMessage;
+                    }
+                    case COMPLETE_REGISTRATION -> {
+                        user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
+                        userService.save(user);
 
-                            sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
-                            sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
+                        sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
+                        sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder()
+                                .removeKeyboard(true)
+                                .build());
 
-                            sendClaimToApprove(user);
-                        }
-                        default -> {
-                        }
+                        sendClaimToApprove(user);
                     }
                 }
             }
@@ -257,13 +255,11 @@ public class RegistrationHandler implements MessageHandler {
             case EDIT_PHONE_NUMBER -> {
                 if (!isUserPressKeyBoardElement(sendMessage, user, messageText, chatId)) {
                     // TODO валидация номера
-                    ContactEntity contact = user
-                            .getContacts().stream()
+                    user.getContacts().stream()
                             .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
                             .findFirst()
-                            .get();
+                            .ifPresent(contact -> contact.setValue(messageText));
 
-                    contact.setValue(messageText);
                 }
             }
             case EDIT_ADDRESS -> {
@@ -272,8 +268,6 @@ public class RegistrationHandler implements MessageHandler {
                     address.setStreet(messageText);
                 }
             }
-            default -> {
-            }
         }
 
         return sendMessage;
@@ -281,8 +275,7 @@ public class RegistrationHandler implements MessageHandler {
 
     private void attachMainEditMenu(SendMessage sendMessage) {
         sendMessage.setReplyMarkup(
-                ReplyKeyboardMarkup
-                        .builder()
+                ReplyKeyboardMarkup.builder()
                         .keyboard(List.of(
                                 new KeyboardRow(List.of(
                                         new KeyboardButton(Button.NAME.getText()),
@@ -292,34 +285,37 @@ public class RegistrationHandler implements MessageHandler {
                                         new KeyboardButton(Button.PHONE_NUMBER.getText()))),
                                 new KeyboardRow(List.of(
                                         new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
+                        .resizeKeyboard(true)
                         .build());
     }
 
     private void attachEditMenu(SendMessage sendMessage) {
         sendMessage.setReplyMarkup(
-                ReplyKeyboardMarkup
-                        .builder()
+                ReplyKeyboardMarkup.builder()
                         .keyboard(List.of(
                                 new KeyboardRow(List.of(
                                         new KeyboardButton(Button.EDIT_MENU.getText()),
-                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
+                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))
+                        ))
+                        .resizeKeyboard(true)
                         .build());
     }
 
     private void sendClaimToApprove(UserEntity user) {
-        messageService
-                .sendMessageToUsers(userService
-                                .getUsersByRole(Role.ADMIN)
-                                .stream()
-                                .map(UserEntity::getChatId).collect(toSet()),
-                        "Пользователь с telegramId " + user.getTelegramId() + "запросил подтверждение регистрации. " + System.lineSeparator() + System.lineSeparator()
-                                + "Данные пользователя: " + System.lineSeparator()
-                                + "Имя пользователя: " + user.getFirstName() + System.lineSeparator()
-                                + "Город: " + user.getTavern().getAddress().getCity().getName() + System.lineSeparator()
-                                + "Название заведения: " + user.getTavern().getName() + System.lineSeparator()
-                                + "Адрес: " + user.getTavern().getAddress().getStreet() + System.lineSeparator() + System.lineSeparator()
-                                + "Необходимо проверить адрес на валидность и подтвердить регистрацию",
-                        botClientToken);
+        String message = "Пользователь с telegramId " + user.getTelegramId() + "запросил подтверждение регистрации. " + System.lineSeparator() + System.lineSeparator()
+                + "Данные пользователя: " + System.lineSeparator()
+                + "Имя пользователя: " + user.getFirstName() + System.lineSeparator()
+                + "Город: " + user.getTavern().getAddress().getCity().getName() + System.lineSeparator()
+                + "Название заведения: " + user.getTavern().getName() + System.lineSeparator()
+                + "Адрес: " + user.getTavern().getAddress().getStreet() + System.lineSeparator() + System.lineSeparator()
+                + "Необходимо проверить адрес на валидность и подтвердить регистрацию";
+
+        userService.findUsersByRole(Role.ADMIN).stream()
+                .map(UserEntity::getTelegramId)
+                .forEach(id ->
+                        telegramApiService.sendMessage(id, message, botClientToken)
+                                .subscribe()
+                );
     }
 
     private SubState changeState(UserEntity user, SubState subState) {
@@ -352,7 +348,9 @@ public class RegistrationHandler implements MessageHandler {
 
                     sendMessage.setChatId(chatId.toString());
                     sendMessage.setText(SubState.WAITING_APPROVE_APPLICATION.getMessage());
-                    sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
+                    sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder()
+                            .removeKeyboard(true)
+                            .build());
 
                     sendClaimToApprove(user);
                 }
@@ -374,12 +372,13 @@ public class RegistrationHandler implements MessageHandler {
                 "Номер телефона: " + user.getContacts()
                 .stream()
                 .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
-                .findFirst().get().getValue() + System.lineSeparator();
+                .map(ContactEntity::getValue)
+                .findFirst()
+                .orElse("") + System.lineSeparator();
 
         SendMessage sendMessage = messageService.configureMessage(chatId, yourPersonalData);
 
-        sendMessage.setReplyMarkup(InlineKeyboardMarkup
-                .builder()
+        sendMessage.setReplyMarkup(InlineKeyboardMarkup.builder()
                 .keyboard(List.of(
                                 List.of(
                                         keyboardService.createInlineButton(Button.EDIT),
