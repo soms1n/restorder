@@ -16,36 +16,61 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
 
+    /**
+     * Поиск пользователя
+     * @param telegramId Идентификатор в телеграм
+     * @return Найденного пользователя
+     */
     @Transactional(readOnly = true)
     public Optional<UserEntity> findByTelegramId(Long telegramId) {
-        return Optional.ofNullable(userRepository.findByTelegramId(telegramId));
+        return userRepository.findByTelegramId(telegramId);
     }
 
+    /**
+     * Сохранить пользователя
+     * @param user Пользователь
+     */
     @Transactional
     public void save(UserEntity user) {
         userRepository.save(user);
     }
 
     /**
-     * Создать администратора заведения
+     * Создать пользователя
      *
      * @param telegramId Идентификатор в телеграм
+     * @param role Роль
      * @return Созданного пользователя
      */
     @Transactional
-    public UserEntity createClientAdmin(Long telegramId) {
+    public UserEntity create(Long telegramId, Role role) {
         UserEntity user = UserEntity.builder()
                 .telegramId(telegramId)
                 .state(State.REGISTRATION)
                 .subState(State.REGISTRATION.getInitialSubState())
                 .build();
 
-        user.addRole(Role.CLIENT_ADMIN);
+        user.addRole(role);
 
         return userRepository.save(user);
     }
 
-    public List<UserEntity> getUsersByRole(Role role) {
-        return userRepository.getUserEntitiesByRolesIsAndBlockedFalse(role);
+    /**
+     * Поиск пользователей по ролям
+     * @param role Роли
+     * @return Список найденных пользователей
+     */
+    public List<UserEntity> findUsersByRole(Role role) {
+        return userRepository.findByRolesIsAndBlockedFalse(role);
+    }
+
+    /**
+     * Удалить пользователя
+     *
+     * @param user Пользователь
+     */
+    @Transactional
+    public void delete(UserEntity user) {
+        userRepository.delete(user);
     }
 }

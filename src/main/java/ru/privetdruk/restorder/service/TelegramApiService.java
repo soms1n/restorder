@@ -1,0 +1,77 @@
+package ru.privetdruk.restorder.service;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Mono;
+import ru.privetdruk.restorder.model.dto.telegram.SendMessageResponse;
+import ru.privetdruk.restorder.model.dto.telegram.UpdateWebhookResponse;
+
+@Slf4j
+@Service
+public class TelegramApiService {
+    public static final String TELEGRAM_API_URL = "https://api.telegram.org";
+    public static final String BOT_TOKEN_PATH = "bot{token}";
+    public static final String SET_WEBHOOK_PATH = "/setWebhook";
+    public static final String SEND_MESSAGE_PATH = "/sendMessage";
+
+    private static String updateWebhookUri;
+
+    private final WebClient webClient;
+
+    public TelegramApiService(WebClient webClient,
+                              @Value("${bot.client.token}") String token,
+                              @Value("${bot.client.web-hook-path}") String webHookPath) {
+        this.webClient = webClient;
+
+        updateWebhookUri = UriComponentsBuilder
+                .fromHttpUrl(TELEGRAM_API_URL)
+                .path(BOT_TOKEN_PATH)
+                .path(SET_WEBHOOK_PATH)
+                .queryParam("url", webHookPath)
+                .buildAndExpand(token)
+                .toUriString();
+    }
+
+    /**
+     * Обновить webhook
+     *
+     * @return Результат обновления
+     */
+    public Mono<UpdateWebhookResponse> updateWebhook() {
+        return webClient
+                .get()
+                .uri(updateWebhookUri)
+                .retrieve()
+                .bodyToMono(UpdateWebhookResponse.class);
+    }
+
+    /**
+     * Отправить сообщение
+     *
+     * @param chatId Идентификатор телеграм
+     * @param text   Сообщение
+     * @param token  Токен бота
+     * @return Результат отправки
+     */
+    public Mono<SendMessageResponse> sendMessage(Long chatId, String text, String token) {
+        String uri = UriComponentsBuilder
+                .fromHttpUrl(TELEGRAM_API_URL)
+                .path(BOT_TOKEN_PATH)
+                .path(SEND_MESSAGE_PATH)
+                .queryParam("chat_id", chatId)
+                .queryParam("text", text)
+                .buildAndExpand(token)
+                .toUriString();
+
+        return webClient.post()
+                .uri(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(SendMessageResponse.class);
+    }
+}

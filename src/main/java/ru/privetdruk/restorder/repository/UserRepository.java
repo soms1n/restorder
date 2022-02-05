@@ -7,11 +7,12 @@ import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Role;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserRepository extends CrudRepository<UserEntity, Long> {
     @EntityGraph(attributePaths = {"contacts", "roles", "tavern.address", "tavern.employees", "tavern.schedules", "tavern.contacts", "tavern.tables"})
-    UserEntity findByTelegramId(Long telegramId);
+    Optional<UserEntity> findByTelegramId(Long telegramId);
 
-    List<UserEntity> getUserEntitiesByRolesIsAndBlockedFalse(Role role);
+    List<UserEntity> findByRolesIsAndBlockedFalse(Role role);
 }

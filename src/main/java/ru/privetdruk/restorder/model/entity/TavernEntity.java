@@ -31,14 +31,14 @@ public class TavernEntity {
     /**
      * Владелец
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "user_id")
     private UserEntity owner;
 
     /**
      * Сотрудники
      */
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinTable(name = "tavern_to_employee",
             joinColumns = @JoinColumn(name = "tavern_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))

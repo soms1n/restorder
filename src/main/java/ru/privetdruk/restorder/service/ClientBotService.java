@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.entity.UserEntity;
+import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
 
 import java.util.Map;
@@ -50,7 +51,7 @@ public class ClientBotService {
         final Long finalTelegramUserId = telegramUserId;
 
         UserEntity user = userService.findByTelegramId(telegramUserId)
-                .orElseGet(() -> userService.createClientAdmin(finalTelegramUserId));
+                .orElseGet(() -> userService.create(finalTelegramUserId, Role.CLIENT_ADMIN));
 
         return handlers.get(user.getState())
                 .handle(user, message, callback);
