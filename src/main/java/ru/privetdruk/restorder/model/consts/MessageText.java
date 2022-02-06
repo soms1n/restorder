@@ -13,4 +13,5 @@ public interface MessageText {
     String TAVERN_INVALID = "Добавьте в настройках хотя бы один стол и номер телефона, чтобы было доступно управление заведением.";
     String SELECT_ELEMENT_FOR_EDIT = "Выберите, что хотите отредактировать";
     String YOUR_CLAIM_WAS_APPROVED = "Ваша заявка подтверждена.";
+    String ADMIN_APPROVED_CLAIM = "Заявка подтверждена, спасибо.";
 }
