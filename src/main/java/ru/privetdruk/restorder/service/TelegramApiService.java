@@ -60,9 +60,10 @@ public class TelegramApiService {
      * @param chatId Идентификатор телеграм
      * @param text   Сообщение
      * @param token  Токен бота
+     * @param replyKeyboard Keyboard
      * @return Результат отправки
      */
-    public Mono<SendMessageResponse> sendMessage(Long chatId, String text, String token, @Nullable ReplyKeyboard replyKeyboard) {
+    public Mono<SendMessageResponse> sendMessage(Long chatId, String text, String token, ReplyKeyboard replyKeyboard) {
         String uri = UriComponentsBuilder
                 .fromHttpUrl(TELEGRAM_API_URL)
                 .path(BOT_TOKEN_PATH)
@@ -91,6 +92,32 @@ public class TelegramApiService {
         }
 
         return requestBodySpec
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(SendMessageResponse.class);
+    }
+
+    /**
+     * Отправить сообщение
+     *
+     * @param chatId Идентификатор телеграм
+     * @param text   Сообщение
+     * @param token  Токен бота
+     * @return Результат отправки
+     */
+    public Mono<SendMessageResponse> sendMessage(Long chatId, String text, String token) {
+        String uri = UriComponentsBuilder
+                .fromHttpUrl(TELEGRAM_API_URL)
+                .path(BOT_TOKEN_PATH)
+                .path(SEND_MESSAGE_PATH)
+                .queryParam("chat_id", chatId)
+                .queryParam("text", text)
+                .buildAndExpand(token)
+                .toUriString();
+
+        return webClient.post()
+                .uri(uri)
+                .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(SendMessageResponse.class);

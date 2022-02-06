@@ -11,6 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import ru.privetdruk.restorder.handler.MessageHandler;
@@ -59,30 +60,31 @@ public class RegistrationHandler implements MessageHandler {
         /*Если сообщение от админа с подтверждением регистрации, отправляем пользователю сообщение и
         переводим в главное меню
         */
-        if (user.getRoles().contains(Role.ADMIN) && messageText.matches("^Подтвердить регистрацию [0-9]+$")) {
-            String userId = messageText.substring(messageText.lastIndexOf(" ") + 1);
-            Long userTelegramId = Long.valueOf(userId);
+        if (user.getRoles().contains(Role.ADMIN)) {
+            if (callback != null) {
+                String userId = callback.getData().substring(callback.getData().lastIndexOf(" ") + 1);
+                Long userTelegramId = Long.valueOf(userId);
 
-            Optional<UserEntity> optionalUserEntity = userService.findByTelegramIdWithLock(userTelegramId);
+                Optional<UserEntity> optionalUserEntity = userService.findByTelegramIdWithLock(userTelegramId);
 
-            if (optionalUserEntity.isPresent()) {
-                UserEntity userEntity = optionalUserEntity.get();
+                if (optionalUserEntity.isPresent()) {
+                    UserEntity userEntity = optionalUserEntity.get();
 
-                if (userEntity.getSubState() == SubState.WAITING_APPROVE_APPLICATION) {
-                    messageService.sendMessageToUser(userTelegramId,
-                            MessageText.YOUR_CLAIM_WAS_APPROVED,
-                            botClientToken);
-                    //TODO С сообщением отправлять и панель с конпками меню
-                    //TODO отправлять Inline кнопки, а не встроенную клавиатуру, т.к. можно утвержить всего одного
+                    if (userEntity.getSubState() == SubState.WAITING_APPROVE_APPLICATION) {
+                        telegramApiService.sendMessage(userTelegramId,
+                                MessageText.YOUR_CLAIM_WAS_APPROVED,
+                                botClientToken, new ReplyKeyboardMarkup(Keyboard.MAIN_MENU_VIEW_MENU.getKeyboardRows())).subscribe();
 
-                    userEntity.setState(State.MAIN_MENU);
-                    userEntity.setSubState(SubState.VIEW_MAIN_MENU);
-                    userService.save(userEntity);
-
+                        userEntity.setState(State.MAIN_MENU);
+                        userEntity.setSubState(SubState.VIEW_MAIN_MENU);
+                        userService.save(userEntity);
+                    }
                 }
-            }
 
-            sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
+                sendMessage.setChatId(String.valueOf(chatId));
+                sendMessage.setText(MessageText.ADMIN_APPROVED_CLAIM);
+                sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
+            }
 
             return sendMessage;
         }
@@ -344,15 +346,16 @@ public class RegistrationHandler implements MessageHandler {
         userService.findUsersByRole(Role.ADMIN).stream()
                 .map(UserEntity::getTelegramId)
                 .forEach(id ->
-                        telegramApiService.sendMessage(id, message, botClientToken, ReplyKeyboardMarkup
-                                        .builder()
-                                        .keyboard(List.of(
-                                                new KeyboardRow(List.of(
-                                                        new KeyboardButton(Button.REGISTRATION_ACCEPT.getText() + " " + user.getTelegramId())))))
+                        telegramApiService.sendMessage(id, message, botClientToken, InlineKeyboardMarkup.builder()
+                                        .keyboard(List.of(List.of(InlineKeyboardButton.builder()
+                                                .callbackData(Button.REGISTRATION_ACCEPT.getName() + " " + user.getTelegramId())
+                                                .text(Button.REGISTRATION_ACCEPT.getText() + " " + user.getTelegramId())
+                                                .build())))
                                         .build())
                                 .subscribe()
                 );
     }
+
 
     private SubState changeState(UserEntity user, SubState subState) {
         SubState nextSubState = subState.getNextSubState();
