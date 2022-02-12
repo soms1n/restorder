@@ -3,29 +3,29 @@ package ru.privetdruk.restorder.service;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import ru.privetdruk.restorder.handler.MessageHandler;
-import ru.privetdruk.restorder.handler.client.MainMenuHandler;
-import ru.privetdruk.restorder.handler.client.RegistrationHandler;
-import ru.privetdruk.restorder.handler.client.SettingsHandler;
-import ru.privetdruk.restorder.handler.client.WaitingApplicationApproveHandler;
+import ru.privetdruk.restorder.handler.client.*;
 import ru.privetdruk.restorder.model.enums.State;
 
 import java.util.Map;
 
 @Service
 public class ClientHandlerService {
-    private final RegistrationHandler registrationHandler;
+    private final RegistrationEmployeeHandler registrationEmployeeHandler;
+    private final RegistrationTavernHandler registrationTavernHandler;
     private final MainMenuHandler mainMenuHandler;
     private final SettingsHandler settingsHandler;
-    private final WaitingApplicationApproveHandler waitingApplicationApproveHandler;
+    private final EventHandler eventHandler;
 
-    public ClientHandlerService(@Lazy RegistrationHandler registrationHandler,
+    public ClientHandlerService(@Lazy RegistrationEmployeeHandler registrationEmployeeHandler,
+                                @Lazy RegistrationTavernHandler registrationTavernHandler,
                                 @Lazy MainMenuHandler mainMenuHandler,
                                 @Lazy SettingsHandler settingsHandler,
-                                @Lazy WaitingApplicationApproveHandler waitingApplicationApproveHandler) {
-        this.registrationHandler = registrationHandler;
+                                @Lazy EventHandler eventHandler) {
+        this.registrationEmployeeHandler = registrationEmployeeHandler;
+        this.registrationTavernHandler = registrationTavernHandler;
         this.mainMenuHandler = mainMenuHandler;
         this.settingsHandler = settingsHandler;
-        this.waitingApplicationApproveHandler = waitingApplicationApproveHandler;
+        this.eventHandler = eventHandler;
     }
 
     /**
@@ -35,9 +35,11 @@ public class ClientHandlerService {
      */
     public Map<State, MessageHandler> loadHandlers() {
         return Map.of(
-                State.REGISTRATION, registrationHandler,
+                State.REGISTRATION_EMPLOYEE, registrationEmployeeHandler,
+                State.REGISTRATION_TAVERN, registrationTavernHandler,
                 State.SETTINGS, settingsHandler,
-                State.MAIN_MENU, mainMenuHandler
+                State.MAIN_MENU, mainMenuHandler,
+                State.EVENT, eventHandler
         );
     }
 }

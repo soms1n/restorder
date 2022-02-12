@@ -21,14 +21,6 @@ public class AddressEntity {
     private Long id;
 
     /**
-     * Заведение
-     */
-    @EqualsAndHashCode.Exclude
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tavern_id")
-    private TavernEntity tavern;
-
-    /**
      * Город
      */
     @Column(name = "city")
@@ -41,15 +33,9 @@ public class AddressEntity {
     @Column(name = "street")
     private String street;
 
-    /**
-     * Строение (номер дома)
-     */
-    @Column(name = "building")
-    private String building;
-
     @Builder
     public AddressEntity(TavernEntity tavern, City city) {
-        this.tavern = tavern;
+        tavern.setAddress(this);
         this.city = city;
     }
 }

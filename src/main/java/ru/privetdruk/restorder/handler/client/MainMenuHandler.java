@@ -1,8 +1,12 @@
 package ru.privetdruk.restorder.handler.client;
 
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.groupadministration.CreateChatInviteLink;
+import org.telegram.telegrambots.meta.api.methods.groupadministration.ExportChatInviteLink;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.ChatInviteLink;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
@@ -25,13 +29,11 @@ public class MainMenuHandler implements MessageHandler {
     private final TavernService tavernService;
     private final ReplyKeyboardMarkup keyboard;
     private final SettingsHandler settingsHandler;
-    private final UserService userService;
 
-    public MainMenuHandler(MessageService messageService, TavernService tavernService, KeyboardService keyboardService, SettingsHandler settingsHandler, UserService userService) {
+    public MainMenuHandler(MessageService messageService, TavernService tavernService, SettingsHandler settingsHandler) {
         this.messageService = messageService;
         this.tavernService = tavernService;
         this.settingsHandler = settingsHandler;
-        this.userService = userService;
         this.keyboard = new ReplyKeyboardMarkup();
         this.keyboard.setKeyboard(Keyboard.MAIN_MENU_VIEW_MENU.getKeyboardRows());
         this.keyboard.setResizeKeyboard(true);

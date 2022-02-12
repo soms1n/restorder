@@ -29,19 +29,14 @@ public class TavernEntity {
     private Long id;
 
     /**
-     * Владелец
-     */
-    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
-    @JoinColumn(name = "user_id")
-    private UserEntity owner;
-
-    /**
      * Сотрудники
      */
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true)
-    @JoinTable(name = "tavern_to_employee",
+    @JoinTable(
+            name = "tavern_to_employee",
             joinColumns = @JoinColumn(name = "tavern_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
     @Fetch(FetchMode.SUBSELECT)
     private Set<UserEntity> employees = new HashSet<>();
 
@@ -83,8 +78,9 @@ public class TavernEntity {
 
     @Builder
     public TavernEntity(UserEntity owner, String name) {
-        this.owner = owner;
         this.name = name;
+
+        addEmployee(owner);
     }
 
     public void addEmployee(UserEntity employee) {

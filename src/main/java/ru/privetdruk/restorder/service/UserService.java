@@ -51,11 +51,28 @@ public class UserService {
     public UserEntity create(Long telegramId, Role role) {
         UserEntity user = UserEntity.builder()
                 .telegramId(telegramId)
-                .state(State.REGISTRATION)
-                .subState(State.REGISTRATION.getInitialSubState())
+                .state(State.REGISTRATION_TAVERN)
+                .subState(State.REGISTRATION_TAVERN.getInitialSubState())
                 .build();
 
         user.addRole(role);
+
+        return userRepository.save(user);
+    }
+
+    /**
+     * Создать пользователя
+     *
+     * @param telegramId Идентификатор в телеграм
+     * @return Созданного пользователя
+     */
+    @Transactional
+    public UserEntity create(Long telegramId) {
+        UserEntity user = UserEntity.builder()
+                .telegramId(telegramId)
+                .state(State.REGISTRATION_TAVERN)
+                .subState(State.REGISTRATION_TAVERN.getInitialSubState())
+                .build();
 
         return userRepository.save(user);
     }

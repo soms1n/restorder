@@ -33,7 +33,7 @@ public class UserEntity {
      * Имя
      */
     @Column(name = "first_name")
-    private String firstName;
+    private String name;
 
     /**
      * Контакты
@@ -67,11 +67,12 @@ public class UserEntity {
     /**
      * Заведение
      */
-    //TODO тут надо разобраться со связью. Без каскадирования не работает, с каскадированием создает лишние записи
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(name = "tavern_to_employee",
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "tavern_to_employee",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "tavern_id"))
+            inverseJoinColumns = @JoinColumn(name = "tavern_id")
+    )
     private TavernEntity tavern;
 
     /**
@@ -107,7 +108,7 @@ public class UserEntity {
     public String toString() {
         return "User{" +
                 "id=" + id +
-                ", firstName='" + firstName + '\'' +
+                ", firstName='" + name + '\'' +
                 ", telegramId=" + telegramId +
                 '}';
     }
