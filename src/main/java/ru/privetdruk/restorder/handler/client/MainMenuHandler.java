@@ -54,7 +54,10 @@ public class MainMenuHandler implements MessageHandler {
                 case SETTINGS -> {
                     return settingsHandler.handle(user, message, callback);
                 }
-                case INFORMATION -> sendMessage.setText("<b>Информация о вашем заведении:</b>");
+                case INFORMATION -> {
+                    sendMessage.setText("<b>Информация о вашем заведении:</b>");
+                    sendMessage.enableHtml(true);
+                }
             }
         }
 
