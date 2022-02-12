@@ -35,9 +35,9 @@ import java.util.Optional;
 @DisplayName("Registration service testing")
 @SpringBootTest
 @Disabled
-class RegistrationHandlerTest {
+class RegistrationTavernHandlerTest {
     @Mock
-    RegistrationHandler registrationHandler;
+    RegistrationTavernHandler registrationTavernHandler;
     @Autowired
     UserService userService;
 

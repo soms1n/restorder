@@ -39,6 +39,7 @@ public enum Button {
     YES("⭕ Да"),
     NO("🟢 Нет"),
     REGISTRATION_ACCEPT("Подтвердить регистрацию"),
+    SHARE_PHONE("\uD83D\uDCDE Поделиться номером"),
     NOTHING(null);
 
     private final String text;

@@ -7,9 +7,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
  */
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum Role {
-    ADMIN("Администратор"),
-    CLIENT_ADMIN("Клиент - администратор"),
-    CLIENT_EMPLOYEE("Клиент - сотрудник"),
+    ADMIN("Главный администратор"),
+    CLIENT_ADMIN("Администратор"),
+    CLIENT_EMPLOYEE("Сотрудник"),
     USER("Пользователь");
 
     private final String description;

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -21,29 +22,26 @@ import ru.privetdruk.restorder.model.entity.ContactEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.*;
-import ru.privetdruk.restorder.service.KeyboardService;
-import ru.privetdruk.restorder.service.MessageService;
-import ru.privetdruk.restorder.service.TelegramApiService;
-import ru.privetdruk.restorder.service.UserService;
+import ru.privetdruk.restorder.service.*;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.stream.Collectors.toSet;
 import static ru.privetdruk.restorder.model.consts.MessageText.SELECT_ELEMENT_FOR_EDIT;
 import static ru.privetdruk.restorder.model.enums.SubState.EDIT_PERSONAL_DATA;
 import static java.util.stream.Collectors.toMap;
 
 @RequiredArgsConstructor
 @Component
-public class RegistrationHandler implements MessageHandler {
+public class RegistrationTavernHandler implements MessageHandler {
     private final static int MAX_BUTTONS_PER_ROW = 8;
 
     private final KeyboardService keyboardService;
     private final MessageService messageService;
     private final UserService userService;
     private final TelegramApiService telegramApiService;
+    private final TavernService tavernService;
 
     @Value("${bot.client.token}")
     private String botClientToken;
@@ -57,7 +55,8 @@ public class RegistrationHandler implements MessageHandler {
         SubState nextSubState;
         SendMessage sendMessage = new SendMessage();
 
-        /*Если сообщение от админа с подтверждением регистрации, отправляем пользователю сообщение и
+        /*
+        Если сообщение от админа с подтверждением регистрации, отправляем пользователю сообщение и
         переводим в главное меню
         */
         if (user.getRoles().contains(Role.ADMIN)) {
@@ -71,9 +70,12 @@ public class RegistrationHandler implements MessageHandler {
                     UserEntity userEntity = optionalUserEntity.get();
 
                     if (userEntity.getSubState() == SubState.WAITING_APPROVE_APPLICATION) {
-                        telegramApiService.sendMessage(userTelegramId,
+                        telegramApiService.sendMessage(
+                                userTelegramId,
                                 MessageText.YOUR_CLAIM_WAS_APPROVED,
-                                botClientToken, new ReplyKeyboardMarkup(Keyboard.MAIN_MENU_VIEW_MENU.getKeyboardRows())).subscribe();
+                                botClientToken,
+                                new ReplyKeyboardMarkup(Keyboard.MAIN_MENU_VIEW_MENU.getKeyboardRows())
+                        ).subscribe();
 
                         userEntity.setState(State.MAIN_MENU);
                         userEntity.setSubState(SubState.VIEW_MAIN_MENU);
@@ -109,7 +111,7 @@ public class RegistrationHandler implements MessageHandler {
                     return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }
 
-                user.setFirstName(messageText);
+                user.setName(messageText);
 
                 sendMessage = messageService.configureMessage(chatId, changeState(user, subState).getMessage());
             }
@@ -123,17 +125,17 @@ public class RegistrationHandler implements MessageHandler {
                         .owner(user)
                         .build();
 
-                tavern.addEmployee(user);
-                user.setTavern(tavern);
+                tavernService.save(tavern);
 
                 changeState(user, subState);
 
                 sendMessage = messageService.configureMessage(chatId, MessageText.CHOICE_CITY);
 
-                sendMessage.setReplyMarkup(InlineKeyboardMarkup.builder()
-                        .keyboard(keyboardService.createButtonList(Arrays.stream(City.values())
-                                .collect(toMap(City::getDescription, City::getName)), MAX_BUTTONS_PER_ROW))
-                        .build()
+                sendMessage.setReplyMarkup(
+                        InlineKeyboardMarkup.builder()
+                                .keyboard(keyboardService.createButtonList(Arrays.stream(City.values())
+                                        .collect(toMap(City::getDescription, City::getName)), MAX_BUTTONS_PER_ROW))
+                                .build()
                 );
             }
             case CHOICE_CITY -> {
@@ -153,8 +155,6 @@ public class RegistrationHandler implements MessageHandler {
                             .build();
 
                     tavern.setAddress(address);
-
-                    userService.save(user);
 
                     sendMessage = messageService.configureMessage(chatId, changeState(user, subState).getMessage());
                 } else {
@@ -277,7 +277,7 @@ public class RegistrationHandler implements MessageHandler {
             }
             case EDIT_NAME -> {
                 if (!isUserPressKeyBoardElement(sendMessage, user, messageText, chatId)) {
-                    user.setFirstName(messageText);
+                    user.setName(messageText);
                 }
             }
             case EDIT_TAVERN -> {
@@ -335,9 +335,14 @@ public class RegistrationHandler implements MessageHandler {
     }
 
     private void sendClaimToApprove(UserEntity user) {
+        // TODO вынести в механизм апрува
+        if (CollectionUtils.isEmpty(user.getRoles())) {
+            user.getRoles().add(Role.CLIENT_ADMIN);
+        }
+
         String message = "Пользователь с telegramId " + user.getTelegramId() + " запросил подтверждение регистрации. " + System.lineSeparator() + System.lineSeparator()
                 + "Данные пользователя " + System.lineSeparator() + System.lineSeparator()
-                + "Имя пользователя: " + user.getFirstName() + System.lineSeparator()
+                + "Имя пользователя: " + user.getName() + System.lineSeparator()
                 + "Город: " + user.getTavern().getAddress().getCity().getDescription() + System.lineSeparator()
                 + "Название заведения: " + user.getTavern().getName() + System.lineSeparator()
                 + "Адрес: " + user.getTavern().getAddress().getStreet() + System.lineSeparator() + System.lineSeparator()
@@ -346,12 +351,19 @@ public class RegistrationHandler implements MessageHandler {
         userService.findUsersByRole(Role.ADMIN).stream()
                 .map(UserEntity::getTelegramId)
                 .forEach(id ->
-                        telegramApiService.sendMessage(id, message, botClientToken, InlineKeyboardMarkup.builder()
-                                        .keyboard(List.of(List.of(InlineKeyboardButton.builder()
-                                                .callbackData(Button.REGISTRATION_ACCEPT.getName() + " " + user.getTelegramId())
-                                                .text(Button.REGISTRATION_ACCEPT.getText() + " " + user.getTelegramId())
-                                                .build())))
-                                        .build())
+                        telegramApiService.sendMessage(
+                                        id,
+                                        message,
+                                        botClientToken,
+                                        InlineKeyboardMarkup.builder()
+                                                .keyboard(List.of(List.of(
+                                                        InlineKeyboardButton.builder()
+                                                                .callbackData(Button.REGISTRATION_ACCEPT.getName() + " " + user.getTelegramId())
+                                                                .text(Button.REGISTRATION_ACCEPT.getText() + " " + user.getTelegramId())
+                                                                .build()
+                                                )))
+                                                .build()
+                                )
                                 .subscribe()
                 );
     }
@@ -405,7 +417,7 @@ public class RegistrationHandler implements MessageHandler {
 
     private SendMessage showPersonalData(UserEntity user, Long chatId) {
         String yourPersonalData = "Ваши данные:" + System.lineSeparator() +
-                "Имя: " + user.getFirstName() + System.lineSeparator() +
+                "Имя: " + user.getName() + System.lineSeparator() +
                 "Заведение: " + user.getTavern().getName() + System.lineSeparator() +
                 "Адрес: " + user.getTavern().getAddress().getStreet() + System.lineSeparator() +
                 "Номер телефона: " + user.getContacts()

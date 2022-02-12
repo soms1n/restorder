@@ -5,10 +5,11 @@ import ru.privetdruk.restorder.model.consts.MessageText;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum SubState {
+    EVENT_INITIAL(null),
     SHOW_REGISTER_BUTTON(MessageText.REGISTER) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
 
         @Override
@@ -19,7 +20,7 @@ public enum SubState {
     REGISTER_BUTTON_PRESS(null) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
 
         @Override
@@ -30,7 +31,7 @@ public enum SubState {
     ENTER_FULL_NAME(MessageText.ENTER_FULL_NAME) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
 
         @Override
@@ -41,7 +42,7 @@ public enum SubState {
     ENTER_TAVERN_NAME(MessageText.ENTER_TAVERN_NAME) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
 
         @Override
@@ -52,7 +53,7 @@ public enum SubState {
     CHOICE_CITY(MessageText.CHOICE_CITY) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
 
         @Override
@@ -63,7 +64,7 @@ public enum SubState {
     ENTER_ADDRESS(MessageText.ENTER_ADDRESS) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
 
         @Override
@@ -74,7 +75,7 @@ public enum SubState {
     ENTER_PHONE_NUMBER(MessageText.ENTER_PHONE_NUMBER) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
 
         @Override
@@ -85,7 +86,7 @@ public enum SubState {
     REGISTRATION_APPROVING(null) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
 
         @Override
@@ -96,13 +97,13 @@ public enum SubState {
     REGISTRATION_EDITING(null) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
     },
     WAITING_APPROVE_APPLICATION(MessageText.WAITING_APPROVE_APPLICATION) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
 
         @Override
@@ -110,7 +111,7 @@ public enum SubState {
             return VIEW_MAIN_MENU;
         }
     },
-    VIEW_MAIN_MENU(null) {
+    VIEW_MAIN_MENU("Переход в главное меню.") {
         @Override
         public State getState() {
             return State.MAIN_MENU;
@@ -119,37 +120,37 @@ public enum SubState {
     EDIT_PERSONAL_DATA(null) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
     },
     EDIT_NAME(null) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
     },
     EDIT_ADDRESS(null) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
     },
     EDIT_CITY(null) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
     },
     EDIT_TAVERN(null) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
     },
     EDIT_PHONE_NUMBER(null) {
         @Override
         public State getState() {
-            return State.REGISTRATION;
+            return State.REGISTRATION_TAVERN;
         }
     },
     VIEW_SETTINGS(null) {
@@ -322,7 +323,63 @@ public enum SubState {
         public SubState getParentSubState() {
             return VIEW_PROFILE_SETTINGS;
         }
+    },
+    VIEW_EMPLOYEE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SETTINGS;
+        }
+    },
+    DELETE_EMPLOYEE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_EMPLOYEE_SETTINGS;
+        }
+    },
+    REGISTER_EMPLOYEE_BUTTON_PRESS(null) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION_EMPLOYEE;
+        }
+
+        @Override
+        public SubState getNextSubState() {
+            return ENTER_EMPLOYEE_FULL_NAME;
+        }
+    },
+    ENTER_EMPLOYEE_FULL_NAME(MessageText.ENTER_FULL_NAME) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION_EMPLOYEE;
+        }
+
+        @Override
+        public SubState getNextSubState() {
+            return ENTER_EMPLOYEE_PHONE_NUMBER;
+        }
+    },
+    ENTER_EMPLOYEE_PHONE_NUMBER(MessageText.ENTER_PHONE_NUMBER) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION_EMPLOYEE;
+        }
+
+        @Override
+        public SubState getNextSubState() {
+            return VIEW_MAIN_MENU;
+        }
     };
+
     private final String message;
 
     SubState(String message) {

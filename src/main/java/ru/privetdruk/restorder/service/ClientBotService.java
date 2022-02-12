@@ -9,8 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.entity.UserEntity;
-import ru.privetdruk.restorder.model.enums.Role;
-import ru.privetdruk.restorder.model.enums.State;
+import ru.privetdruk.restorder.model.enums.*;
 
 import java.util.Map;
 
@@ -18,6 +17,7 @@ import java.util.Map;
 @Service
 public class ClientBotService {
     private final UserService userService;
+
     private final Map<State, MessageHandler> handlers;
 
     public ClientBotService(UserService userService, ClientHandlerService handlerService) {
@@ -51,9 +51,21 @@ public class ClientBotService {
         final Long finalTelegramUserId = telegramUserId;
 
         UserEntity user = userService.findByTelegramId(telegramUserId)
-                .orElseGet(() -> userService.create(finalTelegramUserId, Role.CLIENT_ADMIN));
+                .orElseGet(() -> userService.create(finalTelegramUserId));
 
-        return handlers.get(user.getState())
+        State state = prepareState(message, user);
+
+        return handlers.get(state)
                 .handle(user, message, callback);
+    }
+
+    private State prepareState(Message message, UserEntity user) {
+        String[] messageSplit = message.getText().split(" ");
+        Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
+        if (command == Command.START && messageSplit.length == 2) {
+            return State.EVENT;
+        }
+
+        return user.getState();
     }
 }

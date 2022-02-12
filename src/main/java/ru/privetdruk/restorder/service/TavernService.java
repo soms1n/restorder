@@ -9,6 +9,8 @@ import ru.privetdruk.restorder.model.entity.AddressEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.repository.TavernRepository;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class TavernService {
@@ -29,8 +31,7 @@ public class TavernService {
         AddressEntity address = tavern.getAddress();
         if (address == null
                 || address.getCity() == null
-                || !StringUtils.hasText(address.getStreet())
-                || !StringUtils.hasText(address.getBuilding())) {
+                || !StringUtils.hasText(address.getStreet())) {
             return false;
         }
 
@@ -65,5 +66,14 @@ public class TavernService {
     @Transactional
     public void delete(TavernEntity tavern) {
         tavernRepository.delete(tavern);
+    }
+
+    /**
+     * Найди заведение
+     * @param id Идентификатор заведения
+     * @return Найденное заведение
+     */
+    public Optional<TavernEntity> find(Long id) {
+        return tavernRepository.findById(id);
     }
 }
