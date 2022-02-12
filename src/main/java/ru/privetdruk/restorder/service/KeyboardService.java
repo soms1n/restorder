@@ -17,6 +17,10 @@ import java.util.stream.Collectors;
 public class KeyboardService {
     public static final ReplyKeyboardMarkup SHARE_PHONE_KEYBOARD = new ReplyKeyboardMarkup();
 
+    {
+        init();
+    }
+
     private static void init() {
         SHARE_PHONE_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
