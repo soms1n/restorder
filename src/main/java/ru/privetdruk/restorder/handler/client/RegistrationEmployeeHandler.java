@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.Contact;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.entity.ContactEntity;
@@ -53,6 +53,11 @@ public class RegistrationEmployeeHandler implements MessageHandler {
                 return sendMessage;
             }
             case ENTER_EMPLOYEE_PHONE_NUMBER -> {
+                Contact sendContact = message.getContact();
+                if (sendContact != null) {
+                    messageText = sendContact.getPhoneNumber().replace("+", "");
+                }
+
                 if (!StringUtils.hasText(messageText)) {
                     return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }

@@ -3,6 +3,7 @@ package ru.privetdruk.restorder.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -39,7 +40,7 @@ public class ClientBotService {
             log.info("user: " + message.getFrom());
         }
 
-        if (message == null || !message.hasText()) {
+        if (message == null || (!message.hasText() && message.getContact() == null)) {
             if (callback == null) {
                 return new SendMessage();
             }
@@ -60,6 +61,10 @@ public class ClientBotService {
     }
 
     private State prepareState(Message message, UserEntity user) {
+        if (!StringUtils.hasText(message.getText())) {
+            return user.getState();
+        }
+
         String[] messageSplit = message.getText().split(" ");
         Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
         if (command == Command.START && messageSplit.length == 2) {
