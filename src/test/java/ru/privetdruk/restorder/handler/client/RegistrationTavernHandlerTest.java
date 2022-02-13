@@ -25,10 +25,7 @@ import ru.privetdruk.restorder.model.entity.ContactEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.*;
-import ru.privetdruk.restorder.service.KeyboardService;
-import ru.privetdruk.restorder.service.MessageService;
-import ru.privetdruk.restorder.service.TelegramApiService;
-import ru.privetdruk.restorder.service.UserService;
+import ru.privetdruk.restorder.service.*;
 
 
 import java.util.Collections;
@@ -53,20 +50,22 @@ class RegistrationTavernHandlerTest {
     RegistrationTavernHandler registrationTavernHandler;
     @Mock
     TelegramApiService telegramApiService;
+    @Mock
+    TavernService tavernService;
 
     @BeforeEach
     @DisplayName("Presets")
     void beforeEach() {
         Mockito.when(message.getChatId()).thenReturn(1L);
+        registrationTavernHandler = new RegistrationTavernHandler(new KeyboardService(), new MessageService(), userService, telegramApiService, tavernService);
     }
 
     @Test
     void client_In_ShowRegistrationButton_SubState_And_Does_Not_Click_Registration_Button() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         UserEntity user = generateTestUser(SubState.SHOW_REGISTER_BUTTON);
         Mockito.when(message.getText()).thenReturn("Any string");
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 null
@@ -84,11 +83,10 @@ class RegistrationTavernHandlerTest {
 
     @Test
     void client_In_ShowRegistrationButton_SubState_And_Click_Registration_Button() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.SHOW_REGISTER_BUTTON);
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 callback
@@ -100,11 +98,10 @@ class RegistrationTavernHandlerTest {
 
     @Test
     void client_In_EnterFullName_SubState_And_Entered_Your_Name() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.ENTER_FULL_NAME);
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 callback
@@ -116,11 +113,10 @@ class RegistrationTavernHandlerTest {
 
     @Test
     void client_In_EnterTavernName_SubState_And_Entered_Tavern_Name() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.ENTER_TAVERN_NAME);
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 callback
@@ -136,10 +132,9 @@ class RegistrationTavernHandlerTest {
 
     @Test
     void client_In_ChoiceCity_SubState_And_Entered_Any_Text() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         UserEntity user = generateTestUser(SubState.CHOICE_CITY);
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 null
@@ -154,13 +149,12 @@ class RegistrationTavernHandlerTest {
 
     @Test
     void client_In_ChoiceCity_SubState_And_Selected_Any_City() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         Mockito.when(callback.getData()).thenReturn(City.BRYANSK.getName());
 
         UserEntity user = generateTestUser(SubState.CHOICE_CITY);
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 callback
@@ -172,10 +166,9 @@ class RegistrationTavernHandlerTest {
 
     @Test
     void client_In_EnterAddress_SubState_And_Entered_Your_Address() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         UserEntity user = generateTestUser(SubState.ENTER_ADDRESS);
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 null
@@ -189,7 +182,7 @@ class RegistrationTavernHandlerTest {
     void client_In_EnterPhoneNumber_SubState_And_Entered_Your_Phone_Number() {
         UserEntity user = generateTestUser(SubState.ENTER_PHONE_NUMBER);
         String messageText =  "Ваши данные:" + System.lineSeparator() +
-                "Имя: " + user.getFirstName() + System.lineSeparator() +
+                "Имя: " + user.getName() + System.lineSeparator() +
                 "Заведение: " + user.getTavern().getName() + System.lineSeparator() +
                 "Адрес: " + user.getTavern().getAddress().getStreet() + System.lineSeparator() +
                 "Номер телефона: " + user.getContacts()
@@ -202,10 +195,9 @@ class RegistrationTavernHandlerTest {
 
         Mockito.when(message.getText()).thenReturn("+79208586754");
 
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 null
@@ -224,7 +216,7 @@ class RegistrationTavernHandlerTest {
         UserEntity user = generateTestUser(SubState.REGISTRATION_APPROVING);
 
         String messageText =  "Ваши данные:" + System.lineSeparator() +
-                "Имя: " + user.getFirstName() + System.lineSeparator() +
+                "Имя: " + user.getName() + System.lineSeparator() +
                 "Заведение: " + user.getTavern().getName() + System.lineSeparator() +
                 "Адрес: " + user.getTavern().getAddress().getStreet() + System.lineSeparator() +
                 "Номер телефона: " + user.getContacts()
@@ -234,9 +226,7 @@ class RegistrationTavernHandlerTest {
                 .findFirst()
                 .orElse("") + System.lineSeparator();
 
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
-
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 null
@@ -253,13 +243,12 @@ class RegistrationTavernHandlerTest {
     @Test
     void client_In_RegistrationApproving_SubState_And_Click_Approve_Button() {
         UserEntity user = generateTestUser(SubState.REGISTRATION_APPROVING);
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         Mockito.when(telegramApiService.sendMessage(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.never());
         Mockito.when(userService.findUsersByRole(Mockito.any(Role.class))).thenReturn(Collections.singletonList(user));
         Mockito.when(callback.getData()).thenReturn(Button.APPROVE.getName());
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 callback
@@ -272,11 +261,10 @@ class RegistrationTavernHandlerTest {
     @Test
     void client_In_RegistrationApproving_SubState_And_Click_Edit_Button() {
         UserEntity user = generateTestUser(SubState.REGISTRATION_APPROVING);
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         Mockito.when(callback.getData()).thenReturn(Button.EDIT.getName());
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 callback
@@ -290,10 +278,9 @@ class RegistrationTavernHandlerTest {
 
     @Test
     void client_In_EditPersonalData_SubState_And_Entered_Any_Text() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 null
@@ -305,12 +292,11 @@ class RegistrationTavernHandlerTest {
 
     @Test
     void client_In_EditPersonalData_SubState_And_Click_Edit_Name() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.NAME.getText());
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 null
@@ -324,12 +310,11 @@ class RegistrationTavernHandlerTest {
 
     @Test
     void client_In_EditPersonalData_SubState_And_Click_Edit_Tavern() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.TAVERN.getText());
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 null
@@ -341,12 +326,11 @@ class RegistrationTavernHandlerTest {
 
     @Test
     void client_In_EditPersonalData_SubState_And_Click_Edit_Phone_Number() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.PHONE_NUMBER.getText());
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 null
@@ -358,12 +342,11 @@ class RegistrationTavernHandlerTest {
 
     @Test
     void client_In_EditPersonalData_SubState_And_Click_Edit_Address() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.ADDRESS.getText());
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 null
@@ -375,13 +358,12 @@ class RegistrationTavernHandlerTest {
 
     @Test
     void client_In_EditPersonalData_SubState_And_Click_Edit_City() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.CITY.getText());
 
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 null
@@ -393,14 +375,13 @@ class RegistrationTavernHandlerTest {
 
     @Test
     void client_In_EditPersonalData_SubState_And_Click_Complete_Registration() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.COMPLETE_REGISTRATION.getText());
         Mockito.when(telegramApiService.sendMessage(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.never());
         Mockito.when(userService.findUsersByRole(Mockito.any(Role.class))).thenReturn(Collections.singletonList(user));
 
-        SendMessage sendMessage = registrationHandler.handle(
+        SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
                 null
@@ -412,20 +393,19 @@ class RegistrationTavernHandlerTest {
 
     @Test
     void client_In_EditName_SubState_And_Entered_Any_Text() {
-        registrationHandler = new RegistrationHandler(new KeyboardService(), new MessageService(), userService, telegramApiService);
         UserEntity user = generateTestUser(SubState.EDIT_NAME);
         Mockito.when(message.getText()).thenReturn("Some name");
 
-        registrationHandler.handle(user, message, null);
+        registrationTavernHandler.handle(user, message, null);
 
         assertAll("user",
                 () -> assertEquals(user.getSubState(), SubState.EDIT_NAME),
-                () -> assertEquals(user.getFirstName(), message.getText()));
+                () -> assertEquals(user.getName(), message.getText()));
     }
 
     private UserEntity generateTestUser(SubState subState) {
-        UserEntity user = new UserEntity(1L, State.REGISTRATION, subState);
-        user.setFirstName("Иванов Иван Иванович");
+        UserEntity user = new UserEntity(1L, State.REGISTRATION_TAVERN, subState);
+        user.setName("Иванов Иван Иванович");
         user.setRoles(Collections.singleton(Role.CLIENT_ADMIN));
         user.setTavern(new TavernEntity());
         user.getTavern().setName("Августин");
@@ -505,7 +485,7 @@ class RegistrationTavernHandlerTest {
 /*
         UserEntity user = UserEntity.builder()
                 .telegramId(1L)
-                .state(State.REGISTRATION)
+                .state(State.REGISTRATION_TAVERN)
                 .subState(SubState.SHOW_REGISTER_BUTTON)
                 .build();
 
