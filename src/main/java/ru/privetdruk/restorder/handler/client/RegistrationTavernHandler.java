@@ -107,19 +107,11 @@ public class RegistrationTavernHandler implements MessageHandler {
                         .build());
             }
             case ENTER_FULL_NAME -> {
-                if (!StringUtils.hasText(messageText)) {
-                    return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
-                }
-
                 user.setName(messageText);
 
                 sendMessage = messageService.configureMessage(chatId, changeState(user, subState).getMessage());
             }
             case ENTER_TAVERN_NAME -> {
-                if (!StringUtils.hasText(messageText)) {
-                    return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
-                }
-
                 TavernEntity tavern = TavernEntity.builder()
                         .name(messageText)
                         .owner(user)
@@ -143,10 +135,6 @@ public class RegistrationTavernHandler implements MessageHandler {
                     String data = callback.getData();
                     City city = City.fromName(data);
 
-                    if (city == null) {
-                        return messageService.configureMessage(chatId, MessageText.CITY_IS_EMPTY);
-                    }
-
                     TavernEntity tavern = user.getTavern();
 
                     AddressEntity address = AddressEntity.builder()
@@ -166,10 +154,6 @@ public class RegistrationTavernHandler implements MessageHandler {
                 }
             }
             case ENTER_ADDRESS -> {
-                if (!StringUtils.hasText(messageText)) {
-                    return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
-                }
-
                 AddressEntity address = user.getTavern().getAddress();
                 address.setStreet(messageText);
                 nextSubState = changeState(user, subState);
@@ -177,12 +161,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                 sendMessage = messageService.configureMessage(chatId, nextSubState.getMessage());
             }
             case ENTER_PHONE_NUMBER -> {
-                if (!StringUtils.hasText(messageText)) {
-                    return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
-                }
-
                 // TODO валидация номера
-
                 ContactEntity contact = ContactEntity.builder()
                         .user(user)
                         .type(ContractType.MOBILE)
@@ -368,7 +347,6 @@ public class RegistrationTavernHandler implements MessageHandler {
                 );
     }
 
-
     private SubState changeState(UserEntity user, SubState subState) {
         SubState nextSubState = subState.getNextSubState();
         user.setState(nextSubState.getState());
@@ -405,6 +383,7 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                     sendClaimToApprove(user);
                 }
+                default -> attachEditMenu(sendMessage);
             }
 
             result = true;
