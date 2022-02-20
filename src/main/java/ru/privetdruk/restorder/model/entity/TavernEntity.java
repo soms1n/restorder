@@ -8,6 +8,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
+import ru.privetdruk.restorder.model.enums.Category;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -75,6 +76,13 @@ public class TavernEntity {
      */
     @OneToMany(mappedBy = "tavern", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TableEntity> tables = new HashSet<>();
+
+    /**
+     * Категория заведения
+     */
+    @Column(name = "category")
+    @Enumerated(EnumType.STRING)
+    private Category category;
 
     @Builder
     public TavernEntity(UserEntity owner, String name) {
