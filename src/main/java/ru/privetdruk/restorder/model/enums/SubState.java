@@ -378,6 +378,28 @@ public enum SubState {
         public SubState getNextSubState() {
             return VIEW_MAIN_MENU;
         }
+    },
+    VIEW_GENERAL_SETTINGS_CATEGORIES(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS;
+        }
+    },
+    CHANGE_GENERAL_SETTINGS_CATEGORIES(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS_CATEGORIES;
+        }
     };
 
     private final String message;

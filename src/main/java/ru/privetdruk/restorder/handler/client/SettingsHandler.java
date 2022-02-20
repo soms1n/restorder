@@ -10,7 +10,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import ru.privetdruk.restorder.handler.MessageHandler;
@@ -19,10 +18,7 @@ import ru.privetdruk.restorder.model.enums.*;
 import ru.privetdruk.restorder.service.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -35,33 +31,21 @@ public class SettingsHandler implements MessageHandler {
     private final ContactService contactService;
     private final EventService eventService;
 
-    private final ReplyKeyboardRemove removeKeyboard = new ReplyKeyboardRemove(true);
-    private final ReplyKeyboardMarkup yesNoKeyboard = new ReplyKeyboardMarkup();
-    private final ReplyKeyboardMarkup cancelKeyboard = new ReplyKeyboardMarkup();
-    private final ReplyKeyboardMarkup allKeyboard = new ReplyKeyboardMarkup();
-    private final ReplyKeyboardMarkup generalKeyboard = new ReplyKeyboardMarkup();
-    private final ReplyKeyboardMarkup tavernNameKeyboard = new ReplyKeyboardMarkup();
-    private final ReplyKeyboardMarkup tavernContactsKeyboard = new ReplyKeyboardMarkup();
-    private final ReplyKeyboardMarkup tavernAddressKeyboard = new ReplyKeyboardMarkup();
-    private final ReplyKeyboardMarkup profileKeyboard = new ReplyKeyboardMarkup();
-    private final ReplyKeyboardMarkup profileNameKeyboard = new ReplyKeyboardMarkup();
-    private final ReplyKeyboardMarkup userContactsKeyboard = new ReplyKeyboardMarkup();
-    private final ReplyKeyboardMarkup employeeKeyboard = new ReplyKeyboardMarkup();
-    private final ReplyKeyboardMarkup categoryKeyboard = new ReplyKeyboardMarkup();
-    private final ReplyKeyboardMarkup scheduleKeyboard = new ReplyKeyboardMarkup();
-    private final ReplyKeyboardMarkup tableKeyboard = new ReplyKeyboardMarkup();
-
     @Value("${bot.client.username}")
     private String botName;
 
-    public SettingsHandler(@Lazy MainMenuHandler mainMenuHandler, MessageService messageService, UserService userService, TavernService tavernService, ContactService contactService, EventService eventService) {
+    public SettingsHandler(@Lazy MainMenuHandler mainMenuHandler,
+                           MessageService messageService,
+                           UserService userService,
+                           TavernService tavernService,
+                           ContactService contactService,
+                           EventService eventService) {
         this.mainMenuHandler = mainMenuHandler;
         this.messageService = messageService;
         this.userService = userService;
         this.tavernService = tavernService;
         this.contactService = contactService;
         this.eventService = eventService;
-        configureKeyboards();
     }
 
     @Override
@@ -84,7 +68,7 @@ public class SettingsHandler implements MessageHandler {
                         userService.delete(user);
                     }
 
-                    return messageService.configureMessage(chatId, "Данные успешно удалены. Хорошего дня!", removeKeyboard);
+                    return messageService.configureMessage(chatId, "Данные успешно удалены. Хорошего дня!", KeyboardService.REMOVE_KEYBOARD);
                 }
             }
             case MAIN_MENU -> {
@@ -101,6 +85,10 @@ public class SettingsHandler implements MessageHandler {
                         return configureMessage(user, chatId, SubState.CHANGE_GENERAL_SETTINGS_TAVERN_ADDRESS, "Введите новый адрес:");
                     case VIEW_PROFILE_SETTINGS_USER_NAME:
                         return configureMessage(user, chatId, SubState.CHANGE_PROFILE_SETTINGS_USER_NAME, "Введите новое имя:");
+                    case VIEW_GENERAL_SETTINGS_CATEGORIES:
+                        updateSubState(user, SubState.CHANGE_GENERAL_SETTINGS_CATEGORIES);
+
+                        return messageService.configureMessage(chatId, "Выберите новую категорию.", KeyboardService.CATEGORIES_LIST_WITH_CANCEL);
                 }
             }
             case ADD -> {
@@ -121,7 +109,7 @@ public class SettingsHandler implements MessageHandler {
                         return messageService.configureHtmlMessage(
                                 chatId,
                                 String.format(
-                                        "Регистрация по ссылке доступна в течении одного часа и только для одного человека.\nПерешлите данное сообщение вашему сотруднику.\n\n<a href=\"https://t.me/%s?start=%s&startgroup=qwe\">> РЕГИСТРАЦИЯ</a>",
+                                        "Регистрация по ссылке доступна в течении одного часа и только для одного человека.\nПерешлите данное сообщение вашему сотруднику.\n\n<a href=\"https://t.me/%s?start=%s\">> РЕГИСТРАЦИЯ</a>",
                                         botName,
                                         event.getUuid()
                                 )
@@ -132,11 +120,11 @@ public class SettingsHandler implements MessageHandler {
             case DELETE -> {
                 switch (subState) {
                     case VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS:
-                        return configureDeleteContacts(user, SubState.DELETE_GENERAL_SETTINGS_TAVERN_CONTACTS, chatId, tavern.getContacts(), tavernContactsKeyboard);
+                        return configureDeleteContacts(user, SubState.DELETE_GENERAL_SETTINGS_TAVERN_CONTACTS, chatId, tavern.getContacts(), KeyboardService.TAVERN_CONTACTS_KEYBOARD);
                     case VIEW_PROFILE_SETTINGS_USER_CONTACTS:
-                        return configureDeleteContacts(user, SubState.DELETE_PROFILE_SETTINGS_USER_CONTACTS, chatId, user.getContacts(), userContactsKeyboard);
+                        return configureDeleteContacts(user, SubState.DELETE_PROFILE_SETTINGS_USER_CONTACTS, chatId, user.getContacts(), KeyboardService.USER_CONTACTS_KEYBOARD);
                     case VIEW_EMPLOYEE_SETTINGS: {
-                        return configureDeleteEmployees(user, SubState.DELETE_EMPLOYEE_SETTINGS, chatId, tavern.getEmployees(), employeeKeyboard);
+                        return configureDeleteEmployees(user, chatId, tavern.getEmployees());
                     }
                 }
             }
@@ -163,6 +151,7 @@ public class SettingsHandler implements MessageHandler {
                         case TAVERN_NAME -> updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_NAME);
                         case CONTACTS -> updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS);
                         case TAVERN_ADDRESS -> updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS);
+                        case CATEGORIES -> updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_CATEGORIES);
                     }
                 }
                 case CHANGE_GENERAL_SETTINGS_TAVERN_NAME -> {
@@ -213,7 +202,17 @@ public class SettingsHandler implements MessageHandler {
 
                     updateSubState(user, user.getSubState().getParentSubState());
                 }
+                case CHANGE_GENERAL_SETTINGS_CATEGORIES -> {
+                    Category category = Category.fromDescription(messageText);
+                    if (category == null) {
+                        return messageService.configureMessage(chatId, "Выбрано некорректное значение.");
+                    }
 
+                    tavern.setCategory(category);
+                    tavernService.save(tavern);
+
+                    updateSubState(user, user.getSubState().getParentSubState());
+                }
                 case VIEW_PROFILE_SETTINGS -> {
                     switch (button) {
                         case USER_NAME -> updateSubState(user, SubState.VIEW_PROFILE_SETTINGS_USER_NAME);
@@ -222,14 +221,13 @@ public class SettingsHandler implements MessageHandler {
                             updateSubState(user, SubState.DELETE_PROFILE_SETTINGS);
 
                             if (user.getRoles().contains(Role.CLIENT_EMPLOYEE)) {
-                                return messageService.configureMessage(chatId, "Вы действительно хотите удалить профиль?", yesNoKeyboard);
+                                return messageService.configureMessage(chatId, "Вы действительно хотите удалить профиль?", KeyboardService.YES_NO_KEYBOARD);
                             }
 
-                            return messageService.configureMessage(chatId, "Вы является владельцем заведения X. Вместе с вашим профилем будет удалено и заведение. Продолжить удаление?", yesNoKeyboard);
+                            return messageService.configureMessage(chatId, "Вы является владельцем заведения X. Вместе с вашим профилем будет удалено и заведение. Продолжить удаление?", KeyboardService.YES_NO_KEYBOARD);
                         }
                     }
                 }
-
                 case CHANGE_PROFILE_SETTINGS_USER_NAME -> {
                     if (!StringUtils.hasText(messageText)) {
                         return messageService.configureMessage(chatId, "Вы ввели пустое значение! Повторите попытку.");
@@ -278,13 +276,13 @@ public class SettingsHandler implements MessageHandler {
                     if (!StringUtils.hasText(messageText) || employeeId == null) {
                         updateSubState(user, user.getSubState().getParentSubState());
 
-                        return messageService.configureMessage(chatId, "Вы ни кого не выбрали! Операция отменяется.", employeeKeyboard);
+                        return messageService.configureMessage(chatId, "Вы ни кого не выбрали! Операция отменяется.", KeyboardService.EMPLOYEE_KEYBOARD);
                     }
 
                     if (user.getId().equals(employeeId)) {
                         updateSubState(user, user.getSubState().getParentSubState());
 
-                        return messageService.configureMessage(chatId, "Себя нельзя удалить.", employeeKeyboard);
+                        return messageService.configureMessage(chatId, "Себя нельзя удалить.", KeyboardService.EMPLOYEE_KEYBOARD);
                     }
 
                     final Long finalEmployeeId = employeeId;
@@ -300,37 +298,46 @@ public class SettingsHandler implements MessageHandler {
 
         // отрисовка меню
         return switch (user.getSubState()) {
-            case VIEW_SETTINGS -> messageService.configureMessage(chatId, "Открываем все настройки...", allKeyboard);
+            case VIEW_SETTINGS -> messageService.configureMessage(chatId, "Открываем все настройки...", KeyboardService.SETTINGS_KEYBOARD);
 
-            case VIEW_GENERAL_SETTINGS -> messageService.configureMessage(chatId, fillGeneralInfo(tavern), generalKeyboard);
-            case VIEW_GENERAL_SETTINGS_TAVERN_NAME -> messageService.configureMessage(chatId, fillTavernInfo(tavern.getName()), tavernNameKeyboard);
-            case VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS -> messageService.configureMessage(chatId, fillContactInfo(tavern.getContacts()), tavernContactsKeyboard);
-            case VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS -> messageService.configureMessage(chatId, fillAddressInfo(tavern.getAddress()), tavernAddressKeyboard);
+            case VIEW_GENERAL_SETTINGS -> messageService.configureMessage(chatId, fillGeneralInfo(tavern), KeyboardService.GENERAL_KEYBOARD);
+            case VIEW_GENERAL_SETTINGS_TAVERN_NAME -> messageService.configureMessage(chatId, fillTavernInfo(tavern.getName()), KeyboardService.TAVERN_NAME_KEYBOARD);
+            case VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS -> messageService.configureMessage(chatId, fillContactInfo(tavern.getContacts()), KeyboardService.TAVERN_CONTACTS_KEYBOARD);
+            case VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS -> messageService.configureMessage(chatId, fillAddressInfo(tavern.getAddress()), KeyboardService.TAVERN_ADDRESS_KEYBOARD);
+            case VIEW_GENERAL_SETTINGS_CATEGORIES -> messageService.configureMessage(chatId, fillCategory(tavern.getCategory()), KeyboardService.CATEGORIES);
 
-            case VIEW_PROFILE_SETTINGS -> messageService.configureMessage(chatId, fillProfileInfo(user), profileKeyboard);
-            case VIEW_PROFILE_SETTINGS_USER_NAME -> messageService.configureMessage(chatId, fillUserInfo(user.getName()), profileNameKeyboard);
-            case VIEW_PROFILE_SETTINGS_USER_CONTACTS -> messageService.configureMessage(chatId, fillContactInfo(user.getContacts()), userContactsKeyboard);
+            case VIEW_PROFILE_SETTINGS -> messageService.configureMessage(chatId, fillProfileInfo(user), KeyboardService.PROFILE_KEYBOARD);
+            case VIEW_PROFILE_SETTINGS_USER_NAME -> messageService.configureMessage(chatId, fillUserInfo(user.getName()), KeyboardService.PROFILE_NAME_KEYBOARD);
+            case VIEW_PROFILE_SETTINGS_USER_CONTACTS -> messageService.configureMessage(chatId, fillContactInfo(user.getContacts()), KeyboardService.USER_CONTACTS_KEYBOARD);
 
-            case VIEW_EMPLOYEE_SETTINGS -> messageService.configureMessage(chatId, fillEmployeeInfo(tavern.getEmployees()), employeeKeyboard);
+            case VIEW_EMPLOYEE_SETTINGS -> messageService.configureMessage(chatId, fillEmployeeInfo(tavern.getEmployees()), KeyboardService.EMPLOYEE_KEYBOARD);
 
             default -> new SendMessage();
         };
     }
 
+    private String fillCategory(Category category) {
+        return Optional.ofNullable(category)
+                .map(Category::getDescription)
+                .map(description -> "Категория: <b>" + description + "</b>")
+                .orElse("Категория не выбрана.");
+    }
+
     private String fillEmployeeInfo(Set<UserEntity> employees) {
         return employees.stream()
-                .map(employee -> String.format("ID: %d, Имя: %s, %s", employee.getId(), employee.getName(), fillRoleInfo(employee.getRoles())))
+                .sorted(Comparator.comparing(UserEntity::getId))
+                .map(employee -> String.format("ID: <b>%d</b>, Имя: <b>%s</b>, %s", employee.getId(), employee.getName(), fillRoleInfo(employee.getRoles())))
                 .collect(Collectors.joining("\n"));
     }
 
-    private void updateSubState(UserEntity user, SubState viewProfileSettings) {
-        user.setSubState(viewProfileSettings);
+    private void updateSubState(UserEntity user, SubState subState) {
+        user.setSubState(subState);
         userService.save(user);
     }
 
-    private SendMessage configureMessage(UserEntity user, Long chatId, SubState addGeneralSettingsTavernContacts, String s) {
-        updateSubState(user, addGeneralSettingsTavernContacts);
-        return messageService.configureMessage(chatId, s, cancelKeyboard);
+    private SendMessage configureMessage(UserEntity user, Long chatId, SubState subState, String text) {
+        updateSubState(user, subState);
+        return messageService.configureMessage(chatId, text, KeyboardService.CANCEL_KEYBOARD);
     }
 
     private SendMessage configureDeleteContacts(UserEntity user,
@@ -360,15 +367,13 @@ public class SettingsHandler implements MessageHandler {
     }
 
     private SendMessage configureDeleteEmployees(UserEntity user,
-                                                 SubState subState,
                                                  Long chatId,
-                                                 Set<UserEntity> employees,
-                                                 ReplyKeyboardMarkup keyboard) {
+                                                 Set<UserEntity> employees) {
         if (CollectionUtils.isEmpty(employees)) {
-            return messageService.configureMessage(chatId, "Некого удалять.", keyboard);
+            return messageService.configureMessage(chatId, "Некого удалять.", KeyboardService.EMPLOYEE_KEYBOARD);
         }
 
-        updateSubState(user, subState);
+        updateSubState(user, SubState.DELETE_EMPLOYEE_SETTINGS);
 
         ReplyKeyboardMarkup employeesKeyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> rows = new ArrayList<>();
@@ -392,6 +397,7 @@ public class SettingsHandler implements MessageHandler {
 
     private String fillGeneralInfo(TavernEntity tavern) {
         return fillTavernInfo(tavern.getName()) + "\n\n" +
+                fillCategory(tavern.getCategory()) + "\n\n" +
                 fillContactInfo(tavern.getContacts()) + "\n\n" +
                 fillAddressInfo(tavern.getAddress());
     }
@@ -429,138 +435,5 @@ public class SettingsHandler implements MessageHandler {
         return "Контактная информация:\n" + contacts.stream()
                 .map(contact -> contact.getType().getDescription() + " - <b>" + contact.getValue() + "</b>")
                 .collect(Collectors.joining("\n"));
-    }
-
-    private void configureKeyboards() {
-        this.yesNoKeyboard.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.YES.getText()),
-                        new KeyboardButton(Button.NO.getText())
-                ))
-        ));
-        this.yesNoKeyboard.setResizeKeyboard(true);
-
-        this.cancelKeyboard.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.CANCEL.getText())
-                ))
-        ));
-        this.cancelKeyboard.setResizeKeyboard(true);
-
-        this.allKeyboard.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.GENERAL.getText()),
-                        new KeyboardButton(Button.PROFILE.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.EMPLOYEES.getText()),
-                        new KeyboardButton(Button.CATEGORIES.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.SCHEDULE.getText()),
-                        new KeyboardButton(Button.TABLES.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
-        ));
-        this.allKeyboard.setResizeKeyboard(true);
-
-        this.generalKeyboard.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.TAVERN_NAME.getText()),
-                        new KeyboardButton(Button.CONTACTS.getText()),
-                        new KeyboardButton(Button.TAVERN_ADDRESS.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
-        ));
-        this.generalKeyboard.setResizeKeyboard(true);
-
-        this.tavernNameKeyboard.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.CHANGE.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
-        ));
-        this.tavernNameKeyboard.setResizeKeyboard(true);
-
-        this.tavernAddressKeyboard.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.CHANGE.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
-        ));
-        this.tavernAddressKeyboard.setResizeKeyboard(true);
-
-        this.tavernContactsKeyboard.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.ADD.getText()),
-                        new KeyboardButton(Button.DELETE.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
-        ));
-        this.tavernContactsKeyboard.setResizeKeyboard(true);
-
-        this.profileKeyboard.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.USER_NAME.getText()),
-                        new KeyboardButton(Button.CONTACTS.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.DELETE_PROFILE.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
-        ));
-        this.profileKeyboard.setResizeKeyboard(true);
-
-        this.profileNameKeyboard.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.CHANGE.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
-        ));
-        this.profileNameKeyboard.setResizeKeyboard(true);
-
-        this.userContactsKeyboard.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.ADD.getText()),
-                        new KeyboardButton(Button.DELETE.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
-        ));
-        this.userContactsKeyboard.setResizeKeyboard(true);
-
-        this.employeeKeyboard.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.ADD.getText()),
-                        new KeyboardButton(Button.DELETE.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
-        ));
-        this.employeeKeyboard.setResizeKeyboard(true);
     }
 }
