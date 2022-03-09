@@ -8,6 +8,7 @@ import ru.privetdruk.restorder.model.enums.DayWeek;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.LocalTime;
 
 /**
  * График работы
@@ -39,14 +40,20 @@ public class ScheduleEntity {
     private DayWeek dayWeek;
 
     /**
-     * Время работы
+     * Начало работы
      */
-    @Column(name = "time_interval")
-    private Duration interval;
+    @Column(name = "start_period")
+    private LocalTime startPeriod;
+
+    /**
+     * Окончание работы
+     */
+    @Column(name = "end_period")
+    private LocalTime endPeriod;
 
     /**
      * Цена за вход
      */
     @Column(name = "price")
-    private BigDecimal price;
+    private Integer price;
 }

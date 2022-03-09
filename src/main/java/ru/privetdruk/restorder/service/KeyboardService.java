@@ -30,9 +30,13 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup PROFILE_NAME_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup USER_CONTACTS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup EMPLOYEE_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup CATEGORIES  = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup CATEGORIES_LIST_WITH_CANCEL  = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup CATEGORIES_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup CATEGORIES_LIST_WITH_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup SCHEDULE_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup DAY_WEEK_WITH_PERIOD_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup HOURS_WITH_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup MINUTES_WITH_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup FREE_WITH_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TABLE_KEYBOARD = new ReplyKeyboardMarkup();
 
     {
@@ -78,11 +82,15 @@ public class KeyboardService {
                         new KeyboardButton(Button.TABLES.getText())
                 )),
                 new KeyboardRow(List.of(
-                        new KeyboardButton(Button.MAIN_MENU.getText())
+                        new KeyboardButton(Button.RETURN_MAIN_MENU.getText())
                 ))
         ));
         SETTINGS_KEYBOARD.setResizeKeyboard(true);
 
+        KeyboardRow BACK_AND_MAIN_MENU_ROW = new KeyboardRow(List.of(
+                new KeyboardButton(Button.BACK.getText()),
+                new KeyboardButton(Button.RETURN_MAIN_MENU.getText())
+        ));
         GENERAL_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.TAVERN_NAME.getText()),
@@ -92,10 +100,7 @@ public class KeyboardService {
                         new KeyboardButton(Button.CONTACTS.getText()),
                         new KeyboardButton(Button.TAVERN_ADDRESS.getText())
                 )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
+                BACK_AND_MAIN_MENU_ROW
         ));
         GENERAL_KEYBOARD.setResizeKeyboard(true);
 
@@ -103,10 +108,7 @@ public class KeyboardService {
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.CHANGE.getText())
                 )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
+                BACK_AND_MAIN_MENU_ROW
         ));
         TAVERN_NAME_KEYBOARD.setResizeKeyboard(true);
 
@@ -114,10 +116,7 @@ public class KeyboardService {
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.CHANGE.getText())
                 )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
+                BACK_AND_MAIN_MENU_ROW
         ));
         TAVERN_ADDRESS_KEYBOARD.setResizeKeyboard(true);
 
@@ -126,10 +125,7 @@ public class KeyboardService {
                         new KeyboardButton(Button.ADD.getText()),
                         new KeyboardButton(Button.DELETE.getText())
                 )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
+                BACK_AND_MAIN_MENU_ROW
         ));
         TAVERN_CONTACTS_KEYBOARD.setResizeKeyboard(true);
 
@@ -141,10 +137,7 @@ public class KeyboardService {
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.DELETE_PROFILE.getText())
                 )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
+                BACK_AND_MAIN_MENU_ROW
         ));
         PROFILE_KEYBOARD.setResizeKeyboard(true);
 
@@ -152,10 +145,7 @@ public class KeyboardService {
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.CHANGE.getText())
                 )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
+                BACK_AND_MAIN_MENU_ROW
         ));
         PROFILE_NAME_KEYBOARD.setResizeKeyboard(true);
 
@@ -164,10 +154,7 @@ public class KeyboardService {
                         new KeyboardButton(Button.ADD.getText()),
                         new KeyboardButton(Button.DELETE.getText())
                 )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
+                BACK_AND_MAIN_MENU_ROW
         ));
         USER_CONTACTS_KEYBOARD.setResizeKeyboard(true);
 
@@ -176,33 +163,117 @@ public class KeyboardService {
                         new KeyboardButton(Button.ADD.getText()),
                         new KeyboardButton(Button.DELETE.getText())
                 )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
+                BACK_AND_MAIN_MENU_ROW
         ));
         EMPLOYEE_KEYBOARD.setResizeKeyboard(true);
 
-        CATEGORIES.setKeyboard(List.of(
+        CATEGORIES_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.CHANGE.getText())
                 )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BACK.getText()),
-                        new KeyboardButton(Button.MAIN_MENU.getText())
-                ))
+                BACK_AND_MAIN_MENU_ROW
         ));
-        CATEGORIES.setResizeKeyboard(true);
+        CATEGORIES_KEYBOARD.setResizeKeyboard(true);
 
+        int MAX_COLS_ON_ROW = 2;
         List<KeyboardRow> rows = new ArrayList<>();
-        for (Category category : Category.values()) {
-            rows.add(new KeyboardRow(List.of(new KeyboardButton(category.getDescription()))));
+
+        int countCols = 1;
+        KeyboardRow keyboardRow = new KeyboardRow();
+        Category[] categories = Category.values();
+        for (int index = 0; index < categories.length; index++, countCols++) {
+            keyboardRow.add(categories[index].getDescription());
+
+            if (countCols == MAX_COLS_ON_ROW || index == categories.length - 1) {
+                countCols = 0;
+                rows.add(keyboardRow);
+                keyboardRow = new KeyboardRow();
+            }
         }
 
-        rows.add(new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()))));
+        CATEGORIES_LIST_WITH_CANCEL_KEYBOARD.setKeyboard(rows);
+        CATEGORIES_LIST_WITH_CANCEL_KEYBOARD.setResizeKeyboard(true);
 
-        CATEGORIES_LIST_WITH_CANCEL.setKeyboard(rows);
-        CATEGORIES_LIST_WITH_CANCEL.setResizeKeyboard(true);
+        SCHEDULE_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.ADD.getText()),
+                        new KeyboardButton(Button.DELETE.getText())
+                )),
+                BACK_AND_MAIN_MENU_ROW
+        ));
+        SCHEDULE_KEYBOARD.setResizeKeyboard(true);
+
+        DAY_WEEK_WITH_PERIOD_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.MONDAY.getText()),
+                        new KeyboardButton(Button.TUESDAY.getText()),
+                        new KeyboardButton(Button.WEDNESDAY.getText())
+                )),
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.THURSDAY.getText()),
+                        new KeyboardButton(Button.FRIDAY.getText()),
+                        new KeyboardButton(Button.SATURDAY.getText())
+                )),
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.SUNDAY.getText()),
+                        new KeyboardButton(Button.WEEKDAYS.getText()),
+                        new KeyboardButton(Button.WEEKENDS.getText())
+                )),
+                BACK_AND_MAIN_MENU_ROW
+        ));
+        DAY_WEEK_WITH_PERIOD_KEYBOARD.setResizeKeyboard(true);
+
+        HOURS_WITH_CANCEL_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton("12"))),
+                new KeyboardRow(List.of(new KeyboardButton("13"))),
+                new KeyboardRow(List.of(new KeyboardButton("14"))),
+                new KeyboardRow(List.of(new KeyboardButton("15"))),
+                new KeyboardRow(List.of(new KeyboardButton("16"))),
+                new KeyboardRow(List.of(new KeyboardButton("17"))),
+                new KeyboardRow(List.of(new KeyboardButton("18"))),
+                new KeyboardRow(List.of(new KeyboardButton("19"))),
+                new KeyboardRow(List.of(new KeyboardButton("20"))),
+                new KeyboardRow(List.of(new KeyboardButton("21"))),
+                new KeyboardRow(List.of(new KeyboardButton("22"))),
+                new KeyboardRow(List.of(new KeyboardButton("23"))),
+                new KeyboardRow(List.of(new KeyboardButton("24"))),
+                new KeyboardRow(List.of(new KeyboardButton("1"))),
+                new KeyboardRow(List.of(new KeyboardButton("2"))),
+                new KeyboardRow(List.of(new KeyboardButton("3"))),
+                new KeyboardRow(List.of(new KeyboardButton("4"))),
+                new KeyboardRow(List.of(new KeyboardButton("5"))),
+                new KeyboardRow(List.of(new KeyboardButton("6"))),
+                new KeyboardRow(List.of(new KeyboardButton("7"))),
+                new KeyboardRow(List.of(new KeyboardButton("8"))),
+                new KeyboardRow(List.of(new KeyboardButton("9"))),
+                new KeyboardRow(List.of(new KeyboardButton("10"))),
+                new KeyboardRow(List.of(new KeyboardButton("11"))),
+                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText())))
+        ));
+        HOURS_WITH_CANCEL_KEYBOARD.setResizeKeyboard(true);
+
+        MINUTES_WITH_CANCEL_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton("0"))),
+                new KeyboardRow(List.of(new KeyboardButton("5"))),
+                new KeyboardRow(List.of(new KeyboardButton("10"))),
+                new KeyboardRow(List.of(new KeyboardButton("15"))),
+                new KeyboardRow(List.of(new KeyboardButton("20"))),
+                new KeyboardRow(List.of(new KeyboardButton("25"))),
+                new KeyboardRow(List.of(new KeyboardButton("30"))),
+                new KeyboardRow(List.of(new KeyboardButton("35"))),
+                new KeyboardRow(List.of(new KeyboardButton("40"))),
+                new KeyboardRow(List.of(new KeyboardButton("45"))),
+                new KeyboardRow(List.of(new KeyboardButton("50"))),
+                new KeyboardRow(List.of(new KeyboardButton("55"))),
+                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText())))
+        ));
+        MINUTES_WITH_CANCEL_KEYBOARD.setResizeKeyboard(true);
+
+        FREE_WITH_CANCEL_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton(Button.FREE.getText()))),
+                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText())))
+        ));
+        FREE_WITH_CANCEL_KEYBOARD.setResizeKeyboard(true);
     }
 
     public InlineKeyboardButton createInlineButton(Button button) {
@@ -223,5 +294,4 @@ public class KeyboardService {
                 .collect(Collectors.groupingBy(e -> counter.getAndIncrement() / maxButtonsPerRow))
                 .values());
     }
-
 }

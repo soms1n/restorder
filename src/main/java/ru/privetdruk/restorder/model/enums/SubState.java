@@ -400,6 +400,94 @@ public enum SubState {
         public SubState getParentSubState() {
             return VIEW_GENERAL_SETTINGS_CATEGORIES;
         }
+    },
+    VIEW_SCHEDULE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SETTINGS;
+        }
+    },
+    DELETE_SCHEDULE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SCHEDULE_SETTINGS;
+        }
+    },
+    ADD_DAY_WEEK_SCHEDULE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SCHEDULE_SETTINGS;
+        }
+    },
+    ADD_START_HOUR_SCHEDULE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SCHEDULE_SETTINGS;
+        }
+    },
+    ADD_START_MINUTE_SCHEDULE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SCHEDULE_SETTINGS;
+        }
+    },
+    ADD_END_HOUR_SCHEDULE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SCHEDULE_SETTINGS;
+        }
+    },
+    ADD_END_MINUTE_SCHEDULE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SCHEDULE_SETTINGS;
+        }
+    },
+    ADD_PRICE_SCHEDULE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SCHEDULE_SETTINGS;
+        }
     };
 
     private final String message;

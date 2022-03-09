@@ -14,4 +14,5 @@ public interface MessageText {
     String SELECT_ELEMENT_FOR_EDIT = "Выберите, что хотите отредактировать.";
     String YOUR_CLAIM_WAS_APPROVED = "Ваша заявка подтверждена.";
     String ADMIN_APPROVED_CLAIM = "Заявка подтверждена, спасибо.";
+    String INCORRECT_VALUE_TRY_AGAIN = "Выбрано некорректное значение. Повторите попытку.";
 }

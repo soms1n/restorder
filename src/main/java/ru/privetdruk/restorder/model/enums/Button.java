@@ -24,12 +24,12 @@ public enum Button {
     EMPLOYEES("\uD83D\uDD74 Сотрудники"),
     CATEGORIES("\uD83C\uDFA8 Категории"),
     SCHEDULE("\uD83D\uDCC5 Расписание"),
-    TABLES("\uD83E\uDE91 Управление столами"),
+    TABLES("\uD83E\uDE91 Столы"),
     BACK("⬅ Назад"),
     TAVERN_NAME("™ Название"),
     CONTACTS("\uD83D\uDCDE Телефоны"),
     TAVERN_ADDRESS("\uD83C\uDFE2 Адрес"),
-    MAIN_MENU("↩ Главное меню"),
+    RETURN_MAIN_MENU("↩ Главное меню"),
     CHANGE("〰 Изменить"),
     CANCEL("⭕ Отменить"),
     DELETE("❌ Удалить"),
@@ -40,7 +40,18 @@ public enum Button {
     NO("🟢 Нет"),
     REGISTRATION_ACCEPT("Подтвердить регистрацию"),
     SHARE_PHONE("\uD83D\uDCDE Поделиться номером"),
-    NOTHING(null);
+    NOTHING(null),
+    MONDAY("Понедельник"),
+    TUESDAY("Вторник"),
+    WEDNESDAY("Среда"),
+    THURSDAY("Четверг"),
+    FRIDAY("Пятница"),
+    SATURDAY("Суббота"),
+    SUNDAY("Воскресенье"),
+    SELECT_RANGE("\uD83D\uDCC5 Выбрать диапазон"),
+    WEEKDAYS("⚪ Будни"),
+    WEEKENDS("⚫ Выходные"),
+    FREE("Бесплатно");
 
     private final String text;
 
