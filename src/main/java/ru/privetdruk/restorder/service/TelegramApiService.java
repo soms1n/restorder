@@ -23,22 +23,10 @@ public class TelegramApiService {
     public static final String SET_WEBHOOK_PATH = "/setWebhook";
     public static final String SEND_MESSAGE_PATH = "/sendMessage";
 
-    private static String updateWebhookUri;
-
     private final WebClient webClient;
 
-    public TelegramApiService(WebClient webClient,
-                              @Value("${bot.client.token}") String token,
-                              @Value("${bot.client.web-hook-path}") String webHookPath) {
+    public TelegramApiService(WebClient webClient) {
         this.webClient = webClient;
-
-        updateWebhookUri = UriComponentsBuilder
-                .fromHttpUrl(TELEGRAM_API_URL)
-                .path(BOT_TOKEN_PATH)
-                .path(SET_WEBHOOK_PATH)
-                .queryParam("url", webHookPath)
-                .buildAndExpand(token)
-                .toUriString();
     }
 
     /**
@@ -46,7 +34,15 @@ public class TelegramApiService {
      *
      * @return Результат обновления
      */
-    public Mono<UpdateWebhookResponse> updateWebhook() {
+    public Mono<UpdateWebhookResponse> updateWebhook(String token, String webHookPath) {
+        String updateWebhookUri = UriComponentsBuilder
+                .fromHttpUrl(TELEGRAM_API_URL)
+                .path(BOT_TOKEN_PATH)
+                .path(SET_WEBHOOK_PATH)
+                .queryParam("url", webHookPath)
+                .buildAndExpand(token)
+                .toUriString();
+
         return webClient
                 .get()
                 .uri(updateWebhookUri)
