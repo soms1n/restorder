@@ -488,6 +488,50 @@ public enum SubState {
         public SubState getParentSubState() {
             return VIEW_SCHEDULE_SETTINGS;
         }
+    },
+    VIEW_TABLE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SETTINGS;
+        }
+    },
+    DELETE_TABLE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_TABLE_SETTINGS;
+        }
+    },
+    ADD_LABEL_TABLE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_TABLE_SETTINGS;
+        }
+    },
+    ADD_NUMBER_SEATS_TABLE_SETTINGS(null) {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_TABLE_SETTINGS;
+        }
     };
 
     private final String message;
