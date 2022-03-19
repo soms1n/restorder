@@ -13,7 +13,7 @@ import ru.privetdruk.restorder.service.UserBotService;
 
 import javax.annotation.PostConstruct;
 
-@Component
+
 @RequiredArgsConstructor
 @Slf4j
 public class UserBot extends TelegramWebhookBot {

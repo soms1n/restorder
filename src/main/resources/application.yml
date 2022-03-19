@@ -22,7 +22,7 @@ bot:
     username: test
     token: test
     web-hook-path: https://test.test
-  user:
-    username: test
-    token: test
-    web-hook-path: https://test.test
+#  user:
+#    username: test
+#    token: test
+#    web-hook-path: https://test.test
