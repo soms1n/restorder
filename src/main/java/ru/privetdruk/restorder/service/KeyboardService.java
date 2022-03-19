@@ -274,6 +274,15 @@ public class KeyboardService {
                 new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText())))
         ));
         FREE_WITH_CANCEL_KEYBOARD.setResizeKeyboard(true);
+
+        TABLE_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.ADD.getText()),
+                        new KeyboardButton(Button.DELETE.getText())
+                )),
+                BACK_AND_MAIN_MENU_ROW
+        ));
+        TABLE_KEYBOARD.setResizeKeyboard(true);
     }
 
     public InlineKeyboardButton createInlineButton(Button button) {

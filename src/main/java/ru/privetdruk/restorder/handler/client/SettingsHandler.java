@@ -37,8 +37,10 @@ public class SettingsHandler implements MessageHandler {
     private final TypeService typeService;
     private final ScheduleService scheduleService;
     private final ScheduleMapper scheduleMapper;
+    private final TableService tableService;
 
     private final Map<UserEntity, ScheduleDto> scheduleTemporary = new HashMap<>();
+    private final Map<UserEntity, TableEntity> tableTemporary = new HashMap<>();
 
     @Value("${bot.client.username}")
     private String botName;
@@ -51,7 +53,8 @@ public class SettingsHandler implements MessageHandler {
                            EventService eventService,
                            TypeService typeService,
                            ScheduleService scheduleService,
-                           ScheduleMapper scheduleMapper) {
+                           ScheduleMapper scheduleMapper,
+                           TableService tableService) {
         this.mainMenuHandler = mainMenuHandler;
         this.messageService = messageService;
         this.userService = userService;
@@ -61,6 +64,7 @@ public class SettingsHandler implements MessageHandler {
         this.typeService = typeService;
         this.scheduleService = scheduleService;
         this.scheduleMapper = scheduleMapper;
+        this.tableService = tableService;
     }
 
     @Override
@@ -137,6 +141,8 @@ public class SettingsHandler implements MessageHandler {
                     case VIEW_SCHEDULE_SETTINGS: {
                         return configureMessage(user, chatId, SubState.ADD_DAY_WEEK_SCHEDULE_SETTINGS, "Выберите день недели.", KeyboardService.DAY_WEEK_WITH_PERIOD_KEYBOARD);
                     }
+                    case VIEW_TABLE_SETTINGS:
+                        return configureMessage(user, chatId, SubState.ADD_LABEL_TABLE_SETTINGS, "Введите маркер стола:");
                 }
             }
             case DELETE -> {
@@ -150,6 +156,9 @@ public class SettingsHandler implements MessageHandler {
                     }
                     case VIEW_SCHEDULE_SETTINGS: {
                         return configureDeleteSchedule(user, chatId);
+                    }
+                    case VIEW_TABLE_SETTINGS: {
+                        return configureDeleteTables(user, chatId);
                     }
                 }
             }
@@ -170,6 +179,7 @@ public class SettingsHandler implements MessageHandler {
                         case PROFILE -> updateSubState(user, SubState.VIEW_PROFILE_SETTINGS);
                         case EMPLOYEES -> updateSubState(user, SubState.VIEW_EMPLOYEE_SETTINGS);
                         case SCHEDULE -> updateSubState(user, SubState.VIEW_SCHEDULE_SETTINGS);
+                        case TABLES -> updateSubState(user, SubState.VIEW_TABLE_SETTINGS);
                     }
                 }
                 case VIEW_GENERAL_SETTINGS -> {
@@ -313,17 +323,16 @@ public class SettingsHandler implements MessageHandler {
                     updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case DELETE_SCHEDULE_SETTINGS -> {
-                    Long scheduleId = readId(messageText);
+                    final Long scheduleId = readId(messageText);
                     if (!StringUtils.hasText(messageText) || scheduleId == null) {
                         updateSubState(user, user.getSubState().getParentSubState());
 
                         return messageService.configureMessage(chatId, "Вы ничего не выбрали! Операция отменяется.", KeyboardService.SCHEDULE_KEYBOARD);
                     }
 
-                    final Long finalScheduleId = scheduleId;
                     Set<ScheduleEntity> schedules = tavern.getSchedules();
 
-                    schedules.removeIf(schedule -> schedule.getId().equals(finalScheduleId));
+                    schedules.removeIf(schedule -> schedule.getId().equals(scheduleId));
 
                     scheduleService.save(schedules);
 
@@ -331,14 +340,13 @@ public class SettingsHandler implements MessageHandler {
                 }
                 case ADD_DAY_WEEK_SCHEDULE_SETTINGS -> {
                     scheduleTemporary.remove(user);
-                    ScheduleDto schedule = new ScheduleDto();
-                    scheduleTemporary.put(user, schedule);
 
                     DayWeek dayWeek = DayWeek.fromFullName(messageText);
-
                     if (dayWeek == null && (button != Button.WEEKDAYS && button != Button.WEEKENDS)) {
                         return messageService.configureMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.DAY_WEEK_WITH_PERIOD_KEYBOARD);
                     }
+
+                    ScheduleDto schedule = new ScheduleDto();
 
                     if (dayWeek != null) {
                         schedule.setDayWeek(dayWeek);
@@ -347,6 +355,8 @@ public class SettingsHandler implements MessageHandler {
                     } else {
                         schedule.setWeekends(true);
                     }
+
+                    scheduleTemporary.put(user, schedule);
 
                     return configureMessage(user, chatId, SubState.ADD_START_HOUR_SCHEDULE_SETTINGS, "Выберите час начала периода.", KeyboardService.HOURS_WITH_CANCEL_KEYBOARD);
                 }
@@ -435,6 +445,58 @@ public class SettingsHandler implements MessageHandler {
 
                     updateSubState(user, subState.getParentSubState());
                 }
+                case ADD_LABEL_TABLE_SETTINGS -> {
+                    tableTemporary.remove(user);
+
+                    if (!StringUtils.hasText(messageText)) {
+                        return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE, KeyboardService.DAY_WEEK_WITH_PERIOD_KEYBOARD);
+                    }
+
+                    TableEntity table = new TableEntity();
+                    table.setTavern(user.getTavern());
+                    table.setLabel(messageText);
+
+                    tableTemporary.put(user, table);
+
+                    return configureMessage(user, chatId, SubState.ADD_NUMBER_SEATS_TABLE_SETTINGS, "Введите кол-во мест:");
+                }
+                case ADD_NUMBER_SEATS_TABLE_SETTINGS -> {
+                    if (!StringUtils.hasText(messageText) || !typeService.isInteger(messageText) || Integer.parseInt(messageText) < 1) {
+                        return messageService.configureMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.MINUTES_WITH_CANCEL_KEYBOARD);
+                    }
+
+                    updateSubState(user, subState.getParentSubState());
+
+                    TableEntity table = tableTemporary.get(user);
+                    table.setNumberSeats(Integer.parseInt(messageText));
+
+                    final String label = table.getLabel();
+                    boolean isExists = tavern.getTables().stream()
+                            .anyMatch(tableEntity -> label.equalsIgnoreCase(tableEntity.getLabel()));
+
+                    if (isExists) {
+                        return messageService.configureMessage(chatId, "Стол с указанным маркером уже существует.\n\n" + fillTables(tavern.getTables()), KeyboardService.TABLE_KEYBOARD);
+                    }
+
+                    table = tableService.save(table);
+                    tavern.getTables().add(table);
+                }
+                case DELETE_TABLE_SETTINGS -> {
+                    final Long tableId = readId(messageText);
+                    if (!StringUtils.hasText(messageText) || tableId == null) {
+                        updateSubState(user, user.getSubState().getParentSubState());
+
+                        return messageService.configureMessage(chatId, "Вы ничего не выбрали! Операция отменяется.", KeyboardService.TABLE_KEYBOARD);
+                    }
+
+                    Set<TableEntity> tables = tavern.getTables();
+
+                    tables.removeIf(table -> table.getId().equals(tableId));
+
+                    tableService.save(tables);
+
+                    updateSubState(user, user.getSubState().getParentSubState());
+                }
             }
         }
 
@@ -456,6 +518,8 @@ public class SettingsHandler implements MessageHandler {
 
             case VIEW_SCHEDULE_SETTINGS -> messageService.configureMessage(chatId, fillSchedules(tavern.getSchedules()), KeyboardService.SCHEDULE_KEYBOARD);
 
+            case VIEW_TABLE_SETTINGS -> messageService.configureMessage(chatId, fillTables(tavern.getTables()), KeyboardService.TABLE_KEYBOARD);
+
 
             default -> new SendMessage();
         };
@@ -469,6 +533,18 @@ public class SettingsHandler implements MessageHandler {
             employeeId = null;
         }
         return employeeId;
+    }
+
+    private String fillTables(Set<TableEntity> tables) {
+        if (CollectionUtils.isEmpty(tables)) {
+            return "Столы не добавлены.";
+        }
+
+        return "Столы:" + System.lineSeparator() +
+                tables.stream()
+                        .sorted(Comparator.comparing(TableEntity::getLabel, Comparator.naturalOrder()))
+                        .map(table -> "<b>" + table.getLabel() + "</b>: мест - " + table.getNumberSeats())
+                        .collect(Collectors.joining(System.lineSeparator()));
     }
 
     private String fillSchedules(Set<ScheduleEntity> schedules) {
@@ -591,6 +667,29 @@ public class SettingsHandler implements MessageHandler {
         employeesKeyboard.setResizeKeyboard(true);
 
         return messageService.configureMessage(chatId, "Выберите сотрудника, которого хотите удалить.", employeesKeyboard);
+    }
+
+    private SendMessage configureDeleteTables(UserEntity user,
+                                              Long chatId) {
+        Set<TableEntity> tables = user.getTavern().getTables();
+        if (CollectionUtils.isEmpty(tables)) {
+            return messageService.configureMessage(chatId, "Нечего удалять.", KeyboardService.TABLE_KEYBOARD);
+        }
+
+        updateSubState(user, SubState.DELETE_TABLE_SETTINGS);
+
+        ReplyKeyboardMarkup tablesKeyboard = new ReplyKeyboardMarkup();
+        List<KeyboardRow> rows = new ArrayList<>();
+        tables.forEach(table ->
+                rows.add(new KeyboardRow(List.of(new KeyboardButton("ID: " + table.getId() + " " + table.getLabel()))))
+        );
+
+        rows.add(new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()))));
+
+        tablesKeyboard.setKeyboard(rows);
+        tablesKeyboard.setResizeKeyboard(true);
+
+        return messageService.configureMessage(chatId, "Выберите стол, который хотите удалить.", tablesKeyboard);
     }
 
     private SendMessage configureDeleteSchedule(UserEntity user,

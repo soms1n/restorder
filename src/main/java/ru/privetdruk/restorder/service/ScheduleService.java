@@ -55,7 +55,7 @@ public class ScheduleService {
             return true;
         }
 
-        return schedules.stream()
+        return foundSchedules.stream()
                 .noneMatch(
                         schedule -> (startPeriod.isAfter(schedule.getStartPeriod()) && startPeriod.isBefore(schedule.getEndPeriod()))
                                 || (endPeriod.isAfter(schedule.getStartPeriod()) && endPeriod.isBefore(schedule.getEndPeriod()))
