@@ -51,7 +51,10 @@ public enum Button {
     SELECT_RANGE("\uD83D\uDCC5 Выбрать диапазон"),
     WEEKDAYS("⚪ Будни"),
     WEEKENDS("⚫ Выходные"),
-    FREE("Бесплатно");
+    FREE("Бесплатно"),
+    RESERVE("🟢 Забронировать"),
+    REMOVE_RESERVE("\uD83D\uDD34 Убрать бронь"),
+    RESERVE_LIST("\uD83D\uDD56 Список бронирований");
 
     private final String text;
 

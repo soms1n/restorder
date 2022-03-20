@@ -6,10 +6,19 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.util.List;
 
 public enum Keyboard {
-    MAIN_MENU_VIEW_MENU(List.of(new KeyboardRow(List.of(
-            new KeyboardButton(Button.SETTINGS.getText()),
-            new KeyboardButton(Button.INFORMATION.getText()))
-    )));
+    MAIN_MENU_VIEW_MENU(List.of(
+            new KeyboardRow(List.of(
+                    new KeyboardButton(Button.RESERVE.getText()),
+                    new KeyboardButton(Button.REMOVE_RESERVE.getText())
+            )),
+            new KeyboardRow(List.of(
+                    new KeyboardButton(Button.RESERVE_LIST.getText())
+            )),
+            new KeyboardRow(List.of(
+                    new KeyboardButton(Button.SETTINGS.getText()),
+                    new KeyboardButton(Button.INFORMATION.getText())
+            ))
+    ));
 
     private final List<KeyboardRow> keyboardRows;
 
