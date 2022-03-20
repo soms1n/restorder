@@ -4,7 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Стол в заведение
@@ -36,6 +38,12 @@ public class TableEntity {
      */
     @Column(name = "reserved")
     private Boolean reserved = false;
+
+    /**
+     * Резервы
+     */
+    @OneToMany(mappedBy = "table", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ReserveEntity> reserves = new HashSet<>();
 
     /**
      * Метка

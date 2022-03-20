@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
+import ru.privetdruk.restorder.model.enums.SubState;
 import ru.privetdruk.restorder.repository.UserRepository;
 
 import java.util.List;
@@ -94,5 +95,15 @@ public class UserService {
     @Transactional
     public void delete(UserEntity user) {
         userRepository.delete(user);
+    }
+
+    /**
+     * Обновит подсостояние пользователя
+     * @param user Пользователь
+     * @param subState Подсостояние
+     */
+    public void updateSubState(UserEntity user, SubState subState) {
+        user.setSubState(subState);
+        save(user);
     }
 }

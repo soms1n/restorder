@@ -1,42 +1,33 @@
 package ru.privetdruk.restorder.handler.client;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.groupadministration.CreateChatInviteLink;
-import org.telegram.telegrambots.meta.api.methods.groupadministration.ExportChatInviteLink;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.ChatInviteLink;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Button;
-import ru.privetdruk.restorder.model.enums.Keyboard;
 import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.MessageService;
 import ru.privetdruk.restorder.service.TavernService;
-import ru.privetdruk.restorder.service.UserService;
-
-import java.util.List;
 
 @Component
 public class MainMenuHandler implements MessageHandler {
     private final MessageService messageService;
     private final TavernService tavernService;
-    private final ReplyKeyboardMarkup keyboard;
     private final SettingsHandler settingsHandler;
+    private final ReserveHandler reserveHandler;
 
-    public MainMenuHandler(MessageService messageService, TavernService tavernService, SettingsHandler settingsHandler) {
+    public MainMenuHandler(MessageService messageService,
+                           TavernService tavernService,
+                           @Lazy SettingsHandler settingsHandler,
+                           @Lazy ReserveHandler reserveHandler) {
         this.messageService = messageService;
         this.tavernService = tavernService;
         this.settingsHandler = settingsHandler;
-        this.keyboard = new ReplyKeyboardMarkup();
-        this.keyboard.setKeyboard(Keyboard.MAIN_MENU_VIEW_MENU.getKeyboardRows());
-        this.keyboard.setResizeKeyboard(true);
+        this.reserveHandler = reserveHandler;
     }
 
     @Override
@@ -60,10 +51,13 @@ public class MainMenuHandler implements MessageHandler {
                     sendMessage.setText("<b>Информация о вашем заведении:</b>");
                     sendMessage.enableHtml(true);
                 }
+                case RESERVE_LIST -> {
+                    return reserveHandler.handle(user, message, callback);
+                }
             }
         }
 
-        sendMessage.setReplyMarkup(keyboard);
+        sendMessage.setReplyMarkup(KeyboardService.MAIN_MENU);
 
         return sendMessage;
     }

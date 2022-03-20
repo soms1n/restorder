@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS reserve
 (
     id            BIGSERIAL NOT NULL
-        CONSTRAINT schedule_pk
+        CONSTRAINT reserve_pk
             PRIMARY KEY,
     user_id       BIGINT    NOT NULL
         CONSTRAINT reserve_user_fk
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS reserve
     number_people INT       NOT NULL,
     status        TEXT      NOT NULL,
     date          DATE      NOT NULL,
-    time          TIMESTAMP NOT NULL
+    time          TIME NOT NULL
 );
 
 COMMENT ON TABLE reserve IS 'Брони столов';

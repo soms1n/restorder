@@ -44,6 +44,7 @@ public class ReserveEntity {
      * Статус
      */
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private ReserveStatus status = ReserveStatus.ACTIVE;
 
     /**

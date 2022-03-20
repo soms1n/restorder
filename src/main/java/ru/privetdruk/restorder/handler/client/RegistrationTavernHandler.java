@@ -71,11 +71,12 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                     if (userEntity.getSubState() == SubState.WAITING_APPROVE_APPLICATION) {
                         telegramApiService.sendMessage(
-                                userTelegramId,
-                                MessageText.YOUR_CLAIM_WAS_APPROVED,
-                                botClientToken,
-                                new ReplyKeyboardMarkup(Keyboard.MAIN_MENU_VIEW_MENU.getKeyboardRows())
-                        ).subscribe();
+                                        userTelegramId,
+                                        MessageText.YOUR_CLAIM_WAS_APPROVED,
+                                        botClientToken,
+                                        KeyboardService.MAIN_MENU
+                                )
+                                .subscribe();
 
                         userEntity.setState(State.MAIN_MENU);
                         userEntity.setSubState(SubState.VIEW_MAIN_MENU);
@@ -85,7 +86,11 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                 sendMessage.setChatId(String.valueOf(chatId));
                 sendMessage.setText(MessageText.ADMIN_APPROVED_CLAIM);
-                sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
+                sendMessage.setReplyMarkup(
+                        ReplyKeyboardRemove.builder()
+                                .removeKeyboard(true)
+                                .build()
+                );
             }
 
             return sendMessage;
@@ -102,9 +107,11 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                 sendMessage = messageService.configureMessage(chatId, subState.getMessage());
 
-                sendMessage.setReplyMarkup(InlineKeyboardMarkup.builder()
-                        .keyboard(List.of(List.of(keyboardService.createInlineButton(Button.REGISTRATION))))
-                        .build());
+                sendMessage.setReplyMarkup(
+                        InlineKeyboardMarkup.builder()
+                                .keyboard(List.of(List.of(keyboardService.createInlineButton(Button.REGISTRATION))))
+                                .build()
+                );
             }
             case ENTER_FULL_NAME -> {
                 user.setName(messageText);
@@ -125,8 +132,11 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                 sendMessage.setReplyMarkup(
                         InlineKeyboardMarkup.builder()
-                                .keyboard(keyboardService.createButtonList(Arrays.stream(City.values())
-                                        .collect(toMap(City::getDescription, City::getName)), MAX_BUTTONS_PER_ROW))
+                                .keyboard(keyboardService.createButtonList(
+                                        Arrays.stream(City.values())
+                                                .collect(toMap(City::getDescription, City::getName)),
+                                        MAX_BUTTONS_PER_ROW
+                                ))
                                 .build()
                 );
             }
@@ -148,8 +158,11 @@ public class RegistrationTavernHandler implements MessageHandler {
                 } else {
                     sendMessage = messageService.configureMessage(chatId, subState.getMessage());
                     sendMessage.setReplyMarkup(InlineKeyboardMarkup.builder()
-                            .keyboard(keyboardService.createButtonList(Arrays.stream(City.values())
-                                    .collect(toMap(City::getDescription, City::getName)), MAX_BUTTONS_PER_ROW))
+                            .keyboard(keyboardService.createButtonList(
+                                    Arrays.stream(City.values())
+                                            .collect(toMap(City::getDescription, City::getName)),
+                                    MAX_BUTTONS_PER_ROW
+                            ))
                             .build());
                 }
             }
@@ -291,12 +304,16 @@ public class RegistrationTavernHandler implements MessageHandler {
                         .keyboard(List.of(
                                 new KeyboardRow(List.of(
                                         new KeyboardButton(Button.NAME.getText()),
-                                        new KeyboardButton(Button.TAVERN.getText()))),
+                                        new KeyboardButton(Button.TAVERN.getText())
+                                )),
                                 new KeyboardRow(List.of(
                                         new KeyboardButton(Button.ADDRESS.getText()),
-                                        new KeyboardButton(Button.PHONE_NUMBER.getText()))),
+                                        new KeyboardButton(Button.PHONE_NUMBER.getText())
+                                )),
                                 new KeyboardRow(List.of(
-                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))))
+                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())
+                                ))
+                        ))
                         .resizeKeyboard(true)
                         .build());
     }
@@ -307,10 +324,12 @@ public class RegistrationTavernHandler implements MessageHandler {
                         .keyboard(List.of(
                                 new KeyboardRow(List.of(
                                         new KeyboardButton(Button.EDIT_MENU.getText()),
-                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())))
+                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())
+                                ))
                         ))
                         .resizeKeyboard(true)
-                        .build());
+                        .build()
+        );
     }
 
     private void sendClaimToApprove(UserEntity user) {
@@ -399,8 +418,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                 "Имя: " + user.getName() + System.lineSeparator() +
                 "Заведение: " + user.getTavern().getName() + System.lineSeparator() +
                 "Адрес: " + user.getTavern().getAddress().getStreet() + System.lineSeparator() +
-                "Номер телефона: " + user.getContacts()
-                .stream()
+                "Номер телефона: " + user.getContacts().stream()
                 .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
                 .map(ContactEntity::getValue)
                 .findFirst()
@@ -408,14 +426,14 @@ public class RegistrationTavernHandler implements MessageHandler {
 
         SendMessage sendMessage = messageService.configureMessage(chatId, yourPersonalData);
 
-        sendMessage.setReplyMarkup(InlineKeyboardMarkup.builder()
-                .keyboard(List.of(
-                                List.of(
-                                        keyboardService.createInlineButton(Button.EDIT),
-                                        keyboardService.createInlineButton(Button.APPROVE)
-                                )
-                        )
-                ).build());
+        sendMessage.setReplyMarkup(
+                InlineKeyboardMarkup.builder()
+                        .keyboard(List.of(List.of(
+                                keyboardService.createInlineButton(Button.EDIT),
+                                keyboardService.createInlineButton(Button.APPROVE)
+                        )))
+                        .build()
+        );
 
         return sendMessage;
     }
