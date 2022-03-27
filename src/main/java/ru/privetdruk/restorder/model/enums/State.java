@@ -9,6 +9,7 @@ public enum State {
     MAIN_MENU(SubState.VIEW_MAIN_MENU),
     SETTINGS(SubState.VIEW_SETTINGS),
     EVENT(SubState.EVENT_INITIAL),
+    BOOKING(SubState.GREETING),
     RESERVE(null);
 
     private final SubState initialSubState;
