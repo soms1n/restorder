@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 @Service
 public class KeyboardService {
     public static final ReplyKeyboardRemove REMOVE_KEYBOARD = new ReplyKeyboardRemove(true);
+    public static final ReplyKeyboardMarkup MAIN_MENU = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup SHARE_PHONE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup YES_NO_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
@@ -38,12 +39,27 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup MINUTES_WITH_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup FREE_WITH_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TABLE_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup RESERVE_LIST_KEYBOARD = new ReplyKeyboardMarkup();
 
     {
         init();
     }
 
     private static void init() {
+        MAIN_MENU.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.RESERVE.getText())
+                )),
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.RESERVE_LIST.getText())
+                )),
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.SETTINGS.getText()),
+                        new KeyboardButton(Button.INFORMATION.getText())
+                ))
+        ));
+        MAIN_MENU.setResizeKeyboard(true);
+
         SHARE_PHONE_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
                         KeyboardButton.builder()
@@ -283,6 +299,12 @@ public class KeyboardService {
                 BACK_AND_MAIN_MENU_ROW
         ));
         TABLE_KEYBOARD.setResizeKeyboard(true);
+
+        RESERVE_LIST_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton(Button.REMOVE_RESERVE.getText()))),
+                new KeyboardRow(List.of(new KeyboardButton(Button.RETURN_MAIN_MENU.getText())))
+        ));
+        RESERVE_LIST_KEYBOARD.setResizeKeyboard(true);
     }
 
     public InlineKeyboardButton createInlineButton(Button button) {

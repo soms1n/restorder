@@ -538,6 +538,17 @@ public enum SubState {
         public State getState() {
             return State.BOOKING;
         }
+    },
+    VIEW_RESERVE_LIST(null) {
+        @Override
+        public State getState() {
+            return State.RESERVE;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MAIN_MENU;
+        }
     };
 
     private final String message;

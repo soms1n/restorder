@@ -99,4 +99,14 @@ public class UserService {
     public void delete(UserEntity user) {
         userRepository.delete(user);
     }
+
+    /**
+     * Обновит подсостояние пользователя
+     * @param user Пользователь
+     * @param subState Подсостояние
+     */
+    public void updateSubState(UserEntity user, SubState subState) {
+        user.setSubState(subState);
+        save(user);
+    }
 }

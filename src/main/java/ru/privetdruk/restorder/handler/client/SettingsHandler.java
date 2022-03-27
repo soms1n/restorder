@@ -1,5 +1,6 @@
 package ru.privetdruk.restorder.handler.client;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class SettingsHandler implements MessageHandler {
     private final MainMenuHandler mainMenuHandler;
     private final MessageService messageService;
@@ -44,28 +46,6 @@ public class SettingsHandler implements MessageHandler {
 
     @Value("${bot.client.username}")
     private String botName;
-
-    public SettingsHandler(@Lazy MainMenuHandler mainMenuHandler,
-                           MessageService messageService,
-                           UserService userService,
-                           TavernService tavernService,
-                           ContactService contactService,
-                           EventService eventService,
-                           TypeService typeService,
-                           ScheduleService scheduleService,
-                           ScheduleMapper scheduleMapper,
-                           TableService tableService) {
-        this.mainMenuHandler = mainMenuHandler;
-        this.messageService = messageService;
-        this.userService = userService;
-        this.tavernService = tavernService;
-        this.contactService = contactService;
-        this.eventService = eventService;
-        this.typeService = typeService;
-        this.scheduleService = scheduleService;
-        this.scheduleMapper = scheduleMapper;
-        this.tableService = tableService;
-    }
 
     @Override
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
@@ -92,7 +72,7 @@ public class SettingsHandler implements MessageHandler {
             }
             case RETURN_MAIN_MENU -> {
                 user.setState(State.MAIN_MENU);
-                updateSubState(user, SubState.VIEW_MAIN_MENU);
+                userService.updateSubState(user, SubState.VIEW_MAIN_MENU);
 
                 return mainMenuHandler.handle(user, message, callback);
             }
@@ -105,7 +85,7 @@ public class SettingsHandler implements MessageHandler {
                     case VIEW_PROFILE_SETTINGS_USER_NAME:
                         return configureMessage(user, chatId, SubState.CHANGE_PROFILE_SETTINGS_USER_NAME, "Введите новое имя:");
                     case VIEW_GENERAL_SETTINGS_CATEGORIES:
-                        updateSubState(user, SubState.CHANGE_GENERAL_SETTINGS_CATEGORIES);
+                        userService.updateSubState(user, SubState.CHANGE_GENERAL_SETTINGS_CATEGORIES);
 
                         return messageService.configureMessage(chatId, "Выберите новую категорию.", KeyboardService.CATEGORIES_LIST_WITH_CANCEL_KEYBOARD);
                 }
@@ -170,24 +150,24 @@ public class SettingsHandler implements MessageHandler {
                 case VIEW_MAIN_MENU -> {
                     if (button == Button.SETTINGS) {
                         user.setState(State.SETTINGS);
-                        updateSubState(user, SubState.VIEW_SETTINGS);
+                        userService.updateSubState(user, SubState.VIEW_SETTINGS);
                     }
                 }
                 case VIEW_SETTINGS -> {
                     switch (button) {
-                        case GENERAL -> updateSubState(user, SubState.VIEW_GENERAL_SETTINGS);
-                        case PROFILE -> updateSubState(user, SubState.VIEW_PROFILE_SETTINGS);
-                        case EMPLOYEES -> updateSubState(user, SubState.VIEW_EMPLOYEE_SETTINGS);
-                        case SCHEDULE -> updateSubState(user, SubState.VIEW_SCHEDULE_SETTINGS);
-                        case TABLES -> updateSubState(user, SubState.VIEW_TABLE_SETTINGS);
+                        case GENERAL -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS);
+                        case PROFILE -> userService.updateSubState(user, SubState.VIEW_PROFILE_SETTINGS);
+                        case EMPLOYEES -> userService.updateSubState(user, SubState.VIEW_EMPLOYEE_SETTINGS);
+                        case SCHEDULE -> userService.updateSubState(user, SubState.VIEW_SCHEDULE_SETTINGS);
+                        case TABLES -> userService.updateSubState(user, SubState.VIEW_TABLE_SETTINGS);
                     }
                 }
                 case VIEW_GENERAL_SETTINGS -> {
                     switch (button) {
-                        case TAVERN_NAME -> updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_NAME);
-                        case CONTACTS -> updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS);
-                        case TAVERN_ADDRESS -> updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS);
-                        case CATEGORIES -> updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_CATEGORIES);
+                        case TAVERN_NAME -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_NAME);
+                        case CONTACTS -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS);
+                        case TAVERN_ADDRESS -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS);
+                        case CATEGORIES -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_CATEGORIES);
                     }
                 }
                 case CHANGE_GENERAL_SETTINGS_TAVERN_NAME -> {
@@ -198,7 +178,7 @@ public class SettingsHandler implements MessageHandler {
                     tavern.setName(messageText);
                     tavernService.save(tavern);
 
-                    updateSubState(user, user.getSubState().getParentSubState());
+                    userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case ADD_GENERAL_SETTINGS_TAVERN_CONTACTS -> {
                     if (!StringUtils.hasText(messageText)) {
@@ -216,10 +196,10 @@ public class SettingsHandler implements MessageHandler {
                     tavern.addContact(contact);
                     contactService.save(contact);
 
-                    updateSubState(user, user.getSubState().getParentSubState());
+                    userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case DELETE_GENERAL_SETTINGS_TAVERN_CONTACTS -> {
-                    updateSubState(user, user.getSubState().getParentSubState());
+                    userService.updateSubState(user, user.getSubState().getParentSubState());
 
                     if (!StringUtils.hasText(messageText)) {
                         return messageService.configureMessage(chatId, "Вы не выбрали номер! Операция отменяется.");
@@ -236,7 +216,7 @@ public class SettingsHandler implements MessageHandler {
                     tavern.getAddress().setStreet(messageText);
                     tavernService.save(tavern);
 
-                    updateSubState(user, user.getSubState().getParentSubState());
+                    userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case CHANGE_GENERAL_SETTINGS_CATEGORIES -> {
                     Category category = Category.fromDescription(messageText);
@@ -247,14 +227,14 @@ public class SettingsHandler implements MessageHandler {
                     tavern.setCategory(category);
                     tavernService.save(tavern);
 
-                    updateSubState(user, user.getSubState().getParentSubState());
+                    userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case VIEW_PROFILE_SETTINGS -> {
                     switch (button) {
-                        case USER_NAME -> updateSubState(user, SubState.VIEW_PROFILE_SETTINGS_USER_NAME);
-                        case CONTACTS -> updateSubState(user, SubState.VIEW_PROFILE_SETTINGS_USER_CONTACTS);
+                        case USER_NAME -> userService.updateSubState(user, SubState.VIEW_PROFILE_SETTINGS_USER_NAME);
+                        case CONTACTS -> userService.updateSubState(user, SubState.VIEW_PROFILE_SETTINGS_USER_CONTACTS);
                         case DELETE_PROFILE -> {
-                            updateSubState(user, SubState.DELETE_PROFILE_SETTINGS);
+                            userService.updateSubState(user, SubState.DELETE_PROFILE_SETTINGS);
 
                             if (user.getRoles().contains(Role.CLIENT_EMPLOYEE)) {
                                 return messageService.configureMessage(chatId, "Вы действительно хотите удалить профиль?", KeyboardService.YES_NO_KEYBOARD);
@@ -270,7 +250,7 @@ public class SettingsHandler implements MessageHandler {
                     }
 
                     user.setName(messageText);
-                    updateSubState(user, user.getSubState().getParentSubState());
+                    userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case ADD_PROFILE_SETTINGS_USER_CONTACTS -> {
                     if (!StringUtils.hasText(messageText)) {
@@ -286,11 +266,11 @@ public class SettingsHandler implements MessageHandler {
                             .build();
 
                     user.addContact(contact);
-                    updateSubState(user, user.getSubState().getParentSubState());
+                    userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case DELETE_PROFILE_SETTINGS_USER_CONTACTS -> {
                     if (!StringUtils.hasText(messageText)) {
-                        updateSubState(user, user.getSubState().getParentSubState());
+                        userService.updateSubState(user, user.getSubState().getParentSubState());
 
                         return messageService.configureMessage(chatId, "Вы не выбрали номер! Операция отменяется.");
                     }
@@ -298,18 +278,18 @@ public class SettingsHandler implements MessageHandler {
                     user.getContacts()
                             .removeIf(contact -> contact.getValue().equals(messageText));
 
-                    updateSubState(user, user.getSubState().getParentSubState());
+                    userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case DELETE_EMPLOYEE_SETTINGS -> {
                     Long employeeId = readId(messageText);
                     if (!StringUtils.hasText(messageText) || employeeId == null) {
-                        updateSubState(user, user.getSubState().getParentSubState());
+                        userService.updateSubState(user, user.getSubState().getParentSubState());
 
                         return messageService.configureMessage(chatId, "Выни кого не выбрали! Операция отменяется.", KeyboardService.EMPLOYEE_KEYBOARD);
                     }
 
                     if (user.getId().equals(employeeId)) {
-                        updateSubState(user, user.getSubState().getParentSubState());
+                        userService.updateSubState(user, user.getSubState().getParentSubState());
 
                         return messageService.configureMessage(chatId, "Себя нельзя удалить.", KeyboardService.EMPLOYEE_KEYBOARD);
                     }
@@ -320,12 +300,12 @@ public class SettingsHandler implements MessageHandler {
 
                     tavernService.save(tavern);
 
-                    updateSubState(user, user.getSubState().getParentSubState());
+                    userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case DELETE_SCHEDULE_SETTINGS -> {
                     final Long scheduleId = readId(messageText);
                     if (!StringUtils.hasText(messageText) || scheduleId == null) {
-                        updateSubState(user, user.getSubState().getParentSubState());
+                        userService.updateSubState(user, user.getSubState().getParentSubState());
 
                         return messageService.configureMessage(chatId, "Вы ничего не выбрали! Операция отменяется.", KeyboardService.SCHEDULE_KEYBOARD);
                     }
@@ -336,7 +316,7 @@ public class SettingsHandler implements MessageHandler {
 
                     scheduleService.save(schedules);
 
-                    updateSubState(user, user.getSubState().getParentSubState());
+                    userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case ADD_DAY_WEEK_SCHEDULE_SETTINGS -> {
                     scheduleTemporary.remove(user);
@@ -443,7 +423,7 @@ public class SettingsHandler implements MessageHandler {
                     scheduleService.save(scheduleEntities);
                     tavern.getSchedules().addAll(scheduleEntities);
 
-                    updateSubState(user, subState.getParentSubState());
+                    userService.updateSubState(user, subState.getParentSubState());
                 }
                 case ADD_LABEL_TABLE_SETTINGS -> {
                     tableTemporary.remove(user);
@@ -465,7 +445,7 @@ public class SettingsHandler implements MessageHandler {
                         return messageService.configureMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.MINUTES_WITH_CANCEL_KEYBOARD);
                     }
 
-                    updateSubState(user, subState.getParentSubState());
+                    userService.updateSubState(user, subState.getParentSubState());
 
                     TableEntity table = tableTemporary.get(user);
                     table.setNumberSeats(Integer.parseInt(messageText));
@@ -484,7 +464,7 @@ public class SettingsHandler implements MessageHandler {
                 case DELETE_TABLE_SETTINGS -> {
                     final Long tableId = readId(messageText);
                     if (!StringUtils.hasText(messageText) || tableId == null) {
-                        updateSubState(user, user.getSubState().getParentSubState());
+                        userService.updateSubState(user, user.getSubState().getParentSubState());
 
                         return messageService.configureMessage(chatId, "Вы ничего не выбрали! Операция отменяется.", KeyboardService.TABLE_KEYBOARD);
                     }
@@ -495,7 +475,7 @@ public class SettingsHandler implements MessageHandler {
 
                     tableService.save(tables);
 
-                    updateSubState(user, user.getSubState().getParentSubState());
+                    userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
             }
         }
@@ -604,13 +584,8 @@ public class SettingsHandler implements MessageHandler {
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 
-    private void updateSubState(UserEntity user, SubState subState) {
-        user.setSubState(subState);
-        userService.save(user);
-    }
-
     private SendMessage configureMessage(UserEntity user, Long chatId, SubState subState, String text) {
-        updateSubState(user, subState);
+        userService.updateSubState(user, subState);
         return messageService.configureMessage(chatId, text, KeyboardService.CANCEL_KEYBOARD);
     }
 
@@ -629,7 +604,7 @@ public class SettingsHandler implements MessageHandler {
             return messageService.configureMessage(chatId, "Нечего удалять.", keyboard);
         }
 
-        updateSubState(user, subState);
+        userService.updateSubState(user, subState);
 
         ReplyKeyboardMarkup contactKeyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> rows = new ArrayList<>();
@@ -653,7 +628,7 @@ public class SettingsHandler implements MessageHandler {
             return messageService.configureMessage(chatId, "Некого удалять.", KeyboardService.EMPLOYEE_KEYBOARD);
         }
 
-        updateSubState(user, SubState.DELETE_EMPLOYEE_SETTINGS);
+        userService.updateSubState(user, SubState.DELETE_EMPLOYEE_SETTINGS);
 
         ReplyKeyboardMarkup employeesKeyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> rows = new ArrayList<>();
@@ -676,7 +651,7 @@ public class SettingsHandler implements MessageHandler {
             return messageService.configureMessage(chatId, "Нечего удалять.", KeyboardService.TABLE_KEYBOARD);
         }
 
-        updateSubState(user, SubState.DELETE_TABLE_SETTINGS);
+        userService.updateSubState(user, SubState.DELETE_TABLE_SETTINGS);
 
         ReplyKeyboardMarkup tablesKeyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> rows = new ArrayList<>();
@@ -699,7 +674,7 @@ public class SettingsHandler implements MessageHandler {
             return messageService.configureMessage(chatId, "Нечего удалять.", KeyboardService.SCHEDULE_KEYBOARD);
         }
 
-        updateSubState(user, SubState.DELETE_SCHEDULE_SETTINGS);
+        userService.updateSubState(user, SubState.DELETE_SCHEDULE_SETTINGS);
 
         ReplyKeyboardMarkup employeesKeyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> rows = new ArrayList<>();
