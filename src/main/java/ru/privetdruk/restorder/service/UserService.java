@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
+import ru.privetdruk.restorder.model.enums.SubState;
 import ru.privetdruk.restorder.repository.UserRepository;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class UserService {
 
     /**
      * Поиск пользователя
+     *
      * @param telegramId Идентификатор в телеграм
      * @return Найденного пользователя
      */
@@ -33,6 +35,7 @@ public class UserService {
 
     /**
      * Сохранить пользователя
+     *
      * @param user Пользователь
      */
     @Transactional
@@ -44,16 +47,12 @@ public class UserService {
      * Создать пользователя
      *
      * @param telegramId Идентификатор в телеграм
-     * @param role Роль
+     * @param role       Роль
      * @return Созданного пользователя
      */
     @Transactional
-    public UserEntity create(Long telegramId, Role role) {
-        UserEntity user = UserEntity.builder()
-                .telegramId(telegramId)
-                .state(State.REGISTRATION_TAVERN)
-                .subState(State.REGISTRATION_TAVERN.getInitialSubState())
-                .build();
+    public UserEntity create(Long telegramId, State state, SubState subState, Role role) {
+        UserEntity user = createUserWithState(telegramId, state, subState);
 
         user.addRole(role);
 
@@ -67,18 +66,23 @@ public class UserService {
      * @return Созданного пользователя
      */
     @Transactional
-    public UserEntity create(Long telegramId) {
-        UserEntity user = UserEntity.builder()
-                .telegramId(telegramId)
-                .state(State.REGISTRATION_TAVERN)
-                .subState(State.REGISTRATION_TAVERN.getInitialSubState())
-                .build();
+    public UserEntity create(Long telegramId, State state, SubState subState) {
+        UserEntity user = createUserWithState(telegramId, state, subState);
 
         return userRepository.save(user);
     }
 
+    private UserEntity createUserWithState(Long telegramId, State state, SubState subState) {
+        return UserEntity.builder()
+                .telegramId(telegramId)
+                .state(state)
+                .subState(subState)
+                .build();
+    }
+
     /**
      * Поиск пользователей по ролям
+     *
      * @param role Роли
      * @return Список найденных пользователей
      */

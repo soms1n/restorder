@@ -532,6 +532,12 @@ public enum SubState {
         public SubState getParentSubState() {
             return VIEW_TABLE_SETTINGS;
         }
+    },
+    GREETING(null) {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
     };
 
     private final String message;
