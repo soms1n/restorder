@@ -7,7 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import ru.privetdruk.restorder.handler.client.BookingHandler;
+import ru.privetdruk.restorder.handler.user.BookingHandler;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
@@ -22,11 +22,22 @@ public class UserBotService {
     public SendMessage handleUpdate(Update update) {
         Message message = update.getMessage();
         CallbackQuery callback = update.getCallbackQuery();
-        log.info("user: " + message.getFrom());
-        Long telegramUserId = message.getFrom().getId();
+
+        Long telegramUserId;
+
+        if (message != null) {
+            telegramUserId = message.getFrom().getId();
+
+            log.info("user: " + message.getFrom());
+        } else {
+            message = callback.getMessage();
+            telegramUserId = message.getChat().getId();
+        }
+
+        final Long finalTelegramUserId = telegramUserId;
 
         UserEntity user = userService.findByTelegramId(telegramUserId)
-                .orElseGet(() -> userService.create(telegramUserId,
+                .orElseGet(() -> userService.create(finalTelegramUserId,
                         State.BOOKING,
                         State.BOOKING.getInitialSubState(),
                         Role.USER));
