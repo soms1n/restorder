@@ -53,7 +53,9 @@ public class ClientBotService {
         final Long finalTelegramUserId = telegramUserId;
 
         UserEntity user = userService.findByTelegramId(telegramUserId)
-                .orElseGet(() -> userService.create(finalTelegramUserId));
+                .orElseGet(() -> userService.create(finalTelegramUserId,
+                        State.REGISTRATION_TAVERN,
+                        State.REGISTRATION_TAVERN.getInitialSubState()));
 
         State state = prepareState(message, user);
 

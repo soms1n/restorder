@@ -533,6 +533,23 @@ public enum SubState {
             return VIEW_TABLE_SETTINGS;
         }
     },
+    GREETING(null) {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
+
+        @Override
+        public SubState getNextSubState() {
+            return SubState.CITY_SELECT;
+        }
+    },
+    CITY_SELECT(MessageText.CHOICE_CITY) {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
+    },
     VIEW_RESERVE_LIST(null) {
         @Override
         public State getState() {
