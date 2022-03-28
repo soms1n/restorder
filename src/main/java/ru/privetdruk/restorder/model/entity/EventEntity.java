@@ -4,12 +4,11 @@ import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import ru.privetdruk.restorder.model.enums.EventType;
 
 import javax.persistence.*;
-import javax.persistence.Entity;
-import javax.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -85,7 +84,7 @@ public class EventEntity {
     @PrePersist
     protected void prePersistUuid() {
         if (this.uuid == null) {
-            this.uuid =  UUID.randomUUID();
+            this.uuid = UUID.randomUUID();
         }
     }
 }

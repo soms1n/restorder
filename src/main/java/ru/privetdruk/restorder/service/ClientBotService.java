@@ -10,7 +10,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.entity.UserEntity;
-import ru.privetdruk.restorder.model.enums.*;
+import ru.privetdruk.restorder.model.enums.Command;
+import ru.privetdruk.restorder.model.enums.State;
 
 import java.util.Map;
 

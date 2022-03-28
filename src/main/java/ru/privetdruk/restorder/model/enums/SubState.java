@@ -543,6 +543,28 @@ public enum SubState {
         public SubState getParentSubState() {
             return VIEW_MAIN_MENU;
         }
+    },
+    DELETE_RESERVE_CHOICE_DATE(null) {
+        @Override
+        public State getState() {
+            return State.RESERVE;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_RESERVE_LIST;
+        }
+    },
+    DELETE_RESERVE_CHOICE_TABLE(null) {
+        @Override
+        public State getState() {
+            return State.RESERVE;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_RESERVE_LIST;
+        }
     };
 
     private final String message;

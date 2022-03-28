@@ -19,6 +19,7 @@ public class UserService {
 
     /**
      * Поиск пользователя
+     *
      * @param telegramId Идентификатор в телеграм
      * @return Найденного пользователя
      */
@@ -34,6 +35,7 @@ public class UserService {
 
     /**
      * Сохранить пользователя
+     *
      * @param user Пользователь
      */
     @Transactional
@@ -45,7 +47,7 @@ public class UserService {
      * Создать пользователя
      *
      * @param telegramId Идентификатор в телеграм
-     * @param role Роль
+     * @param role       Роль
      * @return Созданного пользователя
      */
     @Transactional
@@ -80,6 +82,7 @@ public class UserService {
 
     /**
      * Поиск пользователей по ролям
+     *
      * @param role Роли
      * @return Список найденных пользователей
      */
@@ -99,7 +102,8 @@ public class UserService {
 
     /**
      * Обновит подсостояние пользователя
-     * @param user Пользователь
+     *
+     * @param user     Пользователь
      * @param subState Подсостояние
      */
     public void updateSubState(UserEntity user, SubState subState) {

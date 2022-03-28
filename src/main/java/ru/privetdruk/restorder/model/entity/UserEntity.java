@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import ru.privetdruk.restorder.model.enums.ContractType;
 import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
 import ru.privetdruk.restorder.model.enums.SubState;
@@ -13,6 +14,7 @@ import ru.privetdruk.restorder.model.enums.SubState;
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -102,6 +104,12 @@ public class UserEntity {
 
     public void addContact(ContactEntity contact) {
         getContacts().add(contact);
+    }
+
+    public Optional<ContactEntity> findContact(ContractType contractType) {
+        return contacts.stream()
+                .filter(contact -> contact.getType() == contractType)
+                .findFirst();
     }
 
     @Override

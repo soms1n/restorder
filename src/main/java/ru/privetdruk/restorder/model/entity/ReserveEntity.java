@@ -7,6 +7,7 @@ import ru.privetdruk.restorder.model.enums.ReserveStatus;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Objects;
 
 /**
  * Резервы столов
@@ -58,4 +59,17 @@ public class ReserveEntity {
      */
     @Column(name = "time")
     private LocalTime time;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ReserveEntity that = (ReserveEntity) o;
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

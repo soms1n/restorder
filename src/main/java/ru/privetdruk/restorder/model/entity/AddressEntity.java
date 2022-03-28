@@ -2,7 +2,6 @@ package ru.privetdruk.restorder.model.entity;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import ru.privetdruk.restorder.model.enums.City;
 

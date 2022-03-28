@@ -3,9 +3,7 @@ package ru.privetdruk.restorder.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -53,9 +51,9 @@ public class TelegramApiService {
     /**
      * Отправить сообщение
      *
-     * @param chatId Идентификатор телеграм
-     * @param text   Сообщение
-     * @param token  Токен бота
+     * @param chatId        Идентификатор телеграм
+     * @param text          Сообщение
+     * @param token         Токен бота
      * @param replyKeyboard Keyboard
      * @return Результат отправки
      */

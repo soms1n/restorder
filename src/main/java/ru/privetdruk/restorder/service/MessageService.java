@@ -18,6 +18,7 @@ public class MessageService {
     public SendMessage configureMessage(Long chatId, String message) {
         return new SendMessage(chatId.toString(), message);
     }
+
     /**
      * Сконфигурировать ответное сообщение
      *
@@ -44,5 +45,23 @@ public class MessageService {
         sendMessage.setReplyMarkup(keyboard);
         sendMessage.enableHtml(true);
         return sendMessage;
+    }
+
+    /**
+     * Распарсить идентификатор
+     *
+     * @param messageText Текст сообщения
+     * @return Идентификатор
+     */
+    public Long parseId(String messageText) {
+        Long id;
+
+        try {
+            id = Long.valueOf(messageText.split(" ")[1]);
+        } catch (Throwable t) {
+            id = null;
+        }
+
+        return id;
     }
 }

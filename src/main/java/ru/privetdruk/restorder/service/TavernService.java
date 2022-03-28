@@ -70,6 +70,7 @@ public class TavernService {
 
     /**
      * Найди заведение
+     *
      * @param id Идентификатор заведения
      * @return Найденное заведение
      */

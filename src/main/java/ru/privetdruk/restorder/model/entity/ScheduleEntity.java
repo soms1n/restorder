@@ -6,7 +6,6 @@ import org.hibernate.annotations.TypeDef;
 import ru.privetdruk.restorder.model.enums.DayWeek;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalTime;
 

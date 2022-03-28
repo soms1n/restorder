@@ -3,7 +3,6 @@ package ru.privetdruk.restorder.handler.client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -121,8 +120,9 @@ public class SettingsHandler implements MessageHandler {
                     case VIEW_SCHEDULE_SETTINGS: {
                         return configureMessage(user, chatId, SubState.ADD_DAY_WEEK_SCHEDULE_SETTINGS, "Выберите день недели.", KeyboardService.DAY_WEEK_WITH_PERIOD_KEYBOARD);
                     }
-                    case VIEW_TABLE_SETTINGS:
+                    case VIEW_TABLE_SETTINGS: {
                         return configureMessage(user, chatId, SubState.ADD_LABEL_TABLE_SETTINGS, "Введите маркер стола:");
+                    }
                 }
             }
             case DELETE -> {
@@ -281,7 +281,7 @@ public class SettingsHandler implements MessageHandler {
                     userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case DELETE_EMPLOYEE_SETTINGS -> {
-                    Long employeeId = readId(messageText);
+                    Long employeeId = messageService.parseId(messageText);
                     if (!StringUtils.hasText(messageText) || employeeId == null) {
                         userService.updateSubState(user, user.getSubState().getParentSubState());
 
@@ -303,7 +303,7 @@ public class SettingsHandler implements MessageHandler {
                     userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case DELETE_SCHEDULE_SETTINGS -> {
-                    final Long scheduleId = readId(messageText);
+                    final Long scheduleId = messageService.parseId(messageText);
                     if (!StringUtils.hasText(messageText) || scheduleId == null) {
                         userService.updateSubState(user, user.getSubState().getParentSubState());
 
@@ -462,7 +462,7 @@ public class SettingsHandler implements MessageHandler {
                     tavern.getTables().add(table);
                 }
                 case DELETE_TABLE_SETTINGS -> {
-                    final Long tableId = readId(messageText);
+                    final Long tableId = messageService.parseId(messageText);
                     if (!StringUtils.hasText(messageText) || tableId == null) {
                         userService.updateSubState(user, user.getSubState().getParentSubState());
 
@@ -503,16 +503,6 @@ public class SettingsHandler implements MessageHandler {
 
             default -> new SendMessage();
         };
-    }
-
-    private Long readId(String messageText) {
-        Long employeeId;
-        try {
-            employeeId = Long.valueOf(messageText.split(" ")[1]);
-        } catch (Throwable t) {
-            employeeId = null;
-        }
-        return employeeId;
     }
 
     private String fillTables(Set<TableEntity> tables) {

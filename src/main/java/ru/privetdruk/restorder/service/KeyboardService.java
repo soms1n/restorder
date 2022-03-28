@@ -301,7 +301,7 @@ public class KeyboardService {
         TABLE_KEYBOARD.setResizeKeyboard(true);
 
         RESERVE_LIST_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.REMOVE_RESERVE.getText()))),
+                new KeyboardRow(List.of(new KeyboardButton(Button.DELETE_RESERVE.getText()))),
                 new KeyboardRow(List.of(new KeyboardButton(Button.RETURN_MAIN_MENU.getText())))
         ));
         RESERVE_LIST_KEYBOARD.setResizeKeyboard(true);
