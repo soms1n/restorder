@@ -51,7 +51,7 @@ public class MainMenuHandler implements MessageHandler {
                     sendMessage.setText("<b>Информация о вашем заведении:</b>");
                     sendMessage.enableHtml(true);
                 }
-                case RESERVE_LIST -> {
+                case RESERVE, RESERVE_LIST -> {
                     return reserveHandler.handle(user, message, callback);
                 }
             }

@@ -40,6 +40,7 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup FREE_WITH_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TABLE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup RESERVE_LIST_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup TODAY_TOMORROW_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
 
     {
         init();
@@ -78,11 +79,9 @@ public class KeyboardService {
         ));
         YES_NO_KEYBOARD.setResizeKeyboard(true);
 
-        CANCEL_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.CANCEL.getText())
-                ))
-        ));
+        KeyboardRow CANCEL_ROW = new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText())));
+
+        CANCEL_KEYBOARD.setKeyboard(List.of(CANCEL_ROW));
         CANCEL_KEYBOARD.setResizeKeyboard(true);
 
         SETTINGS_KEYBOARD.setKeyboard(List.of(
@@ -264,7 +263,7 @@ public class KeyboardService {
                 new KeyboardRow(List.of(new KeyboardButton("9"))),
                 new KeyboardRow(List.of(new KeyboardButton("10"))),
                 new KeyboardRow(List.of(new KeyboardButton("11"))),
-                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText())))
+                CANCEL_ROW
         ));
         HOURS_WITH_CANCEL_KEYBOARD.setResizeKeyboard(true);
 
@@ -281,13 +280,13 @@ public class KeyboardService {
                 new KeyboardRow(List.of(new KeyboardButton("45"))),
                 new KeyboardRow(List.of(new KeyboardButton("50"))),
                 new KeyboardRow(List.of(new KeyboardButton("55"))),
-                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText())))
+                CANCEL_ROW
         ));
         MINUTES_WITH_CANCEL_KEYBOARD.setResizeKeyboard(true);
 
         FREE_WITH_CANCEL_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(new KeyboardButton(Button.FREE.getText()))),
-                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText())))
+                CANCEL_ROW
         ));
         FREE_WITH_CANCEL_KEYBOARD.setResizeKeyboard(true);
 
@@ -305,6 +304,12 @@ public class KeyboardService {
                 new KeyboardRow(List.of(new KeyboardButton(Button.RETURN_MAIN_MENU.getText())))
         ));
         RESERVE_LIST_KEYBOARD.setResizeKeyboard(true);
+
+        TODAY_TOMORROW_CANCEL_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton(Button.TOMORROW.getText()), new KeyboardButton(Button.TODAY.getText()))),
+                CANCEL_ROW
+        ));
+        TODAY_TOMORROW_CANCEL_KEYBOARD.setResizeKeyboard(true);
     }
 
     public InlineKeyboardButton createInlineButton(Button button) {

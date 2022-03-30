@@ -55,7 +55,9 @@ public enum Button {
     RESERVE("✏  Забронировать"),
     DELETE_RESERVE("\uD83D\uDD34 Убрать бронь"),
     RESERVE_LIST("📋 Список бронирований"),
-    PICK_ALL("➿ Выбрать все");
+    PICK_ALL("➿ Выбрать все"),
+    TODAY("\uD83D\uDDD3 Сегодня"),
+    TOMORROW("\uD83D\uDDD2 Завтра");
 
     private final String text;
 

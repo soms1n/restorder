@@ -60,6 +60,24 @@ public class ReserveEntity {
     @Column(name = "time")
     private LocalTime time;
 
+    /**
+     * Забронировано в ручном режиме (оператором)
+     */
+    @Column(name = "manual_mode")
+    private Boolean manualMode = false;
+
+    /**
+     * Имя (для ручной брони)
+     */
+    @Column(name = "name")
+    private String name;
+
+    /**
+     * Номер телефона (для ручной брони)
+     */
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -582,6 +582,28 @@ public enum SubState {
         public SubState getParentSubState() {
             return VIEW_RESERVE_LIST;
         }
+    },
+    ADD_RESERVE_CHOICE_DATE(null) {
+        @Override
+        public State getState() {
+            return State.RESERVE;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MAIN_MENU;
+        }
+    },
+    ADD_RESERVE_CHOICE_TABLE(null) {
+        @Override
+        public State getState() {
+            return State.RESERVE;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MAIN_MENU;
+        }
     };
 
     private final String message;
