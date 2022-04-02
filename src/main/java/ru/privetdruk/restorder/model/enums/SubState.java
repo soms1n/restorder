@@ -594,7 +594,62 @@ public enum SubState {
             return VIEW_MAIN_MENU;
         }
     },
+    ADD_RESERVE_CHOICE_TIME(null) {
+        @Override
+        public State getState() {
+            return State.RESERVE;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MAIN_MENU;
+        }
+    },
+    ADD_RESERVE_CHOICE_PERSONS(null) {
+        @Override
+        public State getState() {
+            return State.RESERVE;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MAIN_MENU;
+        }
+    },
     ADD_RESERVE_CHOICE_TABLE(null) {
+        @Override
+        public State getState() {
+            return State.RESERVE;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MAIN_MENU;
+        }
+    },
+    ADD_RESERVE_CHOICE_NAME(null) {
+        @Override
+        public State getState() {
+            return State.RESERVE;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MAIN_MENU;
+        }
+    },
+    ADD_RESERVE_CHOICE_PHONE(null) {
+        @Override
+        public State getState() {
+            return State.RESERVE;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MAIN_MENU;
+        }
+    },
+    ADD_RESERVE_INFO(null) {
         @Override
         public State getState() {
             return State.RESERVE;

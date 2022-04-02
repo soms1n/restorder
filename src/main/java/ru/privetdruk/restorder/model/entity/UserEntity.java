@@ -6,11 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import ru.privetdruk.restorder.model.enums.City;
-import ru.privetdruk.restorder.model.enums.ContractType;
-import ru.privetdruk.restorder.model.enums.Role;
-import ru.privetdruk.restorder.model.enums.State;
-import ru.privetdruk.restorder.model.enums.SubState;
+import ru.privetdruk.restorder.model.enums.*;
 
 import javax.persistence.*;
 import java.util.HashSet;

@@ -3,7 +3,6 @@ package ru.privetdruk.restorder.handler.client;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -18,6 +17,7 @@ import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.MessageService;
 import ru.privetdruk.restorder.service.ReserveService;
 import ru.privetdruk.restorder.service.UserService;
+import ru.privetdruk.restorder.service.util.StringService;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -32,6 +32,7 @@ public class ReserveHandler implements MessageHandler {
     private final MessageService messageService;
     private final MainMenuHandler mainMenuHandler;
     private final ReserveService reserveService;
+    private final StringService stringService;
 
     private final Map<UserEntity, LocalDate> deleteReservesTemporary = new HashMap<>();
     private final Map<UserEntity, ReserveEntity> addReservesTemporary = new HashMap<>();
@@ -49,7 +50,7 @@ public class ReserveHandler implements MessageHandler {
         switch (button) {
             case BACK, CANCEL, NO -> {
                 switch (subState) {
-                    case ADD_RESERVE_CHOICE_DATE, ADD_RESERVE_CHOICE_TABLE -> {
+                    case ADD_RESERVE_CHOICE_DATE, ADD_RESERVE_CHOICE_TIME, ADD_RESERVE_CHOICE_PERSONS, ADD_RESERVE_CHOICE_TABLE, ADD_RESERVE_INFO -> {
                         return returnToMainMenu(user, message, callback);
                     }
                 }
@@ -64,6 +65,11 @@ public class ReserveHandler implements MessageHandler {
                     return configureDeleteReserve(user, chatId);
                 }
             }
+            case RESERVE -> {
+                if (user.getSubState() == SubState.VIEW_RESERVE_LIST) {
+                    return configureAddReserve(user, chatId);
+                }
+            }
         }
 
         // обновление состояния
@@ -74,9 +80,7 @@ public class ReserveHandler implements MessageHandler {
                         user.setState(State.RESERVE);
                         userService.updateSubState(user, SubState.VIEW_RESERVE_LIST);
                     } else if (button == Button.RESERVE) {
-                        user.setState(State.RESERVE);
-                        userService.updateSubState(user, SubState.ADD_RESERVE_CHOICE_DATE);
-                        return messageService.configureMessage(chatId, "Введите дату резерва <i>(в формате дд.мм.гггг - 24.12.2001)</i>:", KeyboardService.TODAY_TOMORROW_CANCEL_KEYBOARD);
+                        return configureAddReserve(user, chatId);
                     }
                 }
                 case DELETE_RESERVE_CHOICE_DATE -> {
@@ -177,9 +181,47 @@ public class ReserveHandler implements MessageHandler {
 
                     addReservesTemporary.put(user, newReserve);
 
+                    userService.updateSubState(user, SubState.ADD_RESERVE_CHOICE_TIME);
+
+                    return configureChoiceTime(chatId);
+                }
+                case ADD_RESERVE_CHOICE_TIME -> {
+                    if (messageText == null || messageText.length() != 4) {
+                        return configureChoiceTime(chatId);
+                    }
+
+                    try {
+                        LocalTime time = LocalTime.of(Integer.parseInt(messageText.substring(0, 2)), Integer.parseInt(messageText.substring(2, 4)));
+
+                        addReservesTemporary.get(user)
+                                .setTime(time);
+
+                        userService.updateSubState(user, SubState.ADD_RESERVE_CHOICE_PERSONS);
+
+                        return configureChoicePersons(chatId);
+                    } catch (NumberFormatException e) {
+                        return configureChoiceTime(chatId);
+                    }
+                }
+                case ADD_RESERVE_CHOICE_PERSONS -> {
+                    int numberPeople;
+
+                    if (button.getNumber() != null) {
+                        numberPeople = button.getNumber();
+                    } else {
+                        try {
+                            numberPeople = Integer.parseInt(messageText);
+                        } catch (NumberFormatException e) {
+                            return configureChoicePersons(chatId);
+                        }
+                    }
+
+                    addReservesTemporary.get(user)
+                            .setNumberPeople(numberPeople);
+
                     userService.updateSubState(user, SubState.ADD_RESERVE_CHOICE_TABLE);
 
-                    return configureChoiceTable(chatId, tavern);
+                    return configureChoiceTable(user, chatId);
                 }
                 case ADD_RESERVE_CHOICE_TABLE -> {
                     String label = messageText.split(" ")[0];
@@ -189,11 +231,47 @@ public class ReserveHandler implements MessageHandler {
                             .orElse(null);
 
                     if (reserveTable == null) {
-                        return configureChoiceTable(chatId, tavern);
+                        return configureChoiceTable(user, chatId);
                     }
 
                     addReservesTemporary.get(user)
                             .setTable(reserveTable);
+
+                    userService.updateSubState(user, SubState.ADD_RESERVE_CHOICE_NAME);
+
+                    return messageService.configureMessage(chatId, "Введите имя:", KeyboardService.CANCEL_KEYBOARD);
+                }
+                case ADD_RESERVE_CHOICE_NAME -> {
+                    addReservesTemporary.get(user)
+                            .setName(messageText);
+
+                    userService.updateSubState(user, SubState.ADD_RESERVE_CHOICE_PHONE);
+
+                    return messageService.configureMessage(chatId, "Введите номер телефона:", KeyboardService.WITHOUT_PHONE_KEYBOARD);
+                }
+                case ADD_RESERVE_CHOICE_PHONE -> {
+                    if (button != Button.WITHOUT_PHONE) {
+                        addReservesTemporary.get(user)
+                                .setPhoneNumber(messageText);
+                    }
+
+                    userService.updateSubState(user, SubState.ADD_RESERVE_INFO);
+
+                    return messageService.configureMessage(chatId, fillReserveInfo(addReservesTemporary.get(user)), KeyboardService.APPROVE_KEYBOARD);
+                }
+                case ADD_RESERVE_INFO -> {
+                    user.setState(State.MAIN_MENU);
+                    userService.updateSubState(user, SubState.VIEW_MAIN_MENU);
+
+                    if (button == Button.APPROVE) {
+                        ReserveEntity reserve = addReservesTemporary.get(user);
+                        reserveService.save(reserve);
+                        addReservesTemporary.remove(user);
+
+                        return messageService.configureMessage(chatId, "Столик забронирован.", KeyboardService.MAIN_MENU);
+                    }
+
+                    return messageService.configureMessage(chatId, "Столик не удалось забронировать.", KeyboardService.MAIN_MENU);
                 }
             }
         }
@@ -206,19 +284,64 @@ public class ReserveHandler implements MessageHandler {
         };
     }
 
-    private SendMessage configureChoiceTable(Long chatId, TavernEntity tavern) {
+    private SendMessage configureAddReserve(UserEntity user, Long chatId) {
+        user.setState(State.RESERVE);
+        userService.updateSubState(user, SubState.ADD_RESERVE_CHOICE_DATE);
+        return messageService.configureMessage(chatId, "Введите дату резерва <i>(в формате дд.мм.гггг, пример: 24.12.2001)</i>:", KeyboardService.TODAY_TOMORROW_CANCEL_KEYBOARD);
+    }
+
+    private String fillReserveInfo(ReserveEntity reserve) {
+        return String.format(
+                "<b>Информация о бронировании</b>\nДата: <i>%s</i>\nВремя: <i>%s</i>\nСтол: <i>%s</i>\nКол-во персон: <i>%s</i>\nИмя: <i>%s</i>\nТелефон: <i>%s</i>",
+                reserve.getDate().format(Constant.DD_MM_YYYY_FORMATTER),
+                reserve.getTime(),
+                reserve.getTable().getLabel(),
+                reserve.getNumberPeople(),
+                reserve.getName(),
+                Optional.ofNullable(reserve.getPhoneNumber())
+                        .orElse("не указан")
+        );
+    }
+
+    private SendMessage configureChoiceTime(Long chatId) {
+        return messageService.configureMessage(chatId, "Введите время резерва <i>(в формате ЧЧММ, пример: 1830 или 0215)</i>:", KeyboardService.CANCEL_KEYBOARD);
+    }
+
+    private SendMessage configureChoicePersons(Long chatId) {
+        return messageService.configureMessage(chatId, "Введите или выберите кол-во персон:", KeyboardService.NUMBERS_KEYBOARD);
+    }
+
+    private SendMessage configureChoiceTable(UserEntity user, Long chatId) {
+        LocalDate date = addReservesTemporary.get(user)
+                .getDate();
+
         ReplyKeyboardMarkup tablesKeyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> rows = new ArrayList<>();
-        tavern.getTables().forEach(table ->
-                rows.add(new KeyboardRow(List.of(new KeyboardButton(table.getLabel() + " " + table.getNumberSeats() + " мест"))))
-        );
+        user.getTavern().getTables().stream()
+                .sorted(Comparator.comparing(TableEntity::getNumberSeats))
+                .forEach(table -> {
+                            String foundReserve = table.getReserves().stream()
+                                    .filter(reserve -> date.isEqual(reserve.getDate()))
+                                    .min(Comparator.comparing(ReserveEntity::getTime))
+                                    .map(reserve -> "занято с " + reserve.getTime())
+                                    .orElse("");
+
+                            rows.add(new KeyboardRow(List.of(new KeyboardButton(String.format(
+                                    "%s на %s %s %s",
+                                    table.getLabel(),
+                                    table.getNumberSeats(),
+                                    stringService.declensionWords(table.getNumberSeats(), StringService.SEATS_WORDS),
+                                    foundReserve
+                            )))));
+                        }
+                );
 
         rows.add(new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()))));
 
         tablesKeyboard.setKeyboard(rows);
         tablesKeyboard.setResizeKeyboard(true);
 
-        return messageService.configureMessage(chatId, "Выберите стол.", tablesKeyboard);
+        return messageService.configureMessage(chatId, "Введите метку стола или выберите нужный в меню:", tablesKeyboard);
     }
 
     private SendMessage returnToMainMenu(UserEntity user, Message message, CallbackQuery callback) {
@@ -280,11 +403,16 @@ public class ReserveHandler implements MessageHandler {
             String reservesList = reserves.get(date).stream()
                     .sorted(Comparator.comparing(ReserveEntity::getTime, LocalTime::compareTo))
                     .map(reserve -> String.format(
-                            "<i>%s</i> <b>%s</b> %s %s",
+                            "<i>%s</i> <b>%s</b> %s (%s) %s",
                             reserve.getTime(),
                             reserve.getTable().getLabel(),
-                            reserve.getUser().getName(),
-                            reserve.getUser().findContact(ContractType.MOBILE)
+                            reserve.getManualMode() ? Optional.ofNullable(reserve.getName())
+                                    .orElse("")
+                                    : reserve.getUser().getName(),
+                            reserve.getNumberPeople(),
+                            reserve.getManualMode() ? Optional.ofNullable(reserve.getPhoneNumber())
+                                    .orElse("")
+                                    : reserve.getUser().findContact(ContractType.MOBILE)
                                     .map(ContactEntity::getValue)
                                     .orElse("")
                     ))

@@ -41,6 +41,9 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup TABLE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup RESERVE_LIST_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TODAY_TOMORROW_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup NUMBERS_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup WITHOUT_PHONE_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup APPROVE_KEYBOARD = new ReplyKeyboardMarkup();
 
     {
         init();
@@ -300,7 +303,7 @@ public class KeyboardService {
         TABLE_KEYBOARD.setResizeKeyboard(true);
 
         RESERVE_LIST_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.DELETE_RESERVE.getText()))),
+                new KeyboardRow(List.of(new KeyboardButton(Button.DELETE_RESERVE.getText()), new KeyboardButton(Button.RESERVE.getText()))),
                 new KeyboardRow(List.of(new KeyboardButton(Button.RETURN_MAIN_MENU.getText())))
         ));
         RESERVE_LIST_KEYBOARD.setResizeKeyboard(true);
@@ -310,6 +313,25 @@ public class KeyboardService {
                 CANCEL_ROW
         ));
         TODAY_TOMORROW_CANCEL_KEYBOARD.setResizeKeyboard(true);
+
+        NUMBERS_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton(Button.ONE.getText()), new KeyboardButton(Button.TWO.getText()), new KeyboardButton(Button.THREE.getText()))),
+                new KeyboardRow(List.of(new KeyboardButton(Button.FOUR.getText()), new KeyboardButton(Button.FIVE.getText()), new KeyboardButton(Button.SIX.getText()))),
+                new KeyboardRow(List.of(new KeyboardButton(Button.SEVEN.getText()), new KeyboardButton(Button.EIGHT.getText()), new KeyboardButton(Button.NINE.getText()))),
+                CANCEL_ROW
+        ));
+        NUMBERS_KEYBOARD.setResizeKeyboard(true);
+
+        WITHOUT_PHONE_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton(Button.WITHOUT_PHONE.getText()))),
+                CANCEL_ROW
+        ));
+        WITHOUT_PHONE_KEYBOARD.setResizeKeyboard(true);
+
+        APPROVE_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()), new KeyboardButton(Button.APPROVE.getText())))
+        ));
+        APPROVE_KEYBOARD.setResizeKeyboard(true);
     }
 
     public InlineKeyboardButton createInlineButton(Button button) {

@@ -45,4 +45,14 @@ public class ReserveService {
 
         repository.save(reserve);
     }
+
+    /**
+     * Сохранить
+     *
+     * @param reserve Резерв
+     */
+    @Transactional
+    public void save(ReserveEntity reserve) {
+        repository.save(reserve);
+    }
 }

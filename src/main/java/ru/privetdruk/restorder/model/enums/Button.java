@@ -9,7 +9,7 @@ import java.util.Optional;
 public enum Button {
     REGISTRATION("Регистрация"),
     EDIT("Редактировать"),
-    APPROVE("Утвердить"),
+    APPROVE("\uD83D\uDFE2 Утвердить"),
     NAME("Имя"),
     TAVERN("Заведение"),
     ADDRESS("Адрес"),
@@ -53,11 +53,21 @@ public enum Button {
     WEEKENDS("⚫ Выходные"),
     FREE("Бесплатно"),
     RESERVE("✏  Забронировать"),
-    DELETE_RESERVE("\uD83D\uDD34 Убрать бронь"),
+    DELETE_RESERVE("❌ Убрать бронь"),
     RESERVE_LIST("📋 Список бронирований"),
     PICK_ALL("➿ Выбрать все"),
     TODAY("\uD83D\uDDD3 Сегодня"),
-    TOMORROW("\uD83D\uDDD2 Завтра");
+    TOMORROW("\uD83D\uDDD2 Завтра"),
+    WITHOUT_PHONE("\uD83D\uDD15 Без телефона"),
+    ONE("1️⃣"),
+    TWO("2️⃣"),
+    THREE("3️⃣"),
+    FOUR("4️⃣"),
+    FIVE("5️⃣"),
+    SIX("6️⃣"),
+    SEVEN("7️⃣"),
+    EIGHT("8️⃣"),
+    NINE("9️⃣");
 
     private final String text;
 
@@ -93,5 +103,18 @@ public enum Button {
 
     public String getText() {
         return text;
+    }
+
+    public Integer getNumber() {
+        if (this == ONE) return 1;
+        if (this == TWO) return 2;
+        if (this == THREE) return 3;
+        if (this == FOUR) return 4;
+        if (this == FIVE) return 5;
+        if (this == SIX) return 6;
+        if (this == SEVEN) return 7;
+        if (this == EIGHT) return 8;
+        if (this == NINE) return 9;
+        return null;
     }
 }
