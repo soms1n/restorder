@@ -1,34 +1,31 @@
-package ru.privetdruk.restorder.service;
+package ru.privetdruk.restorder.service.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.entity.UserEntity;
-import ru.privetdruk.restorder.model.enums.Command;
+import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
+import ru.privetdruk.restorder.service.UserService;
 
 import java.util.Map;
 
-@Slf4j
 @Service
-public class ClientBotService {
+@Slf4j
+public class UserBotService {
     private final UserService userService;
 
     private final Map<State, MessageHandler> handlers;
 
-    public ClientBotService(UserService userService, ClientHandlerService handlerService) {
+    public UserBotService(UserService userService, UserHandlerService handlerService) {
         this.userService = userService;
         this.handlers = handlerService.loadHandlers();
     }
 
-    //TODO Transactional отсюда перенести минимум в handler, а лучше в конкретный сервис, надо обсуждать, как лучше. Чтобы долго не стопориться оставляю пока тут
-    @Transactional
     public SendMessage handleUpdate(Update update) {
         Message message = update.getMessage();
         CallbackQuery callback = update.getCallbackQuery();
@@ -53,27 +50,18 @@ public class ClientBotService {
         final Long finalTelegramUserId = telegramUserId;
 
         UserEntity user = userService.findByTelegramId(telegramUserId)
-                .orElseGet(() -> userService.create(finalTelegramUserId,
-                        State.REGISTRATION_TAVERN,
-                        State.REGISTRATION_TAVERN.getInitialSubState()));
+                .orElseGet(() -> userService.create(
+                        finalTelegramUserId,
+                        State.REGISTRATION_USER,
+                        State.REGISTRATION_USER.getInitialSubState(),
+                        Role.USER
+                ));
 
-        State state = prepareState(message, user);
+        if (user.getState() != State.REGISTRATION_USER && user.getCity() == null) {
+            userService.updateState(user, State.REGISTRATION_USER);
+        }
 
-        return handlers.get(state)
+        return handlers.get(user.getState())
                 .handle(user, message, callback);
-    }
-
-    private State prepareState(Message message, UserEntity user) {
-        if (!StringUtils.hasText(message.getText())) {
-            return user.getState();
-        }
-
-        String[] messageSplit = message.getText().split(" ");
-        Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
-        if (command == Command.START && messageSplit.length == 2) {
-            return State.EVENT;
-        }
-
-        return user.getState();
     }
 }

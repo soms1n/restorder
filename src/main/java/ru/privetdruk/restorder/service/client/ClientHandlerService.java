@@ -1,4 +1,4 @@
-package ru.privetdruk.restorder.service;
+package ru.privetdruk.restorder.service.client;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;

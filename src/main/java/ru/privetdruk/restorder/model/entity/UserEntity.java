@@ -92,6 +92,13 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private City city;
 
+    /**
+     * Контакты
+     */
+    @OneToMany(mappedBy = "user")
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<ReserveEntity> reserves = new HashSet<>();
+
     @Builder
     public UserEntity(Long telegramId, State state, SubState subState) {
         this.telegramId = telegramId;

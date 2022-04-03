@@ -268,10 +268,10 @@ public class ReserveHandler implements MessageHandler {
                         reserveService.save(reserve);
                         addReservesTemporary.remove(user);
 
-                        return messageService.configureMessage(chatId, "Столик забронирован.", KeyboardService.MAIN_MENU);
+                        return messageService.configureMessage(chatId, "Столик забронирован.", KeyboardService.CLIENT_MAIN_MENU);
                     }
 
-                    return messageService.configureMessage(chatId, "Столик не удалось забронировать.", KeyboardService.MAIN_MENU);
+                    return messageService.configureMessage(chatId, "Столик не удалось забронировать.", KeyboardService.CLIENT_MAIN_MENU);
                 }
             }
         }

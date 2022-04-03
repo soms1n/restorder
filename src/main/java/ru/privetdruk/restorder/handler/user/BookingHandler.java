@@ -3,81 +3,73 @@ package ru.privetdruk.restorder.handler.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import ru.privetdruk.restorder.handler.MessageHandler;
+import ru.privetdruk.restorder.model.consts.Constant;
+import ru.privetdruk.restorder.model.entity.ReserveEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
-import ru.privetdruk.restorder.model.enums.City;
+import ru.privetdruk.restorder.model.enums.Button;
 import ru.privetdruk.restorder.model.enums.SubState;
 import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.MessageService;
 import ru.privetdruk.restorder.service.UserService;
 
-import java.util.Arrays;
-
-import static java.util.stream.Collectors.toMap;
-import static ru.privetdruk.restorder.model.consts.MessageText.GREETING;
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class BookingHandler implements MessageHandler {
-    private final static int MAX_BUTTONS_PER_ROW = 8;
-
     private final MessageService messageService;
-    private final KeyboardService keyboardService;
     private final UserService userService;
 
     @Override
     @Transactional
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
         String messageText = message.getText();
-        SubState subState = user.getSubState();
-        SendMessage sendMessage = new SendMessage();
+        Button button = Button.fromText(messageText)
+                .orElse(Button.NOTHING);
         Long chatId = message.getChatId();
 
-        switch (subState) {
-            case GREETING -> {
-                sendMessage = messageService.configureMessage(chatId, GREETING);
-                sendMessage.setReplyMarkup(
-                        InlineKeyboardMarkup.builder()
-                                .keyboard(keyboardService.createButtonList(Arrays.stream(City.values())
-                                        .collect(toMap(City::getDescription, City::getName)), MAX_BUTTONS_PER_ROW))
-                                .build()
-                );
-
-                changeState(user, SubState.GREETING);
-            }
-            case CITY_SELECT -> {
-                if (callback != null) {
-                    String data = callback.getData();
-                    City city = City.fromName(data);
-                    user.setCity(city);
-
-                    sendMessage = messageService.configureMessage(chatId, changeState(user, subState).getMessage());
-                } else {
-                    sendMessage = messageService.configureMessage(chatId, GREETING);
-                    sendMessage.setReplyMarkup(
-                            InlineKeyboardMarkup.builder()
-                                    .keyboard(keyboardService.createButtonList(Arrays.stream(City.values())
-                                            .collect(toMap(City::getDescription, City::getName)), MAX_BUTTONS_PER_ROW))
-                                    .build()
-                    );
+        // обновление состояния
+        if (button != Button.BACK && button != Button.CANCEL && button != Button.NO) {
+            switch (user.getSubState()) {
+                case VIEW_MAIN_MENU -> {
+                    if (button == Button.MY_RESERVE) {
+                        userService.updateSubState(user, SubState.VIEW_RESERVE_LIST);
+                    }
                 }
             }
         }
 
-        return sendMessage;
+        // отрисовка меню
+        return switch (user.getSubState()) {
+            case VIEW_MAIN_MENU -> messageService.configureMessage(chatId, "Открываем главное меню...", KeyboardService.USER_MAIN_MENU);
+            case VIEW_RESERVE_LIST -> messageService.configureMessage(chatId, fillReserves(user.getReserves()), KeyboardService.USER_MAIN_MENU);
+
+            default -> new SendMessage();
+        };
     }
 
-    private SubState changeState(UserEntity user, SubState subState) {
-        SubState nextSubState = subState.getNextSubState();
-        user.setState(nextSubState.getState());
-        user.setSubState(nextSubState);
+    private String fillReserves(Set<ReserveEntity> reserves) {
+        if (CollectionUtils.isEmpty(reserves)) {
+            return "Вы ничего не бронировали.";
+        }
 
-        userService.save(user);
-
-        return nextSubState;
+        return reserves.stream()
+                .sorted(Comparator.comparing(o -> LocalDateTime.of(o.getDate(), o.getTime())))
+                .map(reserve -> String.format(
+                        "™️ <b>Заведение:</b> <i>%s</i>\n\uD83D\uDDD3 <b>Дата и время:</b> <i>%s</i> в <i>%s</i>\n\uD83D\uDC65 <b>Кол-во персон:</b> <i>%s</i>",
+                        reserve.getTable().getTavern().getName(),
+                        reserve.getDate().format(Constant.DD_MM_YYYY_FORMATTER),
+                        reserve.getTime(),
+                        reserve.getNumberPeople()
+                ))
+                .collect(Collectors.joining("\n\n"));
     }
 }

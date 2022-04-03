@@ -1,6 +1,7 @@
 package ru.privetdruk.restorder.service;
 
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -8,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import ru.privetdruk.restorder.model.enums.Button;
 import ru.privetdruk.restorder.model.enums.Category;
+import ru.privetdruk.restorder.model.enums.City;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +20,8 @@ import java.util.stream.Collectors;
 @Service
 public class KeyboardService {
     public static final ReplyKeyboardRemove REMOVE_KEYBOARD = new ReplyKeyboardRemove(true);
-    public static final ReplyKeyboardMarkup MAIN_MENU = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup CLIENT_MAIN_MENU = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup USER_MAIN_MENU = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup SHARE_PHONE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup YES_NO_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
@@ -44,13 +47,22 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup NUMBERS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup WITHOUT_PHONE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup APPROVE_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup CITIES_KEYBOARD = new ReplyKeyboardMarkup();
 
     {
         init();
     }
 
     private static void init() {
-        MAIN_MENU.setKeyboard(List.of(
+        CITIES_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(City.BRYANSK.getDescription()),
+                        new KeyboardButton(City.YOSHKAR_OLA.getDescription())
+                ))
+        ));
+        CITIES_KEYBOARD.setResizeKeyboard(true);
+
+        CLIENT_MAIN_MENU.setKeyboard(List.of(
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.RESERVE.getText())
                 )),
@@ -62,7 +74,18 @@ public class KeyboardService {
                         new KeyboardButton(Button.INFORMATION.getText())
                 ))
         ));
-        MAIN_MENU.setResizeKeyboard(true);
+        CLIENT_MAIN_MENU.setResizeKeyboard(true);
+
+        USER_MAIN_MENU.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.RESTAURANTS.getText()),
+                        new KeyboardButton(Button.HOOKAHS.getText())
+                )),
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.MY_RESERVE.getText())
+                ))
+        ));
+        USER_MAIN_MENU.setResizeKeyboard(true);
 
         SHARE_PHONE_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
@@ -351,5 +374,22 @@ public class KeyboardService {
                 })
                 .collect(Collectors.groupingBy(e -> counter.getAndIncrement() / maxButtonsPerRow))
                 .values());
+    }
+
+    public InlineKeyboardMarkup createInlineKeyboard(Map<String, String> buttons, int maxButtonsPerRow) {
+        final AtomicInteger counter = new AtomicInteger(0);
+
+        return InlineKeyboardMarkup.builder()
+                .keyboard(new ArrayList<>(
+                        buttons.entrySet().stream()
+                                .map(e -> {
+                                    InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton(e.getKey());
+                                    inlineKeyboardButton.setCallbackData(e.getValue());
+                                    return inlineKeyboardButton;
+                                })
+                                .collect(Collectors.groupingBy(e -> counter.getAndIncrement() / maxButtonsPerRow))
+                                .values()
+                ))
+                .build();
     }
 }

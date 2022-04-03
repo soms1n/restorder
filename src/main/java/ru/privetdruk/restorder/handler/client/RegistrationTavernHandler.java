@@ -25,6 +25,7 @@ import ru.privetdruk.restorder.service.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toMap;
@@ -73,7 +74,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                                         userTelegramId,
                                         MessageText.YOUR_CLAIM_WAS_APPROVED,
                                         botClientToken,
-                                        KeyboardService.MAIN_MENU
+                                        KeyboardService.CLIENT_MAIN_MENU
                                 )
                                 .subscribe();
 
@@ -127,16 +128,13 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                 changeState(user, subState);
 
-                sendMessage = messageService.configureMessage(chatId, MessageText.CHOICE_CITY);
+                Map<String, String> cities = Arrays.stream(City.values())
+                        .collect(toMap(City::getDescription, City::getName));
 
-                sendMessage.setReplyMarkup(
-                        InlineKeyboardMarkup.builder()
-                                .keyboard(keyboardService.createButtonList(
-                                        Arrays.stream(City.values())
-                                                .collect(toMap(City::getDescription, City::getName)),
-                                        MAX_BUTTONS_PER_ROW
-                                ))
-                                .build()
+                sendMessage = messageService.configureMessage(
+                        chatId,
+                        MessageText.CHOICE_CITY,
+                        keyboardService.createInlineKeyboard(cities, MAX_BUTTONS_PER_ROW)
                 );
             }
             case CHOICE_CITY -> {
@@ -155,14 +153,14 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                     sendMessage = messageService.configureMessage(chatId, changeState(user, subState).getMessage());
                 } else {
-                    sendMessage = messageService.configureMessage(chatId, subState.getMessage());
-                    sendMessage.setReplyMarkup(InlineKeyboardMarkup.builder()
-                            .keyboard(keyboardService.createButtonList(
-                                    Arrays.stream(City.values())
-                                            .collect(toMap(City::getDescription, City::getName)),
-                                    MAX_BUTTONS_PER_ROW
-                            ))
-                            .build());
+                    Map<String, String> cities = Arrays.stream(City.values())
+                            .collect(toMap(City::getDescription, City::getName));
+
+                    sendMessage = messageService.configureMessage(
+                            chatId,
+                            subState.getMessage(),
+                            keyboardService.createInlineKeyboard(cities, MAX_BUTTONS_PER_ROW)
+                    );
                 }
             }
             case ENTER_ADDRESS -> {

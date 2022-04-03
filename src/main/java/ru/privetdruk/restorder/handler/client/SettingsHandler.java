@@ -19,6 +19,7 @@ import ru.privetdruk.restorder.model.dto.ScheduleDto;
 import ru.privetdruk.restorder.model.entity.*;
 import ru.privetdruk.restorder.model.enums.*;
 import ru.privetdruk.restorder.service.*;
+import ru.privetdruk.restorder.service.util.TypeService;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;

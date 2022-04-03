@@ -9,12 +9,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.*;
+import ru.privetdruk.restorder.handler.client.MainMenuHandler;
 import ru.privetdruk.restorder.handler.user.BookingHandler;
+import ru.privetdruk.restorder.handler.user.RegistrationHandler;
 import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
 import ru.privetdruk.restorder.model.enums.SubState;
+import ru.privetdruk.restorder.service.user.UserBotService;
+import ru.privetdruk.restorder.service.user.UserHandlerService;
 
 import java.util.Optional;
 
@@ -31,7 +35,13 @@ class UserBotServiceTest {
     @BeforeEach
     @DisplayName("Presets")
     void beforeEach() {
-        userBotService = new UserBotService(userService, new BookingHandler(new MessageService(), new KeyboardService(), userService));
+        userBotService = new UserBotService(
+                userService,
+                new UserHandlerService(
+                        new RegistrationHandler(new MessageService(), userService, new BookingHandler(new MessageService(), new KeyboardService(), userService)),
+                        new BookingHandler(new MessageService(), new KeyboardService(), userService)
+                )
+        );
     }
 
     @Test

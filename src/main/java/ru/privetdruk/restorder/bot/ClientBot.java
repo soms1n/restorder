@@ -7,8 +7,8 @@ import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import ru.privetdruk.restorder.service.ClientBotService;
 import ru.privetdruk.restorder.service.TelegramApiService;
+import ru.privetdruk.restorder.service.client.ClientBotService;
 
 import javax.annotation.PostConstruct;
 

@@ -32,7 +32,7 @@ public class MainMenuHandler implements MessageHandler {
 
     @Override
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
-        SendMessage sendMessage = messageService.configureMessage(message.getChatId(), "");
+        SendMessage sendMessage = messageService.configureMessage(message.getChatId(), "Открываю главное меню.");
 
         boolean validTavern = tavernService.isValid(user.getTavern());
         if (!validTavern) {
@@ -57,7 +57,7 @@ public class MainMenuHandler implements MessageHandler {
             }
         }
 
-        sendMessage.setReplyMarkup(KeyboardService.MAIN_MENU);
+        sendMessage.setReplyMarkup(KeyboardService.CLIENT_MAIN_MENU);
 
         return sendMessage;
     }

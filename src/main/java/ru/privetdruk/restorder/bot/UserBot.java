@@ -9,7 +9,7 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.privetdruk.restorder.service.TelegramApiService;
-import ru.privetdruk.restorder.service.UserBotService;
+import ru.privetdruk.restorder.service.user.UserBotService;
 
 import javax.annotation.PostConstruct;
 

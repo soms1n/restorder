@@ -1,6 +1,7 @@
 package ru.privetdruk.restorder.model.enums;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.util.StringUtils;
 
 /**
  * Города
@@ -22,6 +23,20 @@ public enum City {
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    public static City fromDescription(String description) {
+        if (!StringUtils.hasText(description)) {
+            return null;
+        }
+
+        for (City city : City.values()) {
+            if (description.equalsIgnoreCase(city.getDescription())) {
+                return city;
+            }
+        }
+
+        return null;
     }
 
     public String getName() {
