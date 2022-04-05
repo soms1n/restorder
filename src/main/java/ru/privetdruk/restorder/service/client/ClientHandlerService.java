@@ -3,7 +3,10 @@ package ru.privetdruk.restorder.service.client;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import ru.privetdruk.restorder.handler.MessageHandler;
-import ru.privetdruk.restorder.handler.client.*;
+import ru.privetdruk.restorder.handler.client.EventHandler;
+import ru.privetdruk.restorder.handler.client.RegistrationEmployeeHandler;
+import ru.privetdruk.restorder.handler.client.RegistrationTavernHandler;
+import ru.privetdruk.restorder.handler.client.ReserveHandler;
 import ru.privetdruk.restorder.model.enums.State;
 
 import java.util.Map;

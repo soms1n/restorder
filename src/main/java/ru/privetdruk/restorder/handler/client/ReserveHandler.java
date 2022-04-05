@@ -60,7 +60,7 @@ public class ReserveHandler implements MessageHandler {
             case RETURN_MAIN_MENU -> {
                 return returnToMainMenu(user, message, callback);
             }
-            case DELETE_RESERVE -> {
+            case CANCEL_RESERVE -> {
                 if (user.getSubState() == SubState.VIEW_RESERVE_LIST) {
                     return configureDeleteReserve(user, chatId);
                 }

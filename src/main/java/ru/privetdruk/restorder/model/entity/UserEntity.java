@@ -95,7 +95,7 @@ public class UserEntity {
     /**
      * Контакты
      */
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @Fetch(FetchMode.SUBSELECT)
     private Set<ReserveEntity> reserves = new HashSet<>();
 

@@ -43,6 +43,7 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup FREE_WITH_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TABLE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup RESERVE_LIST_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup USER_RESERVE_LIST_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TODAY_TOMORROW_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup NUMBERS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup WITHOUT_PHONE_KEYBOARD = new ReplyKeyboardMarkup();
@@ -326,10 +327,16 @@ public class KeyboardService {
         TABLE_KEYBOARD.setResizeKeyboard(true);
 
         RESERVE_LIST_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.DELETE_RESERVE.getText()), new KeyboardButton(Button.RESERVE.getText()))),
+                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL_RESERVE.getText()), new KeyboardButton(Button.RESERVE.getText()))),
                 new KeyboardRow(List.of(new KeyboardButton(Button.RETURN_MAIN_MENU.getText())))
         ));
         RESERVE_LIST_KEYBOARD.setResizeKeyboard(true);
+
+        USER_RESERVE_LIST_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL_RESERVE.getText()))),
+                new KeyboardRow(List.of(new KeyboardButton(Button.RETURN_MAIN_MENU.getText())))
+        ));
+        USER_RESERVE_LIST_KEYBOARD.setResizeKeyboard(true);
 
         TODAY_TOMORROW_CANCEL_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(new KeyboardButton(Button.TOMORROW.getText()), new KeyboardButton(Button.TODAY.getText()))),

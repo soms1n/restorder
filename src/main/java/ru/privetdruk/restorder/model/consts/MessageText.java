@@ -15,6 +15,7 @@ public interface MessageText {
     String YOUR_CLAIM_WAS_APPROVED = "Ваша заявка подтверждена.";
     String ADMIN_APPROVED_CLAIM = "Заявка подтверждена, спасибо.";
     String INCORRECT_VALUE_TRY_AGAIN = "Выбрано некорректное значение. Повторите попытку.";
+    String INCORRECT_VALUE_CANCELLED = "Вы ввели некорректное значение. Операция отменяется.";
     String GREETING = """
             Добро пожаловать!
             Я твой персональный помощник по заведениям города.

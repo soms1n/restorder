@@ -659,6 +659,17 @@ public enum SubState {
         public SubState getParentSubState() {
             return VIEW_MAIN_MENU;
         }
+    },
+    DELETE_RESERVE_CHOICE_TAVERN(null) {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_RESERVE_LIST;
+        }
     };
 
     private final String message;
