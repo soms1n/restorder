@@ -7,8 +7,11 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import ru.privetdruk.restorder.model.entity.AddressEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
+import ru.privetdruk.restorder.model.enums.Category;
+import ru.privetdruk.restorder.model.enums.City;
 import ru.privetdruk.restorder.repository.TavernRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -76,5 +79,9 @@ public class TavernService {
      */
     public Optional<TavernEntity> find(Long id) {
         return tavernRepository.findById(id);
+    }
+
+    public List<TavernEntity> findAllByAddressCityAndCategory(City city, Category category) {
+        return tavernRepository.findAllByAddress_CityAndCategory(city, category);
     }
 }

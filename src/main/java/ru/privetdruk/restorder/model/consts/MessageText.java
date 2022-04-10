@@ -23,4 +23,5 @@ public interface MessageText {
                         
             А теперь выберите или введите ваш город, чтобы продолжить.
             """;
+    String CHOICE_TAVERN_TYPE = "Выберите тип заведения";
 }

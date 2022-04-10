@@ -19,6 +19,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import reactor.core.publisher.Mono;
+import ru.privetdruk.restorder.AbstractTest;
 import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.entity.AddressEntity;
 import ru.privetdruk.restorder.model.entity.ContactEntity;
@@ -35,11 +36,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.privetdruk.restorder.model.consts.MessageText.SELECT_ELEMENT_FOR_EDIT;
 
-@ExtendWith(MockitoExtension.class)
 @DisplayName("Checking the registration logic")
-@DisplayNameGeneration(value = DisplayNameGenerator.ReplaceUnderscores.class)
-@SpringBootTest
-class RegistrationTavernHandlerTest {
+class RegistrationTavernHandlerTest extends AbstractTest {
     @Mock
     Message message;
     @Mock
