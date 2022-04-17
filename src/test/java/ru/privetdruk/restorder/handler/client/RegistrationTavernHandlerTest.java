@@ -37,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static ru.privetdruk.restorder.model.consts.MessageText.SELECT_ELEMENT_FOR_EDIT;
 
 @DisplayName("Checking the registration logic")
+@Disabled
 class RegistrationTavernHandlerTest extends AbstractTest {
     @Mock
     Message message;
