@@ -1,2 +1,2 @@
-# restorder
-![GitHub CI](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)
+# rstorder
+[![gitlabci](https://github.com/pr1vetdruk/restorder/actions/workflows/gradle.yml/badge.svg)](https://github.com/pr1vetdruk/restorder/actions/workflows/gradle.yml)
