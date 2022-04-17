@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static java.util.stream.Collectors.toMap;
-import static ru.privetdruk.restorder.model.consts.MessageText.GREETING;
+import static ru.privetdruk.restorder.model.consts.MessageText.*;
 
 @Component
 @RequiredArgsConstructor
@@ -66,12 +66,12 @@ public class RegistrationHandler implements MessageHandler {
                 if (callback != null) {
                     String data = callback.getData();
                     Button button = Button.fromName(data);
-                    sendMessage = messageService.configureMessage(message.getChatId(), "");
+                    sendMessage = messageService.configureMessage(message.getChatId(), CHOICE_TAVERN_TYPE);
 
                     if (button != null) {
                         switch (button) {
                             case RETURN_MAIN_MENU -> {
-                                user.setState(State.BOOKING);
+                                user.setState(State.REGISTRATION_USER);
                                 user.setSubState(SubState.USER_BOT_MAIN_MENU);
                                 attachMainMenu(sendMessage, user.isRegistered());
                             }
@@ -87,18 +87,28 @@ public class RegistrationHandler implements MessageHandler {
                         if (category != null) {
                             List<TavernEntity> taverns = tavernService.findAllByAddressCityAndCategory(user.getCity(), category);
 
+                            sendMessage = messageService.configureMessage(message.getChatId(), CHOICE_TAVERN);
+
+                            List<List<InlineKeyboardButton>> buttonList = new ArrayList<>(keyboardService.createButtonList(taverns.stream()
+                                    .collect(toMap(TavernEntity::getName, TavernEntity::getName)), 1));
+
+                            buttonList.add(List.of(
+                                    InlineKeyboardButton.builder()
+                                            .callbackData(Button.RETURN_MAIN_MENU.getName())
+                                            .text(Button.RETURN_MAIN_MENU.getText())
+                                            .build()));
+
                             //TODO тут надо взять локальное время и от него отсчитать до закрытия
                             sendMessage.setReplyMarkup(
                                     InlineKeyboardMarkup.builder()
-                                            .keyboard(keyboardService.createButtonList(Arrays.stream(Category.values())
-                                                    .collect(toMap(Category::getDescription, Category::getName)), 1))
+                                            .keyboard(buttonList)
                                             .build());
                         } else {
 
                         }
                     }
                 } else {
-                    sendMessage = messageService.configureMessage(chatId, MessageText.CHOICE_TAVERN_TYPE);
+                    sendMessage = messageService.configureMessage(chatId, CHOICE_TAVERN_TYPE);
                     attachMainMenu(sendMessage, user.isRegistered());
                 }
             }
