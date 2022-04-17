@@ -9,9 +9,9 @@ name: gitlabci
 
 on:
   push:
-    branches: [ gitlabci ]
+    branches: [ dev ]
   pull_request:
-    branches: [ gitlabci ]
+    branches: [ dev ]
 
 permissions:
   contents: read
