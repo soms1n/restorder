@@ -34,5 +34,3 @@ jobs:
       run: chmod +x ./gradlew
     - name: Execute Gradle build
       run: ./gradlew build
-    - name: Checkout code
-      uses: actions/checkout@v2
