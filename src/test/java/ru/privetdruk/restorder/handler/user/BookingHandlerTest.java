@@ -21,7 +21,6 @@ import ru.privetdruk.restorder.service.UserService;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Checking the booking logic")
-@Disabled
 class BookingHandlerTest extends AbstractTest {
 
     @InjectMocks
