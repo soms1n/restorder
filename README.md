@@ -1,2 +1,2 @@
 # rstorder
-[![gitlabci](https://github.com/pr1vetdruk/restorder/actions/workflows/gradle.yml/badge.svg)](https://github.com/pr1vetdruk/restorder/actions/workflows/gradle.yml)
+[![build](https://github.com/pr1vetdruk/restorder/workflows/gitlabci/badge.svg)](https://github.com/pr1vetdruk/restorder/actions/workflows/build)
