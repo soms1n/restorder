@@ -82,6 +82,6 @@ public class TavernService {
     }
 
     public List<TavernEntity> findAllByAddressCityAndCategory(City city, Category category) {
-        return tavernRepository.findAllByAddress_CityAndCategory(city, category);
+        return tavernRepository.findAllByAddress_CityAndCategoryOrderByName(city, category);
     }
 }

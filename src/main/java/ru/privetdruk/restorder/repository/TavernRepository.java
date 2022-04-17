@@ -10,5 +10,5 @@ import java.util.List;
 
 @Repository
 public interface TavernRepository extends CrudRepository<TavernEntity, Long> {
-    List<TavernEntity> findAllByAddress_CityAndCategory(City city, Category category);
+    List<TavernEntity> findAllByAddress_CityAndCategoryOrderByName(City city, Category category);
 }
