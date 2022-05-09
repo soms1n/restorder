@@ -2,50 +2,153 @@ package ru.privetdruk.restorder.handler.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.consts.MessageText;
+import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
-import ru.privetdruk.restorder.model.enums.City;
-import ru.privetdruk.restorder.model.enums.State;
-import ru.privetdruk.restorder.model.enums.SubState;
+import ru.privetdruk.restorder.model.enums.*;
 import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.MessageService;
+import ru.privetdruk.restorder.service.TavernService;
 import ru.privetdruk.restorder.service.UserService;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static java.util.stream.Collectors.toMap;
+import static ru.privetdruk.restorder.model.consts.MessageText.*;
 
 @Component
 @RequiredArgsConstructor
 public class RegistrationHandler implements MessageHandler {
+    private final static int MAX_BUTTONS_PER_ROW = 4;
+
     private final MessageService messageService;
+    private final KeyboardService keyboardService;
     private final UserService userService;
-    private final BookingHandler bookingHandler;
+    private final TavernService tavernService;
 
     @Override
+    @Transactional
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
         String messageText = message.getText();
+        SubState subState = user.getSubState();
+        SendMessage sendMessage = new SendMessage();
         Long chatId = message.getChatId();
 
-        switch (user.getSubState()) {
-            case SHOW_REGISTER_BUTTON -> {
-                userService.updateSubState(user, SubState.CITY_SELECT);
+        switch (subState) {
+            case GREETING -> {
+                if (callback != null) {
+                    String data = callback.getData();
+                    City city = City.fromName(data);
+                    user.setCity(city);
 
-                return messageService.configureMessage(chatId, MessageText.GREETING, KeyboardService.CITIES_KEYBOARD);
-            }
-            case CITY_SELECT -> {
-                City city = City.fromDescription(messageText);
-                if (city == null) {
-                    return messageService.configureMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.CITIES_KEYBOARD);
+                    sendMessage = messageService.configureMessage(chatId, changeState(user, subState).getMessage());
+                    attachMainMenu(sendMessage, user.isRegistered());
+                } else {
+                    sendMessage = messageService.configureMessage(chatId, GREETING);
+                    sendMessage.setReplyMarkup(
+                            InlineKeyboardMarkup.builder()
+                                    .keyboard(keyboardService.createButtonList(Arrays.stream(City.values())
+                                            .collect(toMap(City::getDescription, City::getName)), MAX_BUTTONS_PER_ROW))
+                                    .build()
+                    );
                 }
+            }
+            case USER_BOT_MAIN_MENU -> {
+                if (callback != null) {
+                    String data = callback.getData();
+                    Button button = Button.fromName(data);
+                    sendMessage = messageService.configureMessage(message.getChatId(), CHOICE_TAVERN_TYPE);
 
-                user.setCity(city);
-                userService.updateState(user, State.BOOKING);
+                    if (button != null) {
+                        switch (button) {
+                            case RETURN_MAIN_MENU -> {
+                                user.setState(State.REGISTRATION_USER);
+                                user.setSubState(SubState.USER_BOT_MAIN_MENU);
+                                attachMainMenu(sendMessage, user.isRegistered());
+                            }
+                            case MY_RESERVE -> {
 
-                return bookingHandler.handle(user, message, callback);
+                            }
+                            default -> {
+                            }
+                        }
+                    } else {
+                        Category category = Category.fromName(data);
+
+                        if (category != null) {
+                            List<TavernEntity> taverns = tavernService.findAllByAddressCityAndCategory(user.getCity(), category);
+
+                            sendMessage = messageService.configureMessage(message.getChatId(), CHOICE_TAVERN);
+
+                            List<List<InlineKeyboardButton>> buttonList = new ArrayList<>(keyboardService.createButtonList(taverns.stream()
+                                    .collect(toMap(TavernEntity::getName, TavernEntity::getName)), 1));
+
+                            buttonList.add(List.of(
+                                    InlineKeyboardButton.builder()
+                                            .callbackData(Button.RETURN_MAIN_MENU.getName())
+                                            .text(Button.RETURN_MAIN_MENU.getText())
+                                            .build()));
+
+                            //TODO тут надо взять локальное время и от него отсчитать до закрытия
+                            sendMessage.setReplyMarkup(
+                                    InlineKeyboardMarkup.builder()
+                                            .keyboard(buttonList)
+                                            .build());
+                        } else {
+
+                        }
+                    }
+                } else {
+                    sendMessage = messageService.configureMessage(chatId, CHOICE_TAVERN_TYPE);
+                    attachMainMenu(sendMessage, user.isRegistered());
+                }
             }
         }
 
-        return new SendMessage();
+        return sendMessage;
+    }
+
+    private void attachMainMenu(SendMessage sendMessage, boolean isRegistered) {
+        List<List<InlineKeyboardButton>> buttonList = new ArrayList<>(
+                keyboardService.createButtonList(Arrays.stream(Category.values())
+                        .collect(toMap(Category::getDescription, Category::getName)), MAX_BUTTONS_PER_ROW));
+
+        if (isRegistered) {
+            buttonList.add(List.of(
+                    InlineKeyboardButton.builder()
+                            .callbackData(Button.MY_RESERVE.getName())
+                            .text(Button.MY_RESERVE.getText())
+                            .build()));
+        }
+
+        buttonList.add(List.of(
+                InlineKeyboardButton.builder()
+                        .callbackData(Button.RETURN_MAIN_MENU.getName())
+                        .text(Button.RETURN_MAIN_MENU.getText())
+                        .build()));
+
+        sendMessage.setReplyMarkup(
+                InlineKeyboardMarkup.builder()
+                        .keyboard(buttonList)
+                        .build());
+    }
+
+    private SubState changeState(UserEntity user, SubState subState) {
+        SubState nextSubState = subState.getNextSubState();
+        user.setState(nextSubState.getState());
+        user.setSubState(nextSubState);
+
+        userService.save(user);
+
+        return nextSubState;
     }
 }
