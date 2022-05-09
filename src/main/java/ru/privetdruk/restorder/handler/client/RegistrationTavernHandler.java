@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.Contact;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -21,7 +22,11 @@ import ru.privetdruk.restorder.model.entity.ContactEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.*;
-import ru.privetdruk.restorder.service.*;
+import ru.privetdruk.restorder.service.KeyboardService;
+import ru.privetdruk.restorder.service.TavernService;
+import ru.privetdruk.restorder.service.TelegramApiService;
+import ru.privetdruk.restorder.service.UserService;
+import ru.privetdruk.restorder.service.util.ValidationService;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +36,7 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toMap;
 import static ru.privetdruk.restorder.model.consts.MessageText.SELECT_ELEMENT_FOR_EDIT;
 import static ru.privetdruk.restorder.model.enums.SubState.EDIT_PERSONAL_DATA;
+import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
 @RequiredArgsConstructor
 @Component
@@ -38,10 +44,10 @@ public class RegistrationTavernHandler implements MessageHandler {
     private final static int MAX_BUTTONS_PER_ROW = 8;
 
     private final KeyboardService keyboardService;
-    private final MessageService messageService;
     private final UserService userService;
     private final TelegramApiService telegramApiService;
     private final TavernService tavernService;
+    private final ValidationService validationService;
 
     @Value("${bot.client.token}")
     private String botClientToken;
@@ -73,7 +79,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                         telegramApiService.sendMessage(
                                         userTelegramId,
                                         MessageText.YOUR_CLAIM_WAS_APPROVED,
-                                        botClientToken,
+                                        true,
                                         KeyboardService.CLIENT_MAIN_MENU
                                 )
                                 .subscribe();
@@ -100,12 +106,12 @@ public class RegistrationTavernHandler implements MessageHandler {
             case SHOW_REGISTER_BUTTON -> {
                 if (callback != null) {
                     subState = subState.getNextSubState();
-                    sendMessage = messageService.configureMessage(chatId, changeState(user, subState).getMessage());
+                    sendMessage = configureMessage(chatId, changeState(user, subState).getMessage());
 
                     break;
                 }
 
-                sendMessage = messageService.configureMessage(chatId, subState.getMessage());
+                sendMessage = configureMessage(chatId, subState.getMessage());
 
                 sendMessage.setReplyMarkup(
                         InlineKeyboardMarkup.builder()
@@ -116,7 +122,7 @@ public class RegistrationTavernHandler implements MessageHandler {
             case ENTER_FULL_NAME -> {
                 user.setName(messageText);
 
-                sendMessage = messageService.configureMessage(chatId, changeState(user, subState).getMessage());
+                sendMessage = configureMessage(chatId, changeState(user, subState).getMessage());
             }
             case ENTER_TAVERN_NAME -> {
                 TavernEntity tavern = TavernEntity.builder()
@@ -131,7 +137,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                 Map<String, String> cities = Arrays.stream(City.values())
                         .collect(toMap(City::getDescription, City::getName));
 
-                sendMessage = messageService.configureMessage(
+                sendMessage = configureMessage(
                         chatId,
                         MessageText.CHOICE_CITY,
                         keyboardService.createInlineKeyboard(cities, MAX_BUTTONS_PER_ROW)
@@ -151,12 +157,12 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                     tavern.setAddress(address);
 
-                    sendMessage = messageService.configureMessage(chatId, changeState(user, subState).getMessage());
+                    sendMessage = configureMessage(chatId, changeState(user, subState).getMessage());
                 } else {
                     Map<String, String> cities = Arrays.stream(City.values())
                             .collect(toMap(City::getDescription, City::getName));
 
-                    sendMessage = messageService.configureMessage(
+                    sendMessage = configureMessage(
                             chatId,
                             subState.getMessage(),
                             keyboardService.createInlineKeyboard(cities, MAX_BUTTONS_PER_ROW)
@@ -168,10 +174,18 @@ public class RegistrationTavernHandler implements MessageHandler {
                 address.setStreet(messageText);
                 nextSubState = changeState(user, subState);
 
-                sendMessage = messageService.configureMessage(chatId, nextSubState.getMessage());
+                sendMessage = configureMessage(chatId, nextSubState.getMessage(), KeyboardService.SHARE_PHONE_KEYBOARD);
             }
             case ENTER_PHONE_NUMBER -> {
-                // TODO валидация номера
+                Contact sendContact = message.getContact();
+                if (sendContact != null) {
+                    messageText = sendContact.getPhoneNumber().replace("+", "");
+                }
+
+                if (!validationService.isValidPhone(messageText)) {
+                    return configureMessage(chatId, "Вы ввели некорректный номер мобильного телефона. Повторите попытку.", KeyboardService.SHARE_PHONE_KEYBOARD);
+                }
+
                 ContactEntity contact = ContactEntity.builder()
                         .user(user)
                         .type(ContractType.MOBILE)
@@ -188,11 +202,11 @@ public class RegistrationTavernHandler implements MessageHandler {
                 if (callback != null) {
                     if (Button.fromName(callback.getData()) == Button.APPROVE) {
                         changeState(user, subState);
-                        sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
+                        sendMessage = configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
 
                         sendClaimToApprove(user);
                     } else {
-                        sendMessage = messageService.configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
+                        sendMessage = configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
 
                         attachMainEditMenu(sendMessage);
 
@@ -204,7 +218,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                 }
             }
             case EDIT_PERSONAL_DATA -> {
-                sendMessage = messageService.configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
+                sendMessage = configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
 
                 attachMainEditMenu(sendMessage);
 
@@ -213,35 +227,35 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                 switch (button) {
                     case NAME -> {
-                        sendMessage = messageService.configureMessage(chatId, SubState.ENTER_FULL_NAME.getMessage());
+                        sendMessage = configureMessage(chatId, SubState.ENTER_FULL_NAME.getMessage());
                         user.setSubState(SubState.EDIT_NAME);
                         userService.save(user);
 
                         attachEditMenu(sendMessage);
                     }
                     case TAVERN -> {
-                        sendMessage = messageService.configureMessage(chatId, SubState.ENTER_TAVERN_NAME.getMessage());
+                        sendMessage = configureMessage(chatId, SubState.ENTER_TAVERN_NAME.getMessage());
                         user.setSubState(SubState.EDIT_TAVERN);
                         userService.save(user);
 
                         attachEditMenu(sendMessage);
                     }
                     case PHONE_NUMBER -> {
-                        sendMessage = messageService.configureMessage(chatId, SubState.ENTER_PHONE_NUMBER.getMessage());
+                        sendMessage = configureMessage(chatId, SubState.ENTER_PHONE_NUMBER.getMessage());
                         user.setSubState(SubState.EDIT_PHONE_NUMBER);
                         userService.save(user);
 
                         attachEditMenu(sendMessage);
                     }
                     case ADDRESS -> {
-                        sendMessage = messageService.configureMessage(chatId, SubState.ENTER_ADDRESS.getMessage());
+                        sendMessage = configureMessage(chatId, SubState.ENTER_ADDRESS.getMessage());
                         user.setSubState(SubState.EDIT_ADDRESS);
                         userService.save(user);
 
                         attachEditMenu(sendMessage);
                     }
                     case CITY -> {
-                        sendMessage = messageService.configureMessage(chatId, MessageText.CHOICE_CITY);
+                        sendMessage = configureMessage(chatId, MessageText.CHOICE_CITY);
                         sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder()
                                 .removeKeyboard(true)
                                 .build());
@@ -255,7 +269,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                         user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
                         userService.save(user);
 
-                        sendMessage = messageService.configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
+                        sendMessage = configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
                         sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder()
                                 .removeKeyboard(true)
                                 .build());
@@ -276,11 +290,13 @@ public class RegistrationTavernHandler implements MessageHandler {
             }
             case EDIT_PHONE_NUMBER -> {
                 if (!isUserPressKeyBoardElement(sendMessage, user, messageText, chatId)) {
+                    final String finalMessageText = messageText;
+
                     // TODO валидация номера
                     user.getContacts().stream()
                             .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
                             .findFirst()
-                            .ifPresent(contact -> contact.setValue(messageText));
+                            .ifPresent(contact -> contact.setValue(finalMessageText));
 
                 }
             }
@@ -349,12 +365,12 @@ public class RegistrationTavernHandler implements MessageHandler {
                         telegramApiService.sendMessage(
                                         id,
                                         message,
-                                        botClientToken,
+                                        true,
                                         InlineKeyboardMarkup.builder()
                                                 .keyboard(List.of(List.of(
                                                         InlineKeyboardButton.builder()
                                                                 .callbackData(Button.REGISTRATION_ACCEPT.getName() + " " + user.getTelegramId())
-                                                                .text(Button.REGISTRATION_ACCEPT.getText() + " " + user.getTelegramId())
+                                                                .text(Button.REGISTRATION_ACCEPT.getText())
                                                                 .build()
                                                 )))
                                                 .build()
@@ -411,17 +427,17 @@ public class RegistrationTavernHandler implements MessageHandler {
     }
 
     private SendMessage showPersonalData(UserEntity user, Long chatId) {
-        String yourPersonalData = "Ваши данные:" + System.lineSeparator() +
-                "Имя: " + user.getName() + System.lineSeparator() +
-                "Заведение: " + user.getTavern().getName() + System.lineSeparator() +
-                "Адрес: " + user.getTavern().getAddress().getStreet() + System.lineSeparator() +
-                "Номер телефона: " + user.getContacts().stream()
+        String yourPersonalData = "<b>Ваши данные</b>" + System.lineSeparator() +
+                "Имя: <i>" + user.getName() + "</i>" + System.lineSeparator() +
+                "Заведение: <i>" + user.getTavern().getName() + "</i>" + System.lineSeparator() +
+                "Адрес: <i>" + user.getTavern().getAddress().getStreet() + "</i>" + System.lineSeparator() +
+                "Номер телефона: <i>" + user.getContacts().stream()
                 .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
                 .map(ContactEntity::getValue)
                 .findFirst()
-                .orElse("") + System.lineSeparator();
+                .orElse("") + "</i>" + System.lineSeparator();
 
-        SendMessage sendMessage = messageService.configureMessage(chatId, yourPersonalData);
+        SendMessage sendMessage = configureMessage(chatId, yourPersonalData);
 
         sendMessage.setReplyMarkup(
                 InlineKeyboardMarkup.builder()
@@ -431,6 +447,8 @@ public class RegistrationTavernHandler implements MessageHandler {
                         )))
                         .build()
         );
+
+        sendMessage.enableHtml(true);
 
         return sendMessage;
     }

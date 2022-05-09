@@ -3,8 +3,6 @@ package ru.privetdruk.restorder.model.enums;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import ru.privetdruk.restorder.model.consts.MessageText;
 
-import static ru.privetdruk.restorder.model.consts.MessageText.CHOICE_TAVERN_TYPE;
-
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum SubState {
     EVENT_INITIAL(),
@@ -538,18 +536,18 @@ public enum SubState {
     GREETING() {
         @Override
         public State getState() {
-            return State.REGISTRATION_USER;
+            return State.BOOKING;
         }
 
         @Override
         public SubState getNextSubState() {
-            return SubState.USER_BOT_MAIN_MENU;
+            return SubState.CITY_SELECT;
         }
     },
-    USER_BOT_MAIN_MENU(CHOICE_TAVERN_TYPE) {
+    CITY_SELECT(MessageText.CHOICE_CITY) {
         @Override
         public State getState() {
-            return State.REGISTRATION_USER;
+            return State.BOOKING;
         }
     },
     VIEW_RESERVE_LIST() {
@@ -748,6 +746,12 @@ public enum SubState {
         @Override
         public SubState getParentSubState() {
             return BOOKING_CHOICE_PERSONS;
+        }
+    },
+    APPROVE_TAVERN() {
+        @Override
+        public State getState() {
+            return State.ADMIN;
         }
     };
 

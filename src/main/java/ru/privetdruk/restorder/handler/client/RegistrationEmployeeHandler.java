@@ -14,15 +14,17 @@ import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.ContractType;
 import ru.privetdruk.restorder.model.enums.SubState;
 import ru.privetdruk.restorder.service.KeyboardService;
-import ru.privetdruk.restorder.service.MessageService;
 import ru.privetdruk.restorder.service.UserService;
+import ru.privetdruk.restorder.service.util.ValidationService;
+
+import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
 @Component
 @RequiredArgsConstructor
 public class RegistrationEmployeeHandler implements MessageHandler {
-    private final MessageService messageService;
     private final UserService userService;
     private final MainMenuHandler mainMenuHandler;
+    private final ValidationService validationService;
 
     @Override
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
@@ -34,16 +36,16 @@ public class RegistrationEmployeeHandler implements MessageHandler {
 
         switch (subState) {
             case REGISTER_EMPLOYEE_BUTTON_PRESS -> {
-                return messageService.configureMessage(chatId, changeState(user, subState).getMessage());
+                return configureMessage(chatId, changeState(user, subState).getMessage());
             }
             case ENTER_EMPLOYEE_FULL_NAME -> {
                 if (!StringUtils.hasText(messageText)) {
-                    return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
+                    return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }
 
                 user.setName(messageText);
 
-                sendMessage = messageService.configureMessage(chatId, changeState(user, subState).getMessage());
+                sendMessage = configureMessage(chatId, changeState(user, subState).getMessage());
 
                 sendMessage.setReplyMarkup(KeyboardService.SHARE_PHONE_KEYBOARD);
 
@@ -56,10 +58,12 @@ public class RegistrationEmployeeHandler implements MessageHandler {
                 }
 
                 if (!StringUtils.hasText(messageText)) {
-                    return messageService.configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
+                    return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }
 
-                // TODO валидация номера
+                if (!validationService.isValidPhone(messageText)) {
+                    return configureMessage(chatId, "Вы ввели некорректный номер мобильного телефона. Повторите попытку.", KeyboardService.SHARE_PHONE_KEYBOARD);
+                }
 
                 ContactEntity contact = ContactEntity.builder()
                         .user(user)

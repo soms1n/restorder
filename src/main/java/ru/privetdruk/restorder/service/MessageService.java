@@ -16,7 +16,9 @@ public class MessageService {
      * @return Ответное сообщение
      */
     public static SendMessage configureMessage(Long chatId, String message) {
-        return new SendMessage(chatId.toString(), message);
+        SendMessage sendMessage = new SendMessage(chatId.toString(), message);
+        sendMessage.enableHtml(true);
+        return sendMessage;
     }
 
     /**

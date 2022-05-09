@@ -16,19 +16,22 @@ public class ClientHandlerService {
     private final SettingsHandler settingsHandler;
     private final EventHandler eventHandler;
     private final ReserveHandler reserveHandler;
+    private final AdminHandler adminHandler;
 
     public ClientHandlerService(@Lazy RegistrationEmployeeHandler registrationEmployeeHandler,
                                 @Lazy RegistrationTavernHandler registrationTavernHandler,
                                 @Lazy MainMenuHandler mainMenuHandler,
                                 @Lazy SettingsHandler settingsHandler,
                                 @Lazy EventHandler eventHandler,
-                                @Lazy ReserveHandler reserveHandler) {
+                                @Lazy ReserveHandler reserveHandler,
+                                @Lazy AdminHandler adminHandler) {
         this.registrationEmployeeHandler = registrationEmployeeHandler;
         this.registrationTavernHandler = registrationTavernHandler;
         this.mainMenuHandler = mainMenuHandler;
         this.settingsHandler = settingsHandler;
         this.eventHandler = eventHandler;
         this.reserveHandler = reserveHandler;
+        this.adminHandler = adminHandler;
     }
 
     /**
@@ -43,7 +46,8 @@ public class ClientHandlerService {
                 State.SETTINGS, settingsHandler,
                 State.MAIN_MENU, mainMenuHandler,
                 State.EVENT, eventHandler,
-                State.RESERVE, reserveHandler
+                State.RESERVE, reserveHandler,
+                State.ADMIN, adminHandler
         );
     }
 }

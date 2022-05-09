@@ -17,8 +17,13 @@ import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
 import ru.privetdruk.restorder.model.enums.SubState;
+import ru.privetdruk.restorder.repository.ReserveRepository;
+import ru.privetdruk.restorder.repository.ScheduleRepository;
+import ru.privetdruk.restorder.repository.TableRepository;
+import ru.privetdruk.restorder.repository.TavernRepository;
 import ru.privetdruk.restorder.service.user.UserBotService;
 import ru.privetdruk.restorder.service.user.UserHandlerService;
+import ru.privetdruk.restorder.service.util.StringService;
 
 import java.util.Optional;
 
@@ -30,19 +35,35 @@ import java.util.Optional;
 class UserBotServiceTest {
     @Mock
     UserService userService;
-    @Mock
-    TavernService tavernService;
     @InjectMocks
     UserBotService userBotService;
+    @InjectMocks
+    ReserveRepository reserveRepository;
+    @InjectMocks
+    ScheduleRepository scheduleRepository;
+    @InjectMocks
+    TavernRepository tavernRepository;
 
     @BeforeEach
     @DisplayName("Presets")
     void beforeEach() {
+        BookingHandler bookingHandler = new BookingHandler(
+                new ReserveService(reserveRepository),
+                new ScheduleService(scheduleRepository),
+                new StringService(),
+                new TavernService(tavernRepository),
+                userService
+        );
+
         userBotService = new UserBotService(
                 userService,
                 new UserHandlerService(
-                        new RegistrationHandler(new MessageService(), new KeyboardService(),  userService, tavernService),
-                        new BookingHandler(new MessageService(), userService)
+                        new RegistrationHandler(
+                                new MessageService(),
+                                userService,
+                                bookingHandler
+                        ),
+                        bookingHandler
                 )
         );
     }

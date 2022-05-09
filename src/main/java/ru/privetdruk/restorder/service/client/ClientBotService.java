@@ -10,8 +10,10 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.entity.UserEntity;
+import ru.privetdruk.restorder.model.enums.Button;
 import ru.privetdruk.restorder.model.enums.Command;
 import ru.privetdruk.restorder.model.enums.State;
+import ru.privetdruk.restorder.model.enums.SubState;
 import ru.privetdruk.restorder.service.UserService;
 
 import java.util.Map;
@@ -54,17 +56,19 @@ public class ClientBotService {
         final Long finalTelegramUserId = telegramUserId;
 
         UserEntity user = userService.findByTelegramId(telegramUserId)
-                .orElseGet(() -> userService.create(finalTelegramUserId,
+                .orElseGet(() -> userService.create(
+                        finalTelegramUserId,
                         State.REGISTRATION_TAVERN,
-                        State.REGISTRATION_TAVERN.getInitialSubState()));
+                        State.REGISTRATION_TAVERN.getInitialSubState()
+                ));
 
-        State state = prepareState(message, user);
+        State state = prepareState(message, user, callback);
 
         return handlers.get(state)
                 .handle(user, message, callback);
     }
 
-    private State prepareState(Message message, UserEntity user) {
+    private State prepareState(Message message, UserEntity user, CallbackQuery callback) {
         if (!StringUtils.hasText(message.getText())) {
             return user.getState();
         }
@@ -73,6 +77,17 @@ public class ClientBotService {
         Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
         if (command == Command.START && messageSplit.length == 2) {
             return State.EVENT;
+        } else if (command == Command.MAIN_MENU) {
+            userService.updateState(user, State.MAIN_MENU);
+        }
+
+        if (callback != null && StringUtils.hasText(callback.getData())) {
+            String[] callbackData = callback.getData().split(" ");
+
+            Button button = Button.fromName(callbackData[0]);
+            if (button == Button.REGISTRATION_ACCEPT && callbackData.length == 2) {
+                userService.update(user, State.ADMIN, SubState.APPROVE_TAVERN);
+            }
         }
 
         return user.getState();

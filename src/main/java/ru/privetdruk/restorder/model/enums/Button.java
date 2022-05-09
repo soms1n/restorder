@@ -39,7 +39,7 @@ public enum Button {
     DELETE_PROFILE("❌ Удалить профиль"),
     YES("⭕ Да"),
     NO("🟢 Нет"),
-    REGISTRATION_ACCEPT("Подтвердить регистрацию"),
+    REGISTRATION_ACCEPT("\uD83D\uDFE2 Подтвердить"),
     SHARE_PHONE("\uD83D\uDCDE Поделиться номером"),
     NOTHING(null),
     MONDAY("Понедельник"),

@@ -122,4 +122,17 @@ public class UserService {
         user.setSubState(state.getInitialSubState());
         save(user);
     }
+
+    /**
+     * Обновит состояние пользователя
+     *
+     * @param user     Пользователь
+     * @param state    Состояние
+     * @param subState Подсостояние
+     */
+    public void update(UserEntity user, State state, SubState subState) {
+        user.setState(state);
+        user.setSubState(subState);
+        save(user);
+    }
 }

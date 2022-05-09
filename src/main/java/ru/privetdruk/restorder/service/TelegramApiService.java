@@ -3,6 +3,7 @@ package ru.privetdruk.restorder.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -22,6 +23,9 @@ public class TelegramApiService {
     public static final String SEND_MESSAGE_PATH = "/sendMessage";
 
     private final WebClient webClient;
+
+    @Value("${bot.client.token}")
+    private String botClientToken;
 
     public TelegramApiService(WebClient webClient) {
         this.webClient = webClient;
@@ -53,18 +57,18 @@ public class TelegramApiService {
      *
      * @param chatId        Идентификатор телеграм
      * @param text          Сообщение
-     * @param token         Токен бота
+     * @param client        Клиентский бот
      * @param replyKeyboard Keyboard
      * @return Результат отправки
      */
-    public Mono<SendMessageResponse> sendMessage(Long chatId, String text, String token, ReplyKeyboard replyKeyboard) {
+    public Mono<SendMessageResponse> sendMessage(Long chatId, String text, boolean client, ReplyKeyboard replyKeyboard) {
         String uri = UriComponentsBuilder
                 .fromHttpUrl(TELEGRAM_API_URL)
                 .path(BOT_TOKEN_PATH)
                 .path(SEND_MESSAGE_PATH)
                 .queryParam("chat_id", chatId)
                 .queryParam("text", text)
-                .buildAndExpand(token)
+                .buildAndExpand(client ? botClientToken : "")
                 .toUriString();
 
         WebClient.RequestBodySpec requestBodySpec = webClient.post()
@@ -96,17 +100,17 @@ public class TelegramApiService {
      *
      * @param chatId Идентификатор телеграм
      * @param text   Сообщение
-     * @param token  Токен бота
+     * @param client Клиентский бот
      * @return Результат отправки
      */
-    public Mono<SendMessageResponse> sendMessage(Long chatId, String text, String token) {
+    public Mono<SendMessageResponse> sendMessage(Long chatId, String text, boolean client) {
         String uri = UriComponentsBuilder
                 .fromHttpUrl(TELEGRAM_API_URL)
                 .path(BOT_TOKEN_PATH)
                 .path(SEND_MESSAGE_PATH)
                 .queryParam("chat_id", chatId)
                 .queryParam("text", text)
-                .buildAndExpand(token)
+                .buildAndExpand(client ? botClientToken : "")
                 .toUriString();
 
         return webClient.post()

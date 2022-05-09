@@ -8,7 +8,8 @@ import org.springframework.util.StringUtils;
  */
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum Command {
-    START("/start");
+    START("/start"),
+    MAIN_MENU("/menu");
 
     private final String command;
 

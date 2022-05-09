@@ -282,11 +282,18 @@ public class SettingsHandler implements MessageHandler {
                     userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case DELETE_EMPLOYEE_SETTINGS -> {
+                    if (user.getRoles().stream()
+                            .noneMatch(role -> role == Role.CLIENT_ADMIN)) {
+                        userService.updateSubState(user, user.getSubState().getParentSubState());
+
+                        return MessageService.configureMessage(chatId, "Данный функционал доступен только владельцу заведения.", KeyboardService.EMPLOYEE_KEYBOARD);
+                    }
+
                     Long employeeId = messageService.parseId(messageText);
                     if (!StringUtils.hasText(messageText) || employeeId == null) {
                         userService.updateSubState(user, user.getSubState().getParentSubState());
 
-                        return MessageService.configureMessage(chatId, "Выни кого не выбрали! Операция отменяется.", KeyboardService.EMPLOYEE_KEYBOARD);
+                        return MessageService.configureMessage(chatId, "Вы ни кого не выбрали! Операция отменяется.", KeyboardService.EMPLOYEE_KEYBOARD);
                     }
 
                     if (user.getId().equals(employeeId)) {
@@ -506,7 +513,7 @@ public class SettingsHandler implements MessageHandler {
         };
     }
 
-    private String fillTables(Set<TableEntity> tables) {
+    public String fillTables(Set<TableEntity> tables) {
         if (CollectionUtils.isEmpty(tables)) {
             return "Столы не добавлены.";
         }
@@ -518,14 +525,14 @@ public class SettingsHandler implements MessageHandler {
                         .collect(Collectors.joining(System.lineSeparator()));
     }
 
-    private String fillCategory(Category category) {
+    public String fillCategory(Category category) {
         return Optional.ofNullable(category)
                 .map(Category::getDescription)
                 .map(description -> "Категория: <b>" + description + "</b>")
                 .orElse("Категория не выбрана.");
     }
 
-    private String fillEmployeeInfo(Set<UserEntity> employees) {
+    public String fillEmployeeInfo(Set<UserEntity> employees) {
         return employees.stream()
                 .sorted(Comparator.comparing(UserEntity::getId))
                 .map(employee -> String.format(
@@ -664,28 +671,28 @@ public class SettingsHandler implements MessageHandler {
         return MessageService.configureMessage(chatId, "Выберите запись, которую хотите удалить.", employeesKeyboard);
     }
 
-    private String fillProfileInfo(UserEntity user) {
+    public String fillProfileInfo(UserEntity user) {
         return fillUserInfo(user.getName()) + System.lineSeparator() + System.lineSeparator() +
                 fillRoleInfo(user.getRoles()) + System.lineSeparator() + System.lineSeparator() +
                 fillContactInfo(user.getContacts()) + System.lineSeparator() + System.lineSeparator();
     }
 
-    private String fillGeneralInfo(TavernEntity tavern) {
+    public String fillGeneralInfo(TavernEntity tavern) {
         return fillTavernInfo(tavern.getName()) + System.lineSeparator() + System.lineSeparator() +
                 fillCategory(tavern.getCategory()) + System.lineSeparator() + System.lineSeparator() +
                 fillContactInfo(tavern.getContacts()) + System.lineSeparator() + System.lineSeparator() +
                 fillAddressInfo(tavern.getAddress());
     }
 
-    private String fillTavernInfo(String name) {
+    public String fillTavernInfo(String name) {
         return "Название вашего заведения: <b>" + name + "</b>";
     }
 
-    private String fillUserInfo(String name) {
+    public String fillUserInfo(String name) {
         return "Ваше имя: <b>" + name + "</b>";
     }
 
-    private String fillRoleInfo(Set<Role> roles) {
+    public String fillRoleInfo(Set<Role> roles) {
         String rolesString = roles.stream()
                 .map(Role::getDescription)
                 .collect(Collectors.joining(System.lineSeparator()));
@@ -693,7 +700,7 @@ public class SettingsHandler implements MessageHandler {
         return "Роль: <b>" + rolesString + "</b>";
     }
 
-    private String fillAddressInfo(AddressEntity address) {
+    public String fillAddressInfo(AddressEntity address) {
         if (address == null) {
             return "Информация об адресе отсутствует.";
         }
@@ -707,7 +714,7 @@ public class SettingsHandler implements MessageHandler {
         );
     }
 
-    private String fillContactInfo(Set<ContactEntity> contacts) {
+    public String fillContactInfo(Set<ContactEntity> contacts) {
         if (CollectionUtils.isEmpty(contacts)) {
             return "Контактная информация отсутствует.";
         }

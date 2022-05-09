@@ -314,7 +314,7 @@ public class BookingHandler implements MessageHandler {
     }
 
     private void returnToMainMenu(UserEntity user) {
-        userService.updateState(user, State.REGISTRATION_USER);
+        userService.updateState(user, State.BOOKING);
     }
 
     private SendMessage configureDeleteReserve(UserEntity user, Long chatId) {

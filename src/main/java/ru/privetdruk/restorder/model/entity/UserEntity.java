@@ -99,9 +99,6 @@ public class UserEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<ReserveEntity> reserves = new HashSet<>();
 
-    @Column(name = "registered")
-    private boolean registered;
-
     @Builder
     public UserEntity(Long telegramId, State state, SubState subState) {
         this.telegramId = telegramId;
