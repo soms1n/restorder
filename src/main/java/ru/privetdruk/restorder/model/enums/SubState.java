@@ -5,7 +5,7 @@ import ru.privetdruk.restorder.model.consts.MessageText;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum SubState {
-    EVENT_INITIAL(null),
+    EVENT_INITIAL(),
     SHOW_REGISTER_BUTTON(MessageText.REGISTER) {
         @Override
         public State getState() {
@@ -17,7 +17,7 @@ public enum SubState {
             return REGISTER_BUTTON_PRESS;
         }
     },
-    REGISTER_BUTTON_PRESS(null) {
+    REGISTER_BUTTON_PRESS() {
         @Override
         public State getState() {
             return State.REGISTRATION_TAVERN;
@@ -83,7 +83,7 @@ public enum SubState {
             return REGISTRATION_APPROVING;
         }
     },
-    REGISTRATION_APPROVING(null) {
+    REGISTRATION_APPROVING() {
         @Override
         public State getState() {
             return State.REGISTRATION_TAVERN;
@@ -94,7 +94,7 @@ public enum SubState {
             return WAITING_APPROVE_APPLICATION;
         }
     },
-    REGISTRATION_EDITING(null) {
+    REGISTRATION_EDITING() {
         @Override
         public State getState() {
             return State.REGISTRATION_TAVERN;
@@ -117,49 +117,49 @@ public enum SubState {
             return State.MAIN_MENU;
         }
     },
-    EDIT_PERSONAL_DATA(null) {
+    EDIT_PERSONAL_DATA() {
         @Override
         public State getState() {
             return State.REGISTRATION_TAVERN;
         }
     },
-    EDIT_NAME(null) {
+    EDIT_NAME() {
         @Override
         public State getState() {
             return State.REGISTRATION_TAVERN;
         }
     },
-    EDIT_ADDRESS(null) {
+    EDIT_ADDRESS() {
         @Override
         public State getState() {
             return State.REGISTRATION_TAVERN;
         }
     },
-    EDIT_CITY(null) {
+    EDIT_CITY() {
         @Override
         public State getState() {
             return State.REGISTRATION_TAVERN;
         }
     },
-    EDIT_TAVERN(null) {
+    EDIT_TAVERN() {
         @Override
         public State getState() {
             return State.REGISTRATION_TAVERN;
         }
     },
-    EDIT_PHONE_NUMBER(null) {
+    EDIT_PHONE_NUMBER() {
         @Override
         public State getState() {
             return State.REGISTRATION_TAVERN;
         }
     },
-    VIEW_SETTINGS(null) {
+    VIEW_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
         }
     },
-    VIEW_GENERAL_SETTINGS(null) {
+    VIEW_GENERAL_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -170,7 +170,7 @@ public enum SubState {
             return VIEW_SETTINGS;
         }
     },
-    VIEW_GENERAL_SETTINGS_TAVERN_NAME(null) {
+    VIEW_GENERAL_SETTINGS_TAVERN_NAME() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -181,7 +181,7 @@ public enum SubState {
             return VIEW_GENERAL_SETTINGS;
         }
     },
-    CHANGE_GENERAL_SETTINGS_TAVERN_NAME(null) {
+    CHANGE_GENERAL_SETTINGS_TAVERN_NAME() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -192,7 +192,7 @@ public enum SubState {
             return VIEW_GENERAL_SETTINGS_TAVERN_NAME;
         }
     },
-    VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS(null) {
+    VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -203,7 +203,7 @@ public enum SubState {
             return VIEW_GENERAL_SETTINGS;
         }
     },
-    CHANGE_GENERAL_SETTINGS_TAVERN_ADDRESS(null) {
+    CHANGE_GENERAL_SETTINGS_TAVERN_ADDRESS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -214,7 +214,7 @@ public enum SubState {
             return VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS;
         }
     },
-    VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS(null) {
+    VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -225,7 +225,7 @@ public enum SubState {
             return VIEW_GENERAL_SETTINGS;
         }
     },
-    ADD_GENERAL_SETTINGS_TAVERN_CONTACTS(null) {
+    ADD_GENERAL_SETTINGS_TAVERN_CONTACTS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -236,7 +236,7 @@ public enum SubState {
             return VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS;
         }
     },
-    DELETE_GENERAL_SETTINGS_TAVERN_CONTACTS(null) {
+    DELETE_GENERAL_SETTINGS_TAVERN_CONTACTS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -247,7 +247,7 @@ public enum SubState {
             return VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS;
         }
     },
-    VIEW_PROFILE_SETTINGS(null) {
+    VIEW_PROFILE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -258,7 +258,7 @@ public enum SubState {
             return VIEW_SETTINGS;
         }
     },
-    VIEW_PROFILE_SETTINGS_USER_NAME(null) {
+    VIEW_PROFILE_SETTINGS_USER_NAME() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -269,7 +269,7 @@ public enum SubState {
             return VIEW_PROFILE_SETTINGS;
         }
     },
-    CHANGE_PROFILE_SETTINGS_USER_NAME(null) {
+    CHANGE_PROFILE_SETTINGS_USER_NAME() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -280,7 +280,7 @@ public enum SubState {
             return VIEW_PROFILE_SETTINGS_USER_NAME;
         }
     },
-    VIEW_PROFILE_SETTINGS_USER_CONTACTS(null) {
+    VIEW_PROFILE_SETTINGS_USER_CONTACTS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -291,7 +291,7 @@ public enum SubState {
             return VIEW_PROFILE_SETTINGS;
         }
     },
-    ADD_PROFILE_SETTINGS_USER_CONTACTS(null) {
+    ADD_PROFILE_SETTINGS_USER_CONTACTS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -302,7 +302,7 @@ public enum SubState {
             return VIEW_PROFILE_SETTINGS_USER_CONTACTS;
         }
     },
-    DELETE_PROFILE_SETTINGS_USER_CONTACTS(null) {
+    DELETE_PROFILE_SETTINGS_USER_CONTACTS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -313,7 +313,7 @@ public enum SubState {
             return VIEW_PROFILE_SETTINGS_USER_CONTACTS;
         }
     },
-    DELETE_PROFILE_SETTINGS(null) {
+    DELETE_PROFILE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -324,7 +324,7 @@ public enum SubState {
             return VIEW_PROFILE_SETTINGS;
         }
     },
-    VIEW_EMPLOYEE_SETTINGS(null) {
+    VIEW_EMPLOYEE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -335,7 +335,7 @@ public enum SubState {
             return VIEW_SETTINGS;
         }
     },
-    DELETE_EMPLOYEE_SETTINGS(null) {
+    DELETE_EMPLOYEE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -346,7 +346,7 @@ public enum SubState {
             return VIEW_EMPLOYEE_SETTINGS;
         }
     },
-    REGISTER_EMPLOYEE_BUTTON_PRESS(null) {
+    REGISTER_EMPLOYEE_BUTTON_PRESS() {
         @Override
         public State getState() {
             return State.REGISTRATION_EMPLOYEE;
@@ -379,7 +379,7 @@ public enum SubState {
             return VIEW_MAIN_MENU;
         }
     },
-    VIEW_GENERAL_SETTINGS_CATEGORIES(null) {
+    VIEW_GENERAL_SETTINGS_CATEGORIES() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -390,7 +390,7 @@ public enum SubState {
             return VIEW_GENERAL_SETTINGS;
         }
     },
-    CHANGE_GENERAL_SETTINGS_CATEGORIES(null) {
+    CHANGE_GENERAL_SETTINGS_CATEGORIES() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -401,7 +401,7 @@ public enum SubState {
             return VIEW_GENERAL_SETTINGS_CATEGORIES;
         }
     },
-    VIEW_SCHEDULE_SETTINGS(null) {
+    VIEW_SCHEDULE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -412,7 +412,7 @@ public enum SubState {
             return VIEW_SETTINGS;
         }
     },
-    DELETE_SCHEDULE_SETTINGS(null) {
+    DELETE_SCHEDULE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -423,7 +423,7 @@ public enum SubState {
             return VIEW_SCHEDULE_SETTINGS;
         }
     },
-    ADD_DAY_WEEK_SCHEDULE_SETTINGS(null) {
+    ADD_DAY_WEEK_SCHEDULE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -434,7 +434,7 @@ public enum SubState {
             return VIEW_SCHEDULE_SETTINGS;
         }
     },
-    ADD_START_HOUR_SCHEDULE_SETTINGS(null) {
+    ADD_START_HOUR_SCHEDULE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -445,7 +445,7 @@ public enum SubState {
             return VIEW_SCHEDULE_SETTINGS;
         }
     },
-    ADD_START_MINUTE_SCHEDULE_SETTINGS(null) {
+    ADD_START_MINUTE_SCHEDULE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -456,7 +456,7 @@ public enum SubState {
             return VIEW_SCHEDULE_SETTINGS;
         }
     },
-    ADD_END_HOUR_SCHEDULE_SETTINGS(null) {
+    ADD_END_HOUR_SCHEDULE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -467,7 +467,7 @@ public enum SubState {
             return VIEW_SCHEDULE_SETTINGS;
         }
     },
-    ADD_END_MINUTE_SCHEDULE_SETTINGS(null) {
+    ADD_END_MINUTE_SCHEDULE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -478,7 +478,7 @@ public enum SubState {
             return VIEW_SCHEDULE_SETTINGS;
         }
     },
-    ADD_PRICE_SCHEDULE_SETTINGS(null) {
+    ADD_PRICE_SCHEDULE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -489,7 +489,7 @@ public enum SubState {
             return VIEW_SCHEDULE_SETTINGS;
         }
     },
-    VIEW_TABLE_SETTINGS(null) {
+    VIEW_TABLE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -500,7 +500,7 @@ public enum SubState {
             return VIEW_SETTINGS;
         }
     },
-    DELETE_TABLE_SETTINGS(null) {
+    DELETE_TABLE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -511,7 +511,7 @@ public enum SubState {
             return VIEW_TABLE_SETTINGS;
         }
     },
-    ADD_LABEL_TABLE_SETTINGS(null) {
+    ADD_LABEL_TABLE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -522,7 +522,7 @@ public enum SubState {
             return VIEW_TABLE_SETTINGS;
         }
     },
-    ADD_NUMBER_SEATS_TABLE_SETTINGS(null) {
+    ADD_NUMBER_SEATS_TABLE_SETTINGS() {
         @Override
         public State getState() {
             return State.SETTINGS;
@@ -533,7 +533,7 @@ public enum SubState {
             return VIEW_TABLE_SETTINGS;
         }
     },
-    GREETING(null) {
+    GREETING() {
         @Override
         public State getState() {
             return State.BOOKING;
@@ -550,7 +550,7 @@ public enum SubState {
             return State.BOOKING;
         }
     },
-    VIEW_RESERVE_LIST(null) {
+    VIEW_RESERVE_LIST() {
         @Override
         public State getState() {
             return State.RESERVE;
@@ -561,7 +561,7 @@ public enum SubState {
             return VIEW_MAIN_MENU;
         }
     },
-    DELETE_RESERVE_CHOICE_DATE(null) {
+    DELETE_RESERVE_CHOICE_DATE() {
         @Override
         public State getState() {
             return State.RESERVE;
@@ -572,7 +572,7 @@ public enum SubState {
             return VIEW_RESERVE_LIST;
         }
     },
-    DELETE_RESERVE_CHOICE_TABLE(null) {
+    DELETE_RESERVE_CHOICE_TABLE() {
         @Override
         public State getState() {
             return State.RESERVE;
@@ -583,7 +583,7 @@ public enum SubState {
             return VIEW_RESERVE_LIST;
         }
     },
-    ADD_RESERVE_CHOICE_DATE(null) {
+    ADD_RESERVE_CHOICE_DATE() {
         @Override
         public State getState() {
             return State.RESERVE;
@@ -594,7 +594,7 @@ public enum SubState {
             return VIEW_MAIN_MENU;
         }
     },
-    ADD_RESERVE_CHOICE_TIME(null) {
+    ADD_RESERVE_CHOICE_TIME() {
         @Override
         public State getState() {
             return State.RESERVE;
@@ -605,7 +605,7 @@ public enum SubState {
             return VIEW_MAIN_MENU;
         }
     },
-    ADD_RESERVE_CHOICE_PERSONS(null) {
+    ADD_RESERVE_CHOICE_PERSONS() {
         @Override
         public State getState() {
             return State.RESERVE;
@@ -616,7 +616,7 @@ public enum SubState {
             return VIEW_MAIN_MENU;
         }
     },
-    ADD_RESERVE_CHOICE_TABLE(null) {
+    ADD_RESERVE_CHOICE_TABLE() {
         @Override
         public State getState() {
             return State.RESERVE;
@@ -627,7 +627,7 @@ public enum SubState {
             return VIEW_MAIN_MENU;
         }
     },
-    ADD_RESERVE_CHOICE_NAME(null) {
+    ADD_RESERVE_CHOICE_NAME() {
         @Override
         public State getState() {
             return State.RESERVE;
@@ -638,7 +638,7 @@ public enum SubState {
             return VIEW_MAIN_MENU;
         }
     },
-    ADD_RESERVE_CHOICE_PHONE(null) {
+    ADD_RESERVE_CHOICE_PHONE() {
         @Override
         public State getState() {
             return State.RESERVE;
@@ -649,7 +649,7 @@ public enum SubState {
             return VIEW_MAIN_MENU;
         }
     },
-    ADD_RESERVE_INFO(null) {
+    ADD_RESERVE_INFO() {
         @Override
         public State getState() {
             return State.RESERVE;
@@ -660,7 +660,7 @@ public enum SubState {
             return VIEW_MAIN_MENU;
         }
     },
-    DELETE_RESERVE_CHOICE_TAVERN(null) {
+    DELETE_RESERVE_CHOICE_TAVERN() {
         @Override
         public State getState() {
             return State.BOOKING;
@@ -670,9 +670,89 @@ public enum SubState {
         public SubState getParentSubState() {
             return VIEW_RESERVE_LIST;
         }
+    },
+    VIEW_TAVERN_LIST() {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MAIN_MENU;
+        }
+    },
+    CHOICE_TAVERN() {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MAIN_MENU;
+        }
+    },
+    VIEW_TAVERN() {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_TAVERN_LIST;
+        }
+    },
+    BOOKING_CHOICE_DATE() {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_TAVERN;
+        }
+    },
+    BOOKING_CHOICE_TIME() {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return BOOKING_CHOICE_DATE;
+        }
+    },
+    BOOKING_CHOICE_PERSONS() {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return BOOKING_CHOICE_TIME;
+        }
+    },
+    BOOKING_APPROVE() {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return BOOKING_CHOICE_PERSONS;
+        }
     };
 
-    private final String message;
+    private String message;
+
+    SubState() {
+    }
 
     SubState(String message) {
         this.message = message;

@@ -26,6 +26,7 @@ public enum Button {
     SCHEDULE("\uD83D\uDCC5 Расписание"),
     TABLES("\uD83E\uDE91 Столы"),
     BACK("⬅ Назад"),
+    MORE("Далее ➡"),
     TAVERN_NAME("™ Название"),
     CONTACTS("\uD83D\uDCDE Телефоны"),
     TAVERN_ADDRESS("\uD83C\uDFE2 Адрес"),

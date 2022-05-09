@@ -308,7 +308,7 @@ public class ReserveHandler implements MessageHandler {
     }
 
     private SendMessage configureChoicePersons(Long chatId) {
-        return messageService.configureMessage(chatId, "Введите или выберите кол-во персон:", KeyboardService.NUMBERS_KEYBOARD);
+        return messageService.configureMessage(chatId, "Введите или выберите кол-во персон:", KeyboardService.NUMBERS_KEYBOARD_WITH_CANCEL);
     }
 
     private SendMessage configureChoiceTable(UserEntity user, Long chatId) {

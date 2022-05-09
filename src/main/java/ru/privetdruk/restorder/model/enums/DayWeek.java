@@ -3,6 +3,8 @@ package ru.privetdruk.restorder.model.enums;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.util.StringUtils;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -10,22 +12,24 @@ import java.util.List;
  */
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum DayWeek {
-    MONDAY("Понедельник", "Пн"),
-    TUESDAY("Вторник", "Вт"),
-    WEDNESDAY("Среда", "Ср"),
-    THURSDAY("Четверг", "Чт"),
-    FRIDAY("Пятница", "Пт"),
-    SATURDAY("Суббота", "Сб"),
-    SUNDAY("Воскресенье", "Вс");
+    MONDAY(DayOfWeek.MONDAY, "Понедельник", "Пн"),
+    TUESDAY(DayOfWeek.TUESDAY, "Вторник", "Вт"),
+    WEDNESDAY(DayOfWeek.WEDNESDAY, "Среда", "Ср"),
+    THURSDAY(DayOfWeek.THURSDAY, "Четверг", "Чт"),
+    FRIDAY(DayOfWeek.FRIDAY, "Пятница", "Пт"),
+    SATURDAY(DayOfWeek.SATURDAY, "Суббота", "Сб"),
+    SUNDAY(DayOfWeek.SUNDAY, "Воскресенье", "Вс");
 
     public static final List<DayWeek> SORTED_DAY_WEEK_LIST = List.of(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY);
     public static final List<DayWeek> WEEKDAYS_LIST = List.of(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY);
     public static final List<DayWeek> WEEKENDS_LIST = List.of(SATURDAY, SUNDAY);
 
+    private final DayOfWeek dayOfWeek;
     private final String fullName;
     private final String shortName;
 
-    DayWeek(String fullName, String shortName) {
+    DayWeek(DayOfWeek dayOfWeek, String fullName, String shortName) {
+        this.dayOfWeek = dayOfWeek;
         this.fullName = fullName;
         this.shortName = shortName;
     }
@@ -36,6 +40,20 @@ public enum DayWeek {
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    public static DayWeek fromDate(LocalDate date) {
+        if (date == null) {
+            return null;
+        }
+
+        for (DayWeek dayWeek : DayWeek.values()) {
+            if (date.getDayOfWeek() == dayWeek.getDayOfWeek()) {
+                return dayWeek;
+            }
+        }
+
+        return null;
     }
 
     public static DayWeek fromFullName(String fullName) {
@@ -50,6 +68,10 @@ public enum DayWeek {
         }
 
         return null;
+    }
+
+    public DayOfWeek getDayOfWeek() {
+        return dayOfWeek;
     }
 
     public String getName() {

@@ -7,8 +7,11 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import ru.privetdruk.restorder.model.entity.AddressEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
+import ru.privetdruk.restorder.model.enums.Category;
+import ru.privetdruk.restorder.model.enums.City;
 import ru.privetdruk.restorder.repository.TavernRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -74,7 +77,43 @@ public class TavernService {
      * @param id Идентификатор заведения
      * @return Найденное заведение
      */
+    @Transactional(readOnly = true)
     public Optional<TavernEntity> find(Long id) {
         return tavernRepository.findById(id);
+    }
+
+    /**
+     * Найти
+     *
+     * @param city     Город
+     * @param category Категория
+     * @return Список заведений
+     */
+    @Transactional(readOnly = true)
+    public List<TavernEntity> find(City city, Category category) {
+        return tavernRepository.findAllByAddressCityAndCategoryOrderByName(city, category);
+    }
+
+    /**
+     * Найти
+     *
+     * @param id   Идентификатор
+     * @param city Город
+     * @return Найденное заведение
+     */
+    @Transactional(readOnly = true)
+    public TavernEntity find(Long id, City city) {
+        return tavernRepository.findByIdAndAddressCity(id, city);
+    }
+
+    /**
+     * Найди заведение
+     *
+     * @param id Идентификатор заведения
+     * @return Найденное заведение
+     */
+    @Transactional(readOnly = true)
+    public TavernEntity findByIdWithSchedulesAndReserves(Long id) {
+        return tavernRepository.findByIdWithSchedulesAndReserves(id);
     }
 }

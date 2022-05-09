@@ -45,16 +45,41 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup RESERVE_LIST_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup USER_RESERVE_LIST_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TODAY_TOMORROW_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup NUMBERS_KEYBOARD_WITH_CANCEL = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup NUMBERS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup WITHOUT_PHONE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup APPROVE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup CITIES_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup TAVERN_INFO_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup BOOKING_CHOICE_DATE_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup BOOKING_CHOICE_TIME_KEYBOARD = new ReplyKeyboardMarkup();
 
     {
         init();
     }
 
     private static void init() {
+        KeyboardRow CANCEL_ROW = new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText())));
+
+        KeyboardRow BACK_AND_MAIN_MENU_ROW = new KeyboardRow(List.of(
+                new KeyboardButton(Button.BACK.getText()),
+                new KeyboardButton(Button.RETURN_MAIN_MENU.getText())
+        ));
+
+        BOOKING_CHOICE_TIME_KEYBOARD.setKeyboard(List.of(
+                BACK_AND_MAIN_MENU_ROW
+        ));
+        BOOKING_CHOICE_TIME_KEYBOARD.setResizeKeyboard(true);
+
+        BOOKING_CHOICE_DATE_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.TODAY.getText()),
+                        new KeyboardButton(Button.TOMORROW.getText())
+                )),
+                BACK_AND_MAIN_MENU_ROW
+        ));
+        BOOKING_CHOICE_DATE_KEYBOARD.setResizeKeyboard(true);
+
         CITIES_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
                         new KeyboardButton(City.BRYANSK.getDescription()),
@@ -106,7 +131,6 @@ public class KeyboardService {
         ));
         YES_NO_KEYBOARD.setResizeKeyboard(true);
 
-        KeyboardRow CANCEL_ROW = new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText())));
 
         CANCEL_KEYBOARD.setKeyboard(List.of(CANCEL_ROW));
         CANCEL_KEYBOARD.setResizeKeyboard(true);
@@ -129,10 +153,6 @@ public class KeyboardService {
         ));
         SETTINGS_KEYBOARD.setResizeKeyboard(true);
 
-        KeyboardRow BACK_AND_MAIN_MENU_ROW = new KeyboardRow(List.of(
-                new KeyboardButton(Button.BACK.getText()),
-                new KeyboardButton(Button.RETURN_MAIN_MENU.getText())
-        ));
         GENERAL_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.TAVERN_NAME.getText()),
@@ -344,11 +364,19 @@ public class KeyboardService {
         ));
         TODAY_TOMORROW_CANCEL_KEYBOARD.setResizeKeyboard(true);
 
-        NUMBERS_KEYBOARD.setKeyboard(List.of(
+        NUMBERS_KEYBOARD_WITH_CANCEL.setKeyboard(List.of(
                 new KeyboardRow(List.of(new KeyboardButton(Button.ONE.getText()), new KeyboardButton(Button.TWO.getText()), new KeyboardButton(Button.THREE.getText()))),
                 new KeyboardRow(List.of(new KeyboardButton(Button.FOUR.getText()), new KeyboardButton(Button.FIVE.getText()), new KeyboardButton(Button.SIX.getText()))),
                 new KeyboardRow(List.of(new KeyboardButton(Button.SEVEN.getText()), new KeyboardButton(Button.EIGHT.getText()), new KeyboardButton(Button.NINE.getText()))),
                 CANCEL_ROW
+        ));
+        NUMBERS_KEYBOARD_WITH_CANCEL.setResizeKeyboard(true);
+
+        NUMBERS_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton(Button.ONE.getText()), new KeyboardButton(Button.TWO.getText()), new KeyboardButton(Button.THREE.getText()))),
+                new KeyboardRow(List.of(new KeyboardButton(Button.FOUR.getText()), new KeyboardButton(Button.FIVE.getText()), new KeyboardButton(Button.SIX.getText()))),
+                new KeyboardRow(List.of(new KeyboardButton(Button.SEVEN.getText()), new KeyboardButton(Button.EIGHT.getText()), new KeyboardButton(Button.NINE.getText()))),
+                BACK_AND_MAIN_MENU_ROW
         ));
         NUMBERS_KEYBOARD.setResizeKeyboard(true);
 
@@ -362,6 +390,12 @@ public class KeyboardService {
                 new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()), new KeyboardButton(Button.APPROVE.getText())))
         ));
         APPROVE_KEYBOARD.setResizeKeyboard(true);
+
+        TAVERN_INFO_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton(Button.RESERVE.getText()))),
+                BACK_AND_MAIN_MENU_ROW
+        ));
+        TAVERN_INFO_KEYBOARD.setResizeKeyboard(true);
     }
 
     public InlineKeyboardButton createInlineButton(Button button) {

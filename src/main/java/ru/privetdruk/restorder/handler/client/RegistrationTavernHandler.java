@@ -21,10 +21,7 @@ import ru.privetdruk.restorder.model.entity.ContactEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.*;
-import ru.privetdruk.restorder.service.KeyboardService;
-import ru.privetdruk.restorder.service.MessageService;
-import ru.privetdruk.restorder.service.TavernService;
-import ru.privetdruk.restorder.service.TelegramApiService;
+import ru.privetdruk.restorder.service.*;
 
 import java.util.Arrays;
 import java.util.List;

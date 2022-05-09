@@ -23,6 +23,8 @@ import ru.privetdruk.restorder.service.UserService;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static ru.privetdruk.restorder.service.MessageService.configureMessage;
+
 @Component
 @RequiredArgsConstructor
 public class EventHandler implements MessageHandler {
@@ -40,55 +42,53 @@ public class EventHandler implements MessageHandler {
         String[] messageSplit = message.getText().split(" ");
         Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
         if (command != Command.START || messageSplit.length != 2) {
-            return messageService.configureMessage(chatId, "Что-то пошло не так...");
+            return configureMessage(chatId, "Что-то пошло не так...");
         }
 
         EventEntity event = eventService.find(UUID.fromString(messageSplit[Command.MESSAGE_EVENT_ID_INDEX]));
 
         if (event == null) {
-            return messageService.configureMessage(chatId, "Что-то пошло не так...");
+            return configureMessage(chatId, "Что-то пошло не так...");
         }
 
         if (!event.getAvailable() || LocalDateTime.now().isAfter(event.getExpirationDate())) {
-            return messageService.configureMessage(chatId, "Данная ссылка больше недоступна.");
+            return configureMessage(chatId, "Данная ссылка больше недоступна.");
         }
 
         EventType eventType = event.getType();
-        switch (eventType) {
-            case REGISTER_EMPLOYEE -> {
-                Long tavernId = objectMapper.convertValue(event.getParams().get(JsonbKey.TAVERN_ID.getKey()), Long.TYPE);
-                TavernEntity tavern = tavernService.find(tavernId)
-                        .orElse(null);
+        if (eventType == EventType.REGISTER_EMPLOYEE) {
+            Long tavernId = objectMapper.convertValue(event.getParams().get(JsonbKey.TAVERN_ID.getKey()), Long.TYPE);
+            TavernEntity tavern = tavernService.find(tavernId)
+                    .orElse(null);
 
-                if (tavern == null) {
-                    eventService.complete(event);
+            if (tavern == null) {
+                eventService.complete(event);
 
-                    return messageService.configureMessage(chatId, "Некорректная ссылка.");
-                }
+                return configureMessage(chatId, "Некорректная ссылка.");
+            }
 
-                if (user.getTavern() != null && user.getTavern() != tavern) {
-                    return messageService.configureMessage(chatId, "Вы уже является владельцем/сотрудником другого заведения: " + tavern.getName() + ". Удалите в настройках ваш профиль и попробуйте повторно перейти по ссылке.");
-                }
+            if (user.getTavern() != null && user.getTavern() != tavern) {
+                return configureMessage(chatId, "Вы уже является владельцем/сотрудником другого заведения: " + tavern.getName() + ". Удалите в настройках ваш профиль и попробуйте повторно перейти по ссылке.");
+            }
 
-                if (CollectionUtils.isEmpty(user.getRoles()) || user.getTavern() == null) {
-                    user.getRoles().clear();
-                    user.addRole(Role.CLIENT_EMPLOYEE);
+            if (CollectionUtils.isEmpty(user.getRoles()) || user.getTavern() == null) {
+                user.getRoles().clear();
+                user.addRole(Role.CLIENT_EMPLOYEE);
 
-                    tavern.addEmployee(user);
+                tavern.addEmployee(user);
 
-                    user.setState(eventType.getState());
-                    user.setSubState(eventType.getSubState());
+                user.setState(eventType.getState());
+                user.setSubState(eventType.getSubState());
 
-                    userService.save(user);
-                    eventService.complete(event);
+                userService.save(user);
+                eventService.complete(event);
 
-                    return registrationEmployeeHandler.handle(user, message, callback);
-                } else if (user.getTavern() != null && user.getTavern() != tavern) {
-                    return messageService.configureMessage(chatId, "Вы уже является владельцем/сотрудником другого заведения: " + tavern.getName() + ". Удалите в настройках ваш профиль и попробуйте повторно перейти по ссылке.");
-                }
+                return registrationEmployeeHandler.handle(user, message, callback);
+            } else if (user.getTavern() != null && user.getTavern() != tavern) {
+                return configureMessage(chatId, "Вы уже является владельцем/сотрудником другого заведения: " + tavern.getName() + ". Удалите в настройках ваш профиль и попробуйте повторно перейти по ссылке.");
             }
         }
 
-        return messageService.configureMessage(chatId, "Что-то пошло не так...");
+        return configureMessage(chatId, "Что-то пошло не так...");
     }
 }
