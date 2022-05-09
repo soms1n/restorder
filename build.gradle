@@ -43,6 +43,8 @@ dependencies {
 	testImplementation "org.testcontainers:testcontainers:$testcontainersVersion"
 	testImplementation "org.testcontainers:postgresql:$testcontainersVersion"
 	testImplementation "org.testcontainers:junit-jupiter:$testcontainersVersion"
+	implemtaention('org.springframework.boot:spring-boot-starter-web')
+	providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
 }
 
 test {
