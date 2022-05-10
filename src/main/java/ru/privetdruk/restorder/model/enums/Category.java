@@ -8,13 +8,11 @@ import org.springframework.util.StringUtils;
  */
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum Category {
-    CAFE("Кафе", Button.CAFE),
+    CAFE_BAR_RESTAURANT("Кафе - Бар - Ресторан", Button.CAFE_BAR_RESTAURANT),
     NIGHT_CLUB("Ночной клуб", Button.NIGHT_CLUB),
     BILLIARDS("Бильярд", Button.BILLIARDS),
     BOWLING("Боулинг", Button.BOWLING),
-    BAR("Бар", Button.BAR),
-    HOOKAH_BAR("Кальянная", Button.HOOKAH_BAR),
-    RESTAURANT("Ресторан", Button.RESTAURANT);
+    HOOKAH_BAR("Кальянная", Button.HOOKAH_BAR);
 
     private final String description;
     private final Button button;

@@ -69,13 +69,11 @@ public enum Button {
     SEVEN("7️⃣"),
     EIGHT("8️⃣"),
     NINE("9️⃣"),
-    RESTAURANT("\uD83E\uDD42 Ресторан"),
-    HOOKAH_BAR("\uD83D\uDEAC Кальянная"),
-    CAFE("☕ Кафе"),
-    NIGHT_CLUB("\uD83C\uDF78 Ночной клуб"),
-    BILLIARDS("\uD83C\uDFB1 Бильярд"),
+    HOOKAH_BAR("\uD83D\uDEAC Кальянные"),
+    CAFE_BAR_RESTAURANT("☕ Кафе \uD83C\uDF7A Бары \uD83E\uDD42 Рестораны"),
+    NIGHT_CLUB("\uD83C\uDF78 Ночные клубы"),
+    BILLIARDS("\uD83C\uDFB1 Бильярдные"),
     BOWLING("\uD83C\uDFB3 Боулинг"),
-    BAR("\uD83C\uDF7A Бар"),
     MY_RESERVE("📋 Мои бронирования"),
     NOW("\uD83D\uDD51 Сейчас");
 

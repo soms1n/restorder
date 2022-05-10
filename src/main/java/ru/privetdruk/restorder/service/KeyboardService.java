@@ -105,15 +105,15 @@ public class KeyboardService {
 
         USER_MAIN_MENU.setKeyboard(List.of(
                 new KeyboardRow(List.of(
-                        new KeyboardButton(Button.RESTAURANT.getText()),
-                        new KeyboardButton(Button.BAR.getText()),
-                        new KeyboardButton(Button.CAFE.getText())
+                        new KeyboardButton(Button.CAFE_BAR_RESTAURANT.getText())
+                )),
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.NIGHT_CLUB.getText()),
+                        new KeyboardButton(Button.HOOKAH_BAR.getText())
                 )),
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.BILLIARDS.getText()),
-                        new KeyboardButton(Button.BOWLING.getText()),
-                        new KeyboardButton(Button.NIGHT_CLUB.getText()),
-                        new KeyboardButton(Button.HOOKAH_BAR.getText())
+                        new KeyboardButton(Button.BOWLING.getText())
                 )),
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.MY_RESERVE.getText())

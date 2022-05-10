@@ -75,7 +75,7 @@ public class UserBotService {
             String[] messageSplit = message.getText().split(" ");
             Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
             if (command == Command.MAIN_MENU) {
-                userService.updateState(user, State.MAIN_MENU);
+                userService.updateState(user, State.BOOKING);
             }
         }
     }

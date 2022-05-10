@@ -65,7 +65,7 @@ public class BookingHandler implements MessageHandler {
                 case VIEW_MAIN_MENU -> {
                     switch (button) {
                         case MY_RESERVE -> userService.updateSubState(user, SubState.VIEW_RESERVE_LIST);
-                        case HOOKAH_BAR, RESTAURANT, CAFE, NIGHT_CLUB, BILLIARDS, BOWLING, BAR -> {
+                        case HOOKAH_BAR, CAFE_BAR_RESTAURANT, NIGHT_CLUB, BILLIARDS, BOWLING -> {
                             Category category = Category.fromButton(button);
                             bookings.put(user, new BookingDto(category));
                             userService.updateSubState(user, SubState.VIEW_TAVERN_LIST);
