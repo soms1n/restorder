@@ -77,7 +77,7 @@ public class ReserveHandler implements MessageHandler {
         }
 
         // обновление состояния
-        if (button != Button.BACK && button != Button.CANCEL && button != Button.NO) {
+        if (button != Button.CANCEL && button != Button.NO) {
             switch (user.getSubState()) {
                 case VIEW_MAIN_MENU -> {
                     if (button == Button.RESERVE_LIST) {
@@ -344,10 +344,10 @@ public class ReserveHandler implements MessageHandler {
                                     .filter(reserve -> date.isEqual(reserve.getDate()))
                                     .map(ReserveEntity::getTime)
                                     .sorted(Comparator.naturalOrder())
-                                    .map(LocalTime::toString)
+                                    .map(time -> time.format(Constant.HH_MM_FORMATTER))
                                     .collect(Collectors.joining(","));
 
-                            String foundReserve = "занято в " + reserveTimes;
+                            String foundReserve = "занято с " + reserveTimes;
 
                             rows.add(new KeyboardRow(List.of(new KeyboardButton(String.format(
                                     "%s на %s %s %s",

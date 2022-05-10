@@ -60,7 +60,7 @@ public class BookingHandler implements MessageHandler {
         }
 
         // обновление/обработка состояния
-        if (button != Button.BACK && button != Button.CANCEL && button != Button.NO) {
+        if (button != Button.CANCEL && button != Button.NO) {
             switch (user.getSubState()) {
                 case VIEW_MAIN_MENU -> {
                     switch (button) {
@@ -273,7 +273,7 @@ public class BookingHandler implements MessageHandler {
                 + System.lineSeparator()
                 + "Дата: <i>" + booking.getDate() + "</i>"
                 + System.lineSeparator()
-                + "Время: <i>" + booking.getTime() + "</i>"
+                + "Время: <i>" + booking.getTime().format(Constant.HH_MM_FORMATTER) + "</i>"
                 + System.lineSeparator()
                 + "Кол-во персон: <i>" + booking.getPersons() + "</i>";
     }

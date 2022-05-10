@@ -602,7 +602,7 @@ public enum SubState {
 
         @Override
         public SubState getParentSubState() {
-            return VIEW_MAIN_MENU;
+            return ADD_RESERVE_CHOICE_TABLE;
         }
     },
     ADD_RESERVE_CHOICE_PERSONS() {
@@ -613,7 +613,7 @@ public enum SubState {
 
         @Override
         public SubState getParentSubState() {
-            return VIEW_MAIN_MENU;
+            return ADD_RESERVE_CHOICE_TIME;
         }
     },
     ADD_RESERVE_CHOICE_TABLE() {
@@ -624,7 +624,7 @@ public enum SubState {
 
         @Override
         public SubState getParentSubState() {
-            return VIEW_MAIN_MENU;
+            return ADD_RESERVE_CHOICE_DATE;
         }
     },
     ADD_RESERVE_CHOICE_NAME() {
@@ -635,7 +635,7 @@ public enum SubState {
 
         @Override
         public SubState getParentSubState() {
-            return VIEW_MAIN_MENU;
+            return ADD_RESERVE_CHOICE_PERSONS;
         }
     },
     ADD_RESERVE_CHOICE_PHONE() {
@@ -646,7 +646,7 @@ public enum SubState {
 
         @Override
         public SubState getParentSubState() {
-            return VIEW_MAIN_MENU;
+            return ADD_RESERVE_CHOICE_NAME;
         }
     },
     ADD_RESERVE_INFO() {
@@ -657,7 +657,7 @@ public enum SubState {
 
         @Override
         public SubState getParentSubState() {
-            return VIEW_MAIN_MENU;
+            return ADD_RESERVE_CHOICE_PHONE;
         }
     },
     DELETE_RESERVE_CHOICE_TAVERN() {
