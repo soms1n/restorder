@@ -10,10 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.entity.UserEntity;
-import ru.privetdruk.restorder.model.enums.Button;
-import ru.privetdruk.restorder.model.enums.Command;
-import ru.privetdruk.restorder.model.enums.State;
-import ru.privetdruk.restorder.model.enums.SubState;
+import ru.privetdruk.restorder.model.enums.*;
 import ru.privetdruk.restorder.service.UserService;
 
 import java.util.Map;
@@ -59,7 +56,7 @@ public class ClientBotService {
                 .orElseGet(() -> userService.create(
                         finalTelegramUserId,
                         State.REGISTRATION_TAVERN,
-                        State.REGISTRATION_TAVERN.getInitialSubState()
+                        UserType.CLIENT
                 ));
 
         State state = prepareState(message, user, callback);
@@ -77,7 +74,7 @@ public class ClientBotService {
         Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
         if (command == Command.START && messageSplit.length == 2) {
             return State.EVENT;
-        } else if (command == Command.MAIN_MENU) {
+        } else if (user.isRegistered() && command == Command.MAIN_MENU) {
             userService.updateState(user, State.MAIN_MENU);
         }
 

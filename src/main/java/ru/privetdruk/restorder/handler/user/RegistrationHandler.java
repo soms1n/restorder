@@ -20,7 +20,6 @@ import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 @Component
 @RequiredArgsConstructor
 public class RegistrationHandler implements MessageHandler {
-    private final MessageService messageService;
     private final UserService userService;
     private final BookingHandler bookingHandler;
 
@@ -42,6 +41,8 @@ public class RegistrationHandler implements MessageHandler {
                 }
 
                 user.setCity(city);
+                user.setRegistered(true);
+
                 userService.updateState(user, State.BOOKING);
 
                 return bookingHandler.handle(user, message, callback);

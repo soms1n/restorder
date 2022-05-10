@@ -8,8 +8,10 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.entity.UserEntity;
+import ru.privetdruk.restorder.model.enums.Command;
 import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
+import ru.privetdruk.restorder.model.enums.UserType;
 import ru.privetdruk.restorder.service.UserService;
 
 import java.util.Map;
@@ -53,15 +55,26 @@ public class UserBotService {
                 .orElseGet(() -> userService.create(
                         finalTelegramUserId,
                         State.REGISTRATION_USER,
-                        State.REGISTRATION_USER.getInitialSubState(),
-                        Role.USER
+                        Role.USER,
+                        UserType.USER
                 ));
 
-        if (user.getState() != State.REGISTRATION_USER && user.getCity() == null) {
-            userService.updateState(user, State.REGISTRATION_USER);
-        }
+        prepareState(message, user);
 
         return handlers.get(user.getState())
                 .handle(user, message, callback);
+    }
+
+    private void prepareState(Message message, UserEntity user) {
+        if (!user.isRegistered()) {
+            userService.updateState(user, State.REGISTRATION_USER);
+            return;
+        }
+
+        String[] messageSplit = message.getText().split(" ");
+        Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
+        if (user.isRegistered() && command == Command.MAIN_MENU) {
+            userService.updateState(user, State.MAIN_MENU);
+        }
     }
 }

@@ -8,7 +8,7 @@ import java.util.Optional;
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum Button {
     REGISTRATION("Регистрация"),
-    EDIT("Редактировать"),
+    EDIT("✏  Редактировать"),
     APPROVE("\uD83D\uDFE2 Утвердить"),
     NAME("Имя"),
     TAVERN("Заведение"),

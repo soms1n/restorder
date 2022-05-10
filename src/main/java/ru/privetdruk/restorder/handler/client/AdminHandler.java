@@ -39,6 +39,8 @@ public class AdminHandler implements MessageHandler {
                 return configureMessageForAdmin(user, chatId, "Заявка уже подтверждена.");
             }
 
+            foundUser.setRegistered(true);
+
             userService.updateState(foundUser, State.MAIN_MENU);
 
             telegramApiService.sendMessage(

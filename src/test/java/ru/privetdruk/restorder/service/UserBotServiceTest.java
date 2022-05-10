@@ -17,6 +17,7 @@ import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
 import ru.privetdruk.restorder.model.enums.SubState;
+import ru.privetdruk.restorder.model.enums.UserType;
 import ru.privetdruk.restorder.repository.ReserveRepository;
 import ru.privetdruk.restorder.repository.ScheduleRepository;
 import ru.privetdruk.restorder.repository.TableRepository;
@@ -79,7 +80,7 @@ class UserBotServiceTest {
         message.setChat(new Chat(chatId, "some type"));
         update.setMessage(message);
 
-        UserEntity user = new UserEntity(1L, State.BOOKING, State.BOOKING.getInitialSubState());
+        UserEntity user = new UserEntity(1L, State.BOOKING, State.BOOKING.getInitialSubState(), UserType.USER);
 
         Mockito.when(userService.findByTelegramId(1L)).thenReturn(Optional.of(user));
 
@@ -100,10 +101,10 @@ class UserBotServiceTest {
         callbackQuery.setMessage(message);
 
         update.setCallbackQuery(callbackQuery);
-        UserEntity user = new UserEntity(1L, State.BOOKING, State.BOOKING.getInitialSubState());
+        UserEntity user = new UserEntity(1L, State.BOOKING, State.BOOKING.getInitialSubState(), UserType.USER);
 
         Mockito.when(userService.findByTelegramId(chatId)).thenReturn(Optional.empty());
-        Mockito.when(userService.create(chatId, State.BOOKING, SubState.GREETING, Role.USER)).thenReturn(user);
+        Mockito.when(userService.create(chatId, State.BOOKING, Role.USER, UserType.USER)).thenReturn(user);
 
         SendMessage sendMessage = userBotService.handleUpdate(update);
 

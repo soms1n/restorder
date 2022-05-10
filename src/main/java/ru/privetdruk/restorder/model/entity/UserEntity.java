@@ -99,11 +99,25 @@ public class UserEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<ReserveEntity> reserves = new HashSet<>();
 
+    /**
+     * Признак зарегистрированного пользователя
+     */
+    @Column(name = "registered")
+    private boolean registered;
+
+    /**
+     * Тип
+     */
+    @Column(name = "type")
+    @Enumerated(EnumType.STRING)
+    private UserType type;
+
     @Builder
-    public UserEntity(Long telegramId, State state, SubState subState) {
+    public UserEntity(Long telegramId, State state, SubState subState, UserType type) {
         this.telegramId = telegramId;
         this.state = state;
         this.subState = subState;
+        this.type = type;
     }
 
     public void addRole(Role role) {
@@ -133,12 +147,12 @@ public class UserEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UserEntity user = (UserEntity) o;
-        return Objects.equals(telegramId, user.telegramId);
+        UserEntity that = (UserEntity) o;
+        return Objects.equals(telegramId, that.telegramId) && type == that.type;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(telegramId);
+        return Objects.hash(telegramId, type);
     }
 }

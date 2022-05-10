@@ -7,6 +7,7 @@ import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
 import ru.privetdruk.restorder.model.enums.SubState;
+import ru.privetdruk.restorder.model.enums.UserType;
 import ru.privetdruk.restorder.repository.UserRepository;
 
 import java.util.List;
@@ -51,8 +52,8 @@ public class UserService {
      * @return Созданного пользователя
      */
     @Transactional
-    public UserEntity create(Long telegramId, State state, SubState subState, Role role) {
-        UserEntity user = createUserWithState(telegramId, state, subState);
+    public UserEntity create(Long telegramId, State state, Role role, UserType type) {
+        UserEntity user = createUserWithState(telegramId, state, type);
 
         user.addRole(role);
 
@@ -66,17 +67,18 @@ public class UserService {
      * @return Созданного пользователя
      */
     @Transactional
-    public UserEntity create(Long telegramId, State state, SubState subState) {
-        UserEntity user = createUserWithState(telegramId, state, subState);
+    public UserEntity create(Long telegramId, State state, UserType type) {
+        UserEntity user = createUserWithState(telegramId, state, type);
 
         return userRepository.save(user);
     }
 
-    private UserEntity createUserWithState(Long telegramId, State state, SubState subState) {
+    private UserEntity createUserWithState(Long telegramId, State state, UserType type) {
         return UserEntity.builder()
                 .telegramId(telegramId)
+                .type(type)
                 .state(state)
-                .subState(subState)
+                .subState(state.getInitialSubState())
                 .build();
     }
 
