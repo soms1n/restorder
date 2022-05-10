@@ -65,8 +65,8 @@ public class BookingHandler implements MessageHandler {
                 case VIEW_MAIN_MENU -> {
                     switch (button) {
                         case MY_RESERVE -> userService.updateSubState(user, SubState.VIEW_RESERVE_LIST);
-                        case HOOKAHS, RESTAURANTS -> {
-                            Category category = button == Button.HOOKAHS ? Category.HOOKAH_BAR : Category.RESTAURANT;
+                        case HOOKAH_BAR, RESTAURANT, CAFE, NIGHT_CLUB, BILLIARDS, BOWLING, BAR -> {
+                            Category category = Category.fromButton(button);
                             bookings.put(user, new BookingDto(category));
                             userService.updateSubState(user, SubState.VIEW_TAVERN_LIST);
                         }
@@ -76,37 +76,48 @@ public class BookingHandler implements MessageHandler {
                     if (button == Button.RESERVE) {
                         userService.updateSubState(user, SubState.BOOKING_CHOICE_DATE);
 
-                        return configureMessage(chatId, "Введите дату в формате ДД.ММ.ГГГГ:", KeyboardService.BOOKING_CHOICE_DATE_KEYBOARD);
+                        return configureMessage(chatId, "Введите дату в формате ДДММГГГГ <i>(пример: 24052001)</i>:", KeyboardService.BOOKING_CHOICE_DATE_KEYBOARD);
                     }
                 }
                 case BOOKING_CHOICE_DATE -> {
                     try {
+                        LocalDate now = LocalDate.now();
+
                         LocalDate date = switch (button) {
-                            case TODAY -> LocalDate.now();
-                            case TOMORROW -> LocalDate.now().plusDays(1);
-                            default -> LocalDate.parse(messageText, Constant.DD_MM_YYYY_FORMATTER);
+                            case TODAY -> now;
+                            case TOMORROW -> now.plusDays(1);
+                            default -> LocalDate.parse(messageText, Constant.DD_MM_YYYY_WITHOUT_DOT_FORMATTER);
                         };
+
+                        if (date.isBefore(now)) {
+                            return configureMessage(chatId, "Дата бронирования должна быть больше, либо равна текущей дате. Повторите попытку:", KeyboardService.BOOKING_CHOICE_DATE_KEYBOARD);
+                        }
 
                         bookings.get(user)
                                 .setDate(date);
 
                         userService.updateSubState(user, SubState.BOOKING_CHOICE_TIME);
 
-                        return configureMessage(chatId, "Введите время в формате ЧЧ:ММ", KeyboardService.BOOKING_CHOICE_TIME_KEYBOARD);
+                        return configureMessage(chatId, "Введите время в формате ЧЧММ", KeyboardService.BOOKING_CHOICE_TIME_KEYBOARD);
                     } catch (Throwable t) {
                         return configureMessage(
                                 chatId,
-                                "Введенная дата не соответствует формату. Пример - 05.09.2022. Повторите попытку:",
+                                "Введенная дата не соответствует формату. Пример - 05092022 <i>(5 сентября 2022 года)</i>. Повторите попытку:",
                                 KeyboardService.BOOKING_CHOICE_DATE_KEYBOARD
                         );
                     }
                 }
                 case BOOKING_CHOICE_TIME -> {
                     try {
-                        LocalTime time = LocalTime.parse(messageText);
+                        LocalTime time = LocalTime.parse(messageText, Constant.HH_MM_WITHOUT_DOT_FORMATTER);
 
-                        bookings.get(user)
-                                .setTime(time);
+                        BookingDto booking = bookings.get(user);
+
+                        if (booking.getDate().isEqual(LocalDate.now()) && time.isBefore(LocalTime.now())) {
+                            return configureMessage(chatId, "Время бронирования должно быть больше, либо равно текущему времени.", KeyboardService.TODAY_TOMORROW_CANCEL_KEYBOARD);
+                        }
+
+                        booking.setTime(time);
 
                         userService.updateSubState(user, SubState.BOOKING_CHOICE_PERSONS);
 
@@ -114,7 +125,7 @@ public class BookingHandler implements MessageHandler {
                     } catch (Throwable t) {
                         return configureMessage(
                                 chatId,
-                                "Введенное время не соответствует формату. Пример - 03:05. Повторите попытку:",
+                                "Введенное время не соответствует формату. Пример - 0305 (3 часа 5 минут). Повторите попытку:",
                                 KeyboardService.BOOKING_CHOICE_TIME_KEYBOARD
                         );
                     }
@@ -179,7 +190,7 @@ public class BookingHandler implements MessageHandler {
 
                         userService.updateSubState(user, SubState.BOOKING_APPROVE);
 
-                        return configureMessage(chatId, "Информация о бронировании: заполнить.", KeyboardService.APPROVE_KEYBOARD);
+                        return configureMessage(chatId, fillReserveInfo(booking), KeyboardService.APPROVE_KEYBOARD);
                     } catch (Throwable t) {
                         return configureMessage(
                                 chatId,
@@ -253,6 +264,18 @@ public class BookingHandler implements MessageHandler {
 
             default -> new SendMessage();
         };
+    }
+
+    private String fillReserveInfo(BookingDto booking) {
+        return "<b>Информация о бронировании</b>"
+                + System.lineSeparator()
+                + "Заведение: <i>" + booking.getTavern().getName() + "</i>"
+                + System.lineSeparator()
+                + "Дата: <i>" + booking.getDate() + "</i>"
+                + System.lineSeparator()
+                + "Время: <i>" + booking.getTime() + "</i>"
+                + System.lineSeparator()
+                + "Кол-во персон: <i>" + booking.getPersons() + "</i>";
     }
 
     private String fillTavernInfo(TavernEntity tavern) {

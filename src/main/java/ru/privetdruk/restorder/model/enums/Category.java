@@ -8,18 +8,20 @@ import org.springframework.util.StringUtils;
  */
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum Category {
-    CAFE("Кафе"),
-    NIGHT_CLUB("Ночной клуб"),
-    BILLIARDS("Бильярд"),
-    BOWLING("Боулинг"),
-    BAR("Бар"),
-    HOOKAH_BAR("Кальянная"),
-    RESTAURANT("Ресторан");
+    CAFE("Кафе", Button.CAFE),
+    NIGHT_CLUB("Ночной клуб", Button.NIGHT_CLUB),
+    BILLIARDS("Бильярд", Button.BILLIARDS),
+    BOWLING("Боулинг", Button.BOWLING),
+    BAR("Бар", Button.BAR),
+    HOOKAH_BAR("Кальянная", Button.HOOKAH_BAR),
+    RESTAURANT("Ресторан", Button.RESTAURANT);
 
     private final String description;
+    private final Button button;
 
-    Category(String description) {
+    Category(String description, Button button) {
         this.description = description;
+        this.button = button;
     }
 
     public static Category fromName(String name) {
@@ -44,11 +46,29 @@ public enum Category {
         return null;
     }
 
+    public static Category fromButton(Button button) {
+        if (button == null) {
+            return null;
+        }
+
+        for (Category category : Category.values()) {
+            if (button == category.getButton()) {
+                return category;
+            }
+        }
+
+        return null;
+    }
+
     public String getName() {
         return name();
     }
 
     public String getDescription() {
         return description;
+    }
+
+    public Button getButton() {
+        return button;
     }
 }

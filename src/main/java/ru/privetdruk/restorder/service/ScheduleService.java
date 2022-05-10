@@ -93,7 +93,7 @@ public class ScheduleService {
                             "    %s - %s %s",
                             schedule.getStartPeriod(),
                             schedule.getEndPeriod(),
-                            schedule.getPrice() == 0 ? "бесплатно" : schedule.getPrice() + "р."
+                            "вход: " + (schedule.getPrice() == 0 ? "бесплатно" : schedule.getPrice() + "р.")
                     ))
                     .collect(Collectors.joining(System.lineSeparator()));
 

@@ -69,9 +69,15 @@ public enum Button {
     SEVEN("7️⃣"),
     EIGHT("8️⃣"),
     NINE("9️⃣"),
-    RESTAURANTS("\uD83E\uDD42 Рестораны"),
-    HOOKAHS("\uD83D\uDEAC Кальянные"),
-    MY_RESERVE("📋 Мои бронирования");
+    RESTAURANT("\uD83E\uDD42 Ресторан"),
+    HOOKAH_BAR("\uD83D\uDEAC Кальянная"),
+    CAFE("☕ Кафе"),
+    NIGHT_CLUB("\uD83C\uDF78 Ночной клуб"),
+    BILLIARDS("\uD83C\uDFB1 Бильярд"),
+    BOWLING("\uD83C\uDFB3 Боулинг"),
+    BAR("\uD83C\uDF7A Бар"),
+    MY_RESERVE("📋 Мои бронирования"),
+    NOW("\uD83D\uDD51 Сейчас");
 
     private final String text;
 

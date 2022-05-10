@@ -67,6 +67,7 @@ public class KeyboardService {
         ));
 
         BOOKING_CHOICE_TIME_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton(Button.NOW.getText()))),
                 BACK_AND_MAIN_MENU_ROW
         ));
         BOOKING_CHOICE_TIME_KEYBOARD.setResizeKeyboard(true);
@@ -104,8 +105,15 @@ public class KeyboardService {
 
         USER_MAIN_MENU.setKeyboard(List.of(
                 new KeyboardRow(List.of(
-                        new KeyboardButton(Button.RESTAURANTS.getText()),
-                        new KeyboardButton(Button.HOOKAHS.getText())
+                        new KeyboardButton(Button.RESTAURANT.getText()),
+                        new KeyboardButton(Button.BAR.getText()),
+                        new KeyboardButton(Button.CAFE.getText())
+                )),
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.BILLIARDS.getText()),
+                        new KeyboardButton(Button.BOWLING.getText()),
+                        new KeyboardButton(Button.NIGHT_CLUB.getText()),
+                        new KeyboardButton(Button.HOOKAH_BAR.getText())
                 )),
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.MY_RESERVE.getText())
