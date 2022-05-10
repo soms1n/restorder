@@ -27,6 +27,7 @@ import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.*;
 import ru.privetdruk.restorder.service.*;
+import ru.privetdruk.restorder.service.util.ValidationService;
 
 
 import java.util.Collections;
@@ -56,7 +57,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     @DisplayName("Presets")
     void beforeEach() {
         Mockito.when(message.getChatId()).thenReturn(1L);
-        registrationTavernHandler = new RegistrationTavernHandler(new KeyboardService(), new MessageService(), userService, telegramApiService, tavernService);
+        registrationTavernHandler = new RegistrationTavernHandler(new KeyboardService(), userService, telegramApiService, tavernService, new ValidationService());
     }
 
     @Test
@@ -403,7 +404,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     }
 
     private UserEntity generateTestUser(SubState subState) {
-        UserEntity user = new UserEntity(1L, State.REGISTRATION_TAVERN, subState);
+        UserEntity user = new UserEntity(1L, State.REGISTRATION_TAVERN, subState, UserType.CLIENT);
         user.setName("Иванов Иван Иванович");
         user.setRoles(Collections.singleton(Role.CLIENT_ADMIN));
         user.setTavern(new TavernEntity());
