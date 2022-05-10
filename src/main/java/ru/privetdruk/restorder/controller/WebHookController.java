@@ -20,12 +20,12 @@ public class WebHookController {
         this.userBot = userBot;
     }
 
-    @PostMapping(value = "/user")
+    @PostMapping(value = "${bot.user.rest}")
     public Mono<BotApiMethod<?>> onUserUpdateReceived(@RequestBody Update update) {
         return Mono.just(userBot.onWebhookUpdateReceived(update));
     }
 
-    @PostMapping(value = "/client")
+    @PostMapping(value = "${bot.client.rest}")
     public Mono<BotApiMethod<?>> onClientUpdateReceived(@RequestBody Update update) {
         return Mono.just(clientBot.onWebhookUpdateReceived(update));
     }

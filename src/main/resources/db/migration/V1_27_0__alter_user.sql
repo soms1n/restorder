@@ -1,6 +1,9 @@
 ALTER TABLE users
     ADD COLUMN IF NOT EXISTS type TEXT;
 
+UPDATE users
+SET type = 'CLIENT';
+
 ALTER TABLE users
     ALTER COLUMN type SET NOT NULL;
 
