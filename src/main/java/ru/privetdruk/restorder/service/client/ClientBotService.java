@@ -70,14 +70,12 @@ public class ClientBotService {
             return user.getState();
         }
 
-        if (user.isRegistered()) {
-            String[] messageSplit = message.getText().split(" ");
-            Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
-            if (command == Command.START && messageSplit.length == 2) {
-                return State.EVENT;
-            } else if (command == Command.MAIN_MENU) {
-                userService.updateState(user, State.MAIN_MENU);
-            }
+        String[] messageSplit = message.getText().split(" ");
+        Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
+        if (command == Command.START && messageSplit.length == 2) {
+            return State.EVENT;
+        } else if (user.isRegistered() && command == Command.MAIN_MENU) {
+            userService.updateState(user, State.MAIN_MENU);
         }
 
         if (callback != null && StringUtils.hasText(callback.getData())) {
