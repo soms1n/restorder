@@ -14,6 +14,7 @@ import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.*;
 import ru.privetdruk.restorder.service.UserService;
+import ru.privetdruk.restorder.service.util.ValidationService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,7 +33,7 @@ class BookingHandlerTest extends AbstractTest {
 
     @Test
     void user_in_greeting_substate_and_entered_any_text() {
-        registrationHandler = new RegistrationHandler(userService, bookingHandler);
+        registrationHandler = new RegistrationHandler(bookingHandler, userService, new ValidationService());
 
         UserEntity user = UserEntity.builder()
                 .telegramId(1L)
@@ -59,7 +60,7 @@ class BookingHandlerTest extends AbstractTest {
     @Test
     void not_registered_user_in_greeting_substate_and_select_city() {
         Mockito.doNothing().when(userService).save(Mockito.any());
-        registrationHandler = new RegistrationHandler(userService, bookingHandler);
+        registrationHandler = new RegistrationHandler(bookingHandler, userService, new ValidationService());
 
         UserEntity user = UserEntity.builder()
                 .telegramId(1L)
@@ -92,7 +93,7 @@ class BookingHandlerTest extends AbstractTest {
     @Test
     void registered_user_in_greeting_substate_and_select_city() {
         Mockito.doNothing().when(userService).save(Mockito.any());
-        registrationHandler = new RegistrationHandler(userService, bookingHandler);
+        registrationHandler = new RegistrationHandler(bookingHandler, userService, new ValidationService());
 
         UserEntity user = UserEntity.builder()
                 .telegramId(1L)
@@ -127,7 +128,7 @@ class BookingHandlerTest extends AbstractTest {
     @Test
     void registered_user_in_userBotMainMenu_substate_and_entered_any_text() {
         Mockito.doNothing().when(userService).save(Mockito.any());
-        registrationHandler = new RegistrationHandler(userService, bookingHandler);
+        registrationHandler = new RegistrationHandler(bookingHandler, userService, new ValidationService());
 
         UserEntity user = UserEntity.builder()
                 .telegramId(1L)
@@ -157,7 +158,7 @@ class BookingHandlerTest extends AbstractTest {
     @Test
     void registered_user_in_userBotMainMenu_substate_and_click_main_menu_button() {
         Mockito.doNothing().when(userService).save(Mockito.any());
-        registrationHandler = new RegistrationHandler(userService, bookingHandler);
+        registrationHandler = new RegistrationHandler(bookingHandler, userService, new ValidationService());
 
         UserEntity user = UserEntity.builder()
                 .telegramId(1L)

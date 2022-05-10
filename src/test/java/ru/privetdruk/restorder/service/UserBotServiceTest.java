@@ -22,6 +22,7 @@ import ru.privetdruk.restorder.repository.TavernRepository;
 import ru.privetdruk.restorder.service.user.UserBotService;
 import ru.privetdruk.restorder.service.user.UserHandlerService;
 import ru.privetdruk.restorder.service.util.StringService;
+import ru.privetdruk.restorder.service.util.ValidationService;
 
 import java.util.Optional;
 
@@ -57,8 +58,9 @@ class UserBotServiceTest {
                 userService,
                 new UserHandlerService(
                         new RegistrationHandler(
+                                bookingHandler,
                                 userService,
-                                bookingHandler
+                                new ValidationService()
                         ),
                         bookingHandler
                 )
