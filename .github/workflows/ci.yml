@@ -9,7 +9,7 @@ name: build
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ dev, fix_tests ]
   pull_request:
     branches: [ dev ]
 
