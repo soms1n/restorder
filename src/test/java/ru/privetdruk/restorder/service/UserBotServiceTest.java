@@ -60,7 +60,6 @@ class UserBotServiceTest {
                 userService,
                 new UserHandlerService(
                         new RegistrationHandler(
-                                new MessageService(),
                                 userService,
                                 bookingHandler
                         ),
@@ -82,7 +81,8 @@ class UserBotServiceTest {
 
         UserEntity user = new UserEntity(1L, State.BOOKING, State.BOOKING.getInitialSubState(), UserType.USER);
 
-        Mockito.when(userService.findByTelegramId(1L)).thenReturn(Optional.of(user));
+        Mockito.when(userService.findByTelegramId(1L, UserType.USER))
+                .thenReturn(Optional.of(user));
 
         SendMessage sendMessage = userBotService.handleUpdate(update);
 
@@ -103,7 +103,7 @@ class UserBotServiceTest {
         update.setCallbackQuery(callbackQuery);
         UserEntity user = new UserEntity(1L, State.BOOKING, State.BOOKING.getInitialSubState(), UserType.USER);
 
-        Mockito.when(userService.findByTelegramId(chatId)).thenReturn(Optional.empty());
+        Mockito.when(userService.findByTelegramId(chatId, UserType.USER)).thenReturn(Optional.empty());
         Mockito.when(userService.create(chatId, State.BOOKING, Role.USER, UserType.USER)).thenReturn(user);
 
         SendMessage sendMessage = userBotService.handleUpdate(update);

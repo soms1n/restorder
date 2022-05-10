@@ -1,7 +1,6 @@
 package ru.privetdruk.restorder.handler.client;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -49,9 +48,6 @@ public class RegistrationTavernHandler implements MessageHandler {
     private final TavernService tavernService;
     private final ValidationService validationService;
 
-    @Value("${bot.client.token}")
-    private String botClientToken;
-
     @Override
     @Transactional
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
@@ -60,47 +56,6 @@ public class RegistrationTavernHandler implements MessageHandler {
         SubState subState = user.getSubState();
         SubState nextSubState;
         SendMessage sendMessage = new SendMessage();
-
-        /*
-        Если сообщение от админа с подтверждением регистрации, отправляем пользователю сообщение и
-        переводим в главное меню
-        */
-        if (user.getRoles().contains(Role.ADMIN)) {
-            if (callback != null) {
-                String userId = callback.getData().substring(callback.getData().lastIndexOf(" ") + 1);
-                Long userTelegramId = Long.valueOf(userId);
-
-                Optional<UserEntity> optionalUserEntity = userService.findByTelegramIdWithLock(userTelegramId);
-
-                if (optionalUserEntity.isPresent()) {
-                    UserEntity userEntity = optionalUserEntity.get();
-
-                    if (userEntity.getSubState() == SubState.WAITING_APPROVE_APPLICATION) {
-                        telegramApiService.sendMessage(
-                                        userTelegramId,
-                                        MessageText.YOUR_CLAIM_WAS_APPROVED,
-                                        true,
-                                        KeyboardService.CLIENT_MAIN_MENU
-                                )
-                                .subscribe();
-
-                        userEntity.setState(State.MAIN_MENU);
-                        userEntity.setSubState(SubState.VIEW_MAIN_MENU);
-                        userService.save(userEntity);
-                    }
-                }
-
-                sendMessage.setChatId(String.valueOf(chatId));
-                sendMessage.setText(MessageText.ADMIN_APPROVED_CLAIM);
-                sendMessage.setReplyMarkup(
-                        ReplyKeyboardRemove.builder()
-                                .removeKeyboard(true)
-                                .build()
-                );
-            }
-
-            return sendMessage;
-        }
 
         switch (subState) {
             case SHOW_REGISTER_BUTTON -> {

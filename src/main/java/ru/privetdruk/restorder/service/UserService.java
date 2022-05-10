@@ -22,11 +22,12 @@ public class UserService {
      * Поиск пользователя
      *
      * @param telegramId Идентификатор в телеграм
+     * @param type       Тип пользователя
      * @return Найденного пользователя
      */
     @Transactional(readOnly = true)
-    public Optional<UserEntity> findByTelegramId(Long telegramId) {
-        return userRepository.findByTelegramId(telegramId);
+    public Optional<UserEntity> findByTelegramId(Long telegramId, UserType type) {
+        return userRepository.findByTelegramIdAndType(telegramId, type);
     }
 
     @Transactional

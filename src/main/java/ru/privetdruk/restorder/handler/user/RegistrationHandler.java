@@ -12,7 +12,6 @@ import ru.privetdruk.restorder.model.enums.City;
 import ru.privetdruk.restorder.model.enums.State;
 import ru.privetdruk.restorder.model.enums.SubState;
 import ru.privetdruk.restorder.service.KeyboardService;
-import ru.privetdruk.restorder.service.MessageService;
 import ru.privetdruk.restorder.service.UserService;
 
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
@@ -41,6 +40,13 @@ public class RegistrationHandler implements MessageHandler {
                 }
 
                 user.setCity(city);
+
+                userService.updateSubState(user, SubState.ENTER_FULL_NAME);
+
+                return configureMessage(chatId, MessageText.ENTER_NAME, KeyboardService.REMOVE_KEYBOARD);
+            }
+            case ENTER_FULL_NAME -> {
+                user.setName(messageText);
                 user.setRegistered(true);
 
                 userService.updateState(user, State.BOOKING);
@@ -49,6 +55,6 @@ public class RegistrationHandler implements MessageHandler {
             }
         }
 
-        return new SendMessage();
+        return new SendMessage(chatId.toString(), "Что-то пошло не так...");
     }
 }

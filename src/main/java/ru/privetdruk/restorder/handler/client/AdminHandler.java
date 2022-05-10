@@ -9,6 +9,7 @@ import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.State;
 import ru.privetdruk.restorder.model.enums.SubState;
+import ru.privetdruk.restorder.model.enums.UserType;
 import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.TelegramApiService;
 import ru.privetdruk.restorder.service.UserService;
@@ -28,7 +29,7 @@ public class AdminHandler implements MessageHandler {
         if (user.getSubState() == SubState.APPROVE_TAVERN) {
             Long userId = Long.valueOf(callback.getData().split(" ")[1]);
 
-            UserEntity foundUser = userService.findByTelegramId(userId)
+            UserEntity foundUser = userService.findByTelegramId(userId, UserType.CLIENT)
                     .orElse(null);
 
             if (foundUser == null) {

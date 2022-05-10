@@ -51,7 +51,7 @@ public class UserBotService {
 
         final Long finalTelegramUserId = telegramUserId;
 
-        UserEntity user = userService.findByTelegramId(telegramUserId)
+        UserEntity user = userService.findByTelegramId(telegramUserId, UserType.USER)
                 .orElseGet(() -> userService.create(
                         finalTelegramUserId,
                         State.REGISTRATION_USER,
@@ -66,15 +66,17 @@ public class UserBotService {
     }
 
     private void prepareState(Message message, UserEntity user) {
-        if (!user.isRegistered()) {
+        if (!user.isRegistered() && user.getState() != State.REGISTRATION_USER) {
             userService.updateState(user, State.REGISTRATION_USER);
             return;
         }
 
-        String[] messageSplit = message.getText().split(" ");
-        Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
-        if (user.isRegistered() && command == Command.MAIN_MENU) {
-            userService.updateState(user, State.MAIN_MENU);
+        if (user.isRegistered()) {
+            String[] messageSplit = message.getText().split(" ");
+            Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
+            if (command == Command.MAIN_MENU) {
+                userService.updateState(user, State.MAIN_MENU);
+            }
         }
     }
 }
