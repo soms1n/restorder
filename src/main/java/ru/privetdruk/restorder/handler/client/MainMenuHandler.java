@@ -54,10 +54,8 @@ public class MainMenuHandler implements MessageHandler {
                     TavernEntity tavern = user.getTavern();
                     String description = "<b>Информация о вашем заведении</b>"
                             + System.lineSeparator()
-                            + infoService.fillProfile(user)
-                            + System.lineSeparator() + System.lineSeparator()
                             + infoService.fillGeneral(tavern)
-                            + System.lineSeparator() + System.lineSeparator()
+                            + System.lineSeparator()
                             + infoService.fillEmployee(tavern.getEmployees())
                             + System.lineSeparator() + System.lineSeparator()
                             + infoService.fillTables(tavern.getTables());

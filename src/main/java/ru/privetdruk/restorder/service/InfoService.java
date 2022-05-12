@@ -44,7 +44,7 @@ public class InfoService {
                 .map(Role::getDescription)
                 .collect(Collectors.joining(System.lineSeparator()));
 
-        return "<b>Роль:</b> " + rolesString + "";
+        return "Роль: <b>" + rolesString + "</b>";
     }
 
     public String fillAddress(AddressEntity address) {
@@ -79,7 +79,7 @@ public class InfoService {
         return "<b>Столы:</b>" + System.lineSeparator() +
                 tables.stream()
                         .sorted(Comparator.comparing(TableEntity::getLabel, Comparator.naturalOrder()))
-                        .map(table -> "<b>" + table.getLabel() + "</b>: мест - " + table.getNumberSeats())
+                        .map(table -> "<b>" + table.getLabel() + "</b> на <i>" + table.getNumberSeats() + "</i> мест")
                         .collect(Collectors.joining(System.lineSeparator()));
     }
 
