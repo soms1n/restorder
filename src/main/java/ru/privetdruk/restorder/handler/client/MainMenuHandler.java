@@ -10,31 +10,27 @@ import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Button;
+import ru.privetdruk.restorder.service.InfoService;
 import ru.privetdruk.restorder.service.KeyboardService;
-import ru.privetdruk.restorder.service.MessageService;
-import ru.privetdruk.restorder.service.ScheduleService;
 import ru.privetdruk.restorder.service.TavernService;
 
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
 @Component
 public class MainMenuHandler implements MessageHandler {
-    private final MessageService messageService;
-    private final TavernService tavernService;
+    private final InfoService infoService;
     private final SettingsHandler settingsHandler;
-    private final ScheduleService scheduleService;
     private final ReserveHandler reserveHandler;
+    private final TavernService tavernService;
 
-    public MainMenuHandler(MessageService messageService,
-                           TavernService tavernService,
+    public MainMenuHandler(TavernService tavernService,
+                           InfoService infoService,
                            @Lazy SettingsHandler settingsHandler,
-                           @Lazy ReserveHandler reserveHandler,
-                           @Lazy ScheduleService scheduleService) {
-        this.messageService = messageService;
+                           @Lazy ReserveHandler reserveHandler) {
+        this.infoService = infoService;
         this.tavernService = tavernService;
         this.settingsHandler = settingsHandler;
         this.reserveHandler = reserveHandler;
-        this.scheduleService = scheduleService;
     }
 
     @Override
@@ -58,26 +54,11 @@ public class MainMenuHandler implements MessageHandler {
                     TavernEntity tavern = user.getTavern();
                     String description = "<b>Информация о вашем заведении</b>"
                             + System.lineSeparator()
-                            + settingsHandler.fillProfileInfo(user)
-                            + settingsHandler.fillTavernInfo(tavern.getName())
+                            + infoService.fillGeneral(tavern)
                             + System.lineSeparator()
-                            + System.lineSeparator()
-                            + settingsHandler.fillAddressInfo(tavern.getAddress())
-                            + System.lineSeparator()
-                            + System.lineSeparator()
-                            + settingsHandler.fillCategory(tavern.getCategory())
-                            + System.lineSeparator()
-                            + System.lineSeparator()
-                            + settingsHandler.fillContactInfo(tavern.getContacts())
-                            + System.lineSeparator()
-                            + System.lineSeparator()
-                            + settingsHandler.fillEmployeeInfo(tavern.getEmployees())
-                            + System.lineSeparator()
-                            + System.lineSeparator()
-                            + settingsHandler.fillTables(tavern.getTables())
-                            + System.lineSeparator()
-                            + System.lineSeparator()
-                            + scheduleService.fillSchedulesInfo(tavern.getSchedules());
+                            + infoService.fillEmployee(tavern.getEmployees())
+                            + System.lineSeparator() + System.lineSeparator()
+                            + infoService.fillTables(tavern.getTables());
                     sendMessage.setText(description);
                     sendMessage.enableHtml(true);
                 }

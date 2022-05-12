@@ -93,7 +93,11 @@ public class ReserveHandler implements MessageHandler {
                         date = LocalDate.parse(messageText, Constant.DD_MM_YYYY_FORMATTER);
                     } catch (DateTimeParseException e) {
                         userService.updateSubState(user, user.getSubState().getParentSubState());
-                        return configureMessage(chatId, "Вы ввели некорректное значение. Операция отменяется.", KeyboardService.RESERVE_LIST_KEYBOARD);
+                        return configureMessage(
+                                chatId,
+                                "Вы ввели некорректное значение. Операция отменяется.",
+                                KeyboardService.RESERVE_LIST_KEYBOARD
+                        );
                     }
 
                     List<ReserveEntity> reserves = user.getTavern().getTables().stream()
@@ -177,12 +181,20 @@ public class ReserveHandler implements MessageHandler {
                         try {
                             date = LocalDate.parse(messageText, Constant.DD_MM_YYYY_WITHOUT_DOT_FORMATTER);
                         } catch (DateTimeParseException e) {
-                            return configureMessage(chatId, "Дата не соответствует формату. Повторите попытку:", KeyboardService.TODAY_TOMORROW_CANCEL_KEYBOARD);
+                            return configureMessage(
+                                    chatId,
+                                    "Дата не соответствует формату. Повторите попытку:",
+                                    KeyboardService.TODAY_TOMORROW_CANCEL_KEYBOARD
+                            );
                         }
                     }
 
                     if (date.isBefore(LocalDate.now())) {
-                        return configureMessage(chatId, "Дата бронирования должна быть больше, либо равна текущей дате. Повторите попытку:", KeyboardService.TODAY_TOMORROW_CANCEL_KEYBOARD);
+                        return configureMessage(
+                                chatId,
+                                "Дата бронирования должна быть больше, либо равна текущей дате. Повторите попытку:",
+                                KeyboardService.TODAY_TOMORROW_CANCEL_KEYBOARD
+                        );
                     }
 
                     ReserveEntity newReserve = new ReserveEntity();
@@ -228,7 +240,11 @@ public class ReserveHandler implements MessageHandler {
                         ReserveEntity reserve = addReservesTemporary.get(user);
 
                         if (reserve.getDate().isEqual(LocalDate.now()) && time.isBefore(now)) {
-                            return configureMessage(chatId, "Время бронирования должно быть больше, либо равно текущему времени.", KeyboardService.TODAY_TOMORROW_CANCEL_KEYBOARD);
+                            return configureMessage(
+                                    chatId,
+                                    "Время бронирования должно быть больше, либо равно текущему времени.",
+                                    KeyboardService.TODAY_TOMORROW_CANCEL_KEYBOARD
+                            );
                         }
 
                         reserve.setTime(time);
@@ -304,14 +320,25 @@ public class ReserveHandler implements MessageHandler {
     }
 
     private SendMessage configureAddReserve(UserEntity user, Long chatId) {
-        user.setState(State.RESERVE);
-        userService.updateSubState(user, SubState.ADD_RESERVE_CHOICE_DATE);
-        return configureMessage(chatId, "Введите дату резерва в формате ДДММГГГГ <i>(пример: 24052001)</i>:", KeyboardService.TODAY_TOMORROW_CANCEL_KEYBOARD);
+        userService.update(user, State.RESERVE, SubState.ADD_RESERVE_CHOICE_DATE);
+
+        return configureMessage(
+                chatId,
+                "Введите дату резерва в формате ДДММГГГГ <i>(пример: 24052022)</i>:",
+                KeyboardService.TODAY_TOMORROW_CANCEL_KEYBOARD
+        );
     }
 
     private String fillReserveInfo(ReserveEntity reserve) {
         return String.format(
-                "<b>Информация о бронировании</b>\nДата: <i>%s</i>\nВремя: <i>%s</i>\nСтол: <i>%s</i>\nКол-во персон: <i>%s</i>\nИмя: <i>%s</i>\nТелефон: <i>%s</i>",
+                """
+                        <b>Информация о бронировании</b>
+                        Дата: <i>%s</i>
+                        Время: <i>%s</i>
+                        Стол: <i>%s</i>
+                        Кол-во персон: <i>%s</i>
+                        Имя: <i>%s</i>
+                        Телефон: <i>%s</i>""",
                 reserve.getDate().format(Constant.DD_MM_YYYY_FORMATTER),
                 reserve.getTime().format(Constant.HH_MM_FORMATTER),
                 reserve.getTable().getLabel(),
@@ -323,7 +350,11 @@ public class ReserveHandler implements MessageHandler {
     }
 
     private SendMessage configureChoiceTime(Long chatId) {
-        return configureMessage(chatId, "Введите время резерва <i>(в формате ЧЧММ, пример: 1830 или 0215)</i>:", KeyboardService.BOOKING_CHOICE_TIME_KEYBOARD);
+        return configureMessage(
+                chatId,
+                "Введите время резерва <i>(в формате ЧЧММ, пример: 1830 или 0215)</i>:",
+                KeyboardService.RESERVE_CHOICE_TIME_KEYBOARD
+        );
     }
 
     private SendMessage configureChoicePersons(Long chatId) {
@@ -426,13 +457,13 @@ public class ReserveHandler implements MessageHandler {
             String reservesList = reserves.get(date).stream()
                     .sorted(Comparator.comparing(ReserveEntity::getTime, LocalTime::compareTo))
                     .map(reserve -> String.format(
-                            "<i>%s</i> <b>%s</b> %s (%s) %s",
+                            "<i>%s</i> <b>%s</b> %s %s %s",
                             reserve.getTime(),
                             reserve.getTable().getLabel(),
+                            reserve.getNumberPeople(),
                             reserve.getManualMode() ? Optional.ofNullable(reserve.getName())
                                     .orElse("")
                                     : reserve.getUser().getName(),
-                            reserve.getNumberPeople(),
                             reserve.getManualMode() ? Optional.ofNullable(reserve.getPhoneNumber())
                                     .orElse("")
                                     : reserve.getUser().findContact(ContractType.MOBILE)
@@ -445,8 +476,8 @@ public class ReserveHandler implements MessageHandler {
                     .append("<b>\uD83D\uDDD3 ")
                     .append(date.format(Constant.DD_MM_YYYY_FORMATTER))
                     .append("</b>")
-                    .append(date.isEqual(LocalDate.now()) ? " [<i>сегодня</i>]" : "")
-                    .append(date.isEqual(tomorrow) ? " [<i>завтра</i>]" : "")
+                    .append(date.isEqual(LocalDate.now()) ? " <i>(сегодня)</i>" : "")
+                    .append(date.isEqual(tomorrow) ? " <i>(завтра)</i>" : "")
                     .append(System.lineSeparator())
                     .append(reservesList)
                     .append(System.lineSeparator())

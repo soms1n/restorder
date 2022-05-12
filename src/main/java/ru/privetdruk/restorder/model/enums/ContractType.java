@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum ContractType {
     EMAIL("Электронная почта"),
-    MOBILE("Мобильный телефон");
+    MOBILE("Телефон");
 
     private final String description;
 

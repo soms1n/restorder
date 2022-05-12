@@ -49,10 +49,12 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup NUMBERS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup WITHOUT_PHONE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup APPROVE_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup APPROVE_BEFORE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup CITIES_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TAVERN_INFO_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup BOOKING_CHOICE_DATE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup BOOKING_CHOICE_TIME_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup RESERVE_CHOICE_TIME_KEYBOARD = new ReplyKeyboardMarkup();
 
     {
         init();
@@ -67,10 +69,20 @@ public class KeyboardService {
         ));
 
         BOOKING_CHOICE_TIME_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.NOW.getText()))),
                 BACK_AND_MAIN_MENU_ROW
         ));
         BOOKING_CHOICE_TIME_KEYBOARD.setResizeKeyboard(true);
+
+        RESERVE_CHOICE_TIME_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton(Button.NOW.getText()))),
+                BACK_AND_MAIN_MENU_ROW
+        ));
+        RESERVE_CHOICE_TIME_KEYBOARD.setResizeKeyboard(true);
+
+        APPROVE_BEFORE_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()), new KeyboardButton(Button.ACCEPT.getText())))
+        ));
+        APPROVE_BEFORE_KEYBOARD.setResizeKeyboard(true);
 
         BOOKING_CHOICE_DATE_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
@@ -367,7 +379,7 @@ public class KeyboardService {
         USER_RESERVE_LIST_KEYBOARD.setResizeKeyboard(true);
 
         TODAY_TOMORROW_CANCEL_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.TOMORROW.getText()), new KeyboardButton(Button.TODAY.getText()))),
+                new KeyboardRow(List.of(new KeyboardButton(Button.TODAY.getText()), new KeyboardButton(Button.TOMORROW.getText()))),
                 CANCEL_ROW
         ));
         TODAY_TOMORROW_CANCEL_KEYBOARD.setResizeKeyboard(true);
@@ -395,7 +407,7 @@ public class KeyboardService {
         WITHOUT_PHONE_KEYBOARD.setResizeKeyboard(true);
 
         APPROVE_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()), new KeyboardButton(Button.APPROVE.getText())))
+                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()), new KeyboardButton(Button.ACCEPT.getText())))
         ));
         APPROVE_KEYBOARD.setResizeKeyboard(true);
 
