@@ -29,7 +29,7 @@ public enum Button {
     MORE("Далее ➡"),
     TAVERN_NAME("™ Название"),
     CONTACTS("\uD83D\uDCDE Телефоны"),
-    TAVERN_ADDRESS("\uD83C\uDFE2 Адрес"),
+    TAVERN_ADDRESS("\uD83D\uDDFA Адрес"),
     RETURN_MAIN_MENU("↩ Главное меню"),
     CHANGE("〰 Изменить"),
     CANCEL("⭕ Отменить"),

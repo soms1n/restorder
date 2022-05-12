@@ -379,7 +379,7 @@ public class KeyboardService {
         USER_RESERVE_LIST_KEYBOARD.setResizeKeyboard(true);
 
         TODAY_TOMORROW_CANCEL_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.TOMORROW.getText()), new KeyboardButton(Button.TODAY.getText()))),
+                new KeyboardRow(List.of(new KeyboardButton(Button.TODAY.getText()), new KeyboardButton(Button.TOMORROW.getText()))),
                 CANCEL_ROW
         ));
         TODAY_TOMORROW_CANCEL_KEYBOARD.setResizeKeyboard(true);

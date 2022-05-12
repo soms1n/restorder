@@ -9,9 +9,6 @@ import ru.privetdruk.restorder.model.enums.DayWeek;
 import ru.privetdruk.restorder.repository.ScheduleRepository;
 
 import java.time.LocalTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -63,51 +60,5 @@ public class ScheduleService {
                         schedule -> (startPeriod.isAfter(schedule.getStartPeriod()) && startPeriod.isBefore(schedule.getEndPeriod()))
                                 || (endPeriod.isAfter(schedule.getStartPeriod()) && endPeriod.isBefore(schedule.getEndPeriod()))
                 );
-    }
-
-    /**
-     * Заполнить информацию по графику
-     *
-     * @param schedules Графики
-     * @return Информацию по графику работы
-     */
-    public String fillSchedulesInfo(Set<ScheduleEntity> schedules) {
-        if (CollectionUtils.isEmpty(schedules)) {
-            return "График работы не установлен.";
-        }
-
-        StringBuilder scheduleDescription = new StringBuilder();
-
-        Map<DayWeek, List<ScheduleEntity>> groupingSchedules = schedules.stream()
-                .collect(Collectors.groupingBy(ScheduleEntity::getDayWeek));
-
-        for (DayWeek dayWeek : DayWeek.SORTED_DAY_WEEK_LIST) {
-            List<ScheduleEntity> schedulesByDayWeek = groupingSchedules.get(dayWeek);
-            if (CollectionUtils.isEmpty(schedulesByDayWeek)) {
-                continue;
-            }
-
-            String groupingSchedule = schedulesByDayWeek.stream()
-                    .sorted(Comparator.comparing(ScheduleEntity::getStartPeriod))
-                    .map(schedule -> String.format(
-                            "     %s-%s %s",
-                            schedule.getStartPeriod(),
-                            schedule.getEndPeriod(),
-                            schedule.getPrice() == 0 ? "бесплатно" : schedule.getPrice() + "р."
-                    ))
-                    .collect(Collectors.joining(System.lineSeparator()));
-
-            scheduleDescription
-                    .append(dayWeek.getShortName())
-                    .append("   ")
-                    .append(groupingSchedule.substring(5))
-                    .append(System.lineSeparator());
-        }
-
-        return "<b>\uD83D\uDCC5 График работы:</b>"
-                + System.lineSeparator()
-                + "<pre>День Время       Вход"
-                + System.lineSeparator()
-                + scheduleDescription + "</pre>";
     }
 }

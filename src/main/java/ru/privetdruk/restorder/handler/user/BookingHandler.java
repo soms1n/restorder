@@ -34,8 +34,8 @@ import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 @Component
 @RequiredArgsConstructor
 public class BookingHandler implements MessageHandler {
+    private final InfoService infoService;
     private final ReserveService reserveService;
-    private final ScheduleService scheduleService;
     private final StringService stringService;
     private final TavernService tavernService;
     private final UserService userService;
@@ -52,7 +52,7 @@ public class BookingHandler implements MessageHandler {
 
         // обработка функциональных клавиш
         switch (button) {
-            case BACK, CANCEL, NO -> user.setSubState(user.getSubState().getParentSubState());
+            case BACK, CANCEL, NO -> userService.updateSubState(user, user.getSubState().getParentSubState());
             case RETURN_MAIN_MENU -> returnToMainMenu(user);
             case CANCEL_RESERVE -> {
                 return configureDeleteReserve(user, chatId);
@@ -78,7 +78,7 @@ public class BookingHandler implements MessageHandler {
 
                         return configureMessage(
                                 chatId,
-                                "Введите дату в формате ДДММГГГГ <i>(пример: 24052001)</i>:",
+                                "Введите дату в формате ДДММГГГГ <i>(пример: 24052022)</i>:",
                                 KeyboardService.BOOKING_CHOICE_DATE_KEYBOARD
                         );
                     }
@@ -308,7 +308,7 @@ public class BookingHandler implements MessageHandler {
 
                     userService.updateSubState(user, SubState.VIEW_TAVERN);
 
-                    return configureMessage(chatId, fillTavernInfo(tavern), KeyboardService.TAVERN_INFO_KEYBOARD);
+                    return configureMessage(chatId, infoService.fillGeneral(tavern), KeyboardService.TAVERN_INFO_KEYBOARD);
                 }
                 case DELETE_RESERVE_CHOICE_TAVERN -> {
                     Long id = parseId(messageText);
@@ -351,13 +351,6 @@ public class BookingHandler implements MessageHandler {
                 + "Время: <i>" + booking.getTime().format(Constant.HH_MM_FORMATTER) + "</i>"
                 + System.lineSeparator()
                 + "Кол-во персон: <i>" + booking.getPersons() + "</i>";
-    }
-
-    private String fillTavernInfo(TavernEntity tavern) {
-        return "<b>™️" + tavern.getName() + "</b>"
-                + System.lineSeparator()
-                + System.lineSeparator()
-                + scheduleService.fillSchedulesInfo(tavern.getSchedules());
     }
 
     private SendMessage fillTaverns(UserEntity user) {
