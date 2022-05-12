@@ -712,7 +712,7 @@ public enum SubState {
 
         @Override
         public SubState getParentSubState() {
-            return VIEW_TAVERN;
+            return CHOICE_TAVERN;
         }
     },
     BOOKING_CHOICE_TIME() {
@@ -723,7 +723,7 @@ public enum SubState {
 
         @Override
         public SubState getParentSubState() {
-            return BOOKING_CHOICE_DATE;
+            return VIEW_TAVERN;
         }
     },
     BOOKING_CHOICE_PERSONS() {
@@ -734,7 +734,7 @@ public enum SubState {
 
         @Override
         public SubState getParentSubState() {
-            return BOOKING_CHOICE_TIME;
+            return BOOKING_CHOICE_DATE;
         }
     },
     BOOKING_APPROVE() {
@@ -745,7 +745,18 @@ public enum SubState {
 
         @Override
         public SubState getParentSubState() {
-            return BOOKING_CHOICE_PERSONS;
+            return VIEW_MAIN_MENU;
+        }
+    },
+    BOOKING_APPROVE_BEFORE() {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MAIN_MENU;
         }
     },
     APPROVE_TAVERN() {

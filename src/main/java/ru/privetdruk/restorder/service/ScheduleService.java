@@ -90,22 +90,24 @@ public class ScheduleService {
             String groupingSchedule = schedulesByDayWeek.stream()
                     .sorted(Comparator.comparing(ScheduleEntity::getStartPeriod))
                     .map(schedule -> String.format(
-                            "    %s - %s %s",
+                            "     %s-%s %s",
                             schedule.getStartPeriod(),
                             schedule.getEndPeriod(),
-                            "вход: " + (schedule.getPrice() == 0 ? "бесплатно" : schedule.getPrice() + "р.")
+                            schedule.getPrice() == 0 ? "бесплатно" : schedule.getPrice() + "р."
                     ))
                     .collect(Collectors.joining(System.lineSeparator()));
 
             scheduleDescription
                     .append(dayWeek.getShortName())
-                    .append(": ")
-                    .append(groupingSchedule.substring(4))
+                    .append("   ")
+                    .append(groupingSchedule.substring(5))
                     .append(System.lineSeparator());
         }
 
-        return "<b>\uD83D\uDCC5 График работы:</b>" +
-                System.lineSeparator() +
-                "<pre>" + scheduleDescription + "</pre>";
+        return "<b>\uD83D\uDCC5 График работы:</b>"
+                + System.lineSeparator()
+                + "<pre>День Время       Вход"
+                + System.lineSeparator()
+                + scheduleDescription + "</pre>";
     }
 }

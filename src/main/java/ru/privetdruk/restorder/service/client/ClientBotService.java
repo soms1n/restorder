@@ -82,7 +82,7 @@ public class ClientBotService {
             String[] callbackData = callback.getData().split(" ");
 
             Button button = Button.fromName(callbackData[0]);
-            if (button == Button.REGISTRATION_ACCEPT && callbackData.length == 2) {
+            if (button == Button.ACCEPT && callbackData.length == 2) {
                 userService.update(user, State.ADMIN, SubState.APPROVE_TAVERN);
             }
         }

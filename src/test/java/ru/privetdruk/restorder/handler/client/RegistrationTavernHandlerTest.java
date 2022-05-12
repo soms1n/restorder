@@ -3,10 +3,7 @@ package ru.privetdruk.restorder.handler.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -443,7 +440,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
                 .builder()
                 .keyboard(List.of(
                         new KeyboardRow(List.of(
-                                new KeyboardButton(Button.REGISTRATION_ACCEPT.getText())))))
+                                new KeyboardButton(Button.ACCEPT.getText())))))
                 .build();
 
         SendMessage sendMessage = new SendMessage();

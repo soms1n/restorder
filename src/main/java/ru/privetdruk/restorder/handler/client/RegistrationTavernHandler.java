@@ -324,8 +324,8 @@ public class RegistrationTavernHandler implements MessageHandler {
                                         InlineKeyboardMarkup.builder()
                                                 .keyboard(List.of(List.of(
                                                         InlineKeyboardButton.builder()
-                                                                .callbackData(Button.REGISTRATION_ACCEPT.getName() + " " + user.getTelegramId())
-                                                                .text(Button.REGISTRATION_ACCEPT.getText())
+                                                                .callbackData(Button.ACCEPT.getName() + " " + user.getTelegramId())
+                                                                .text(Button.ACCEPT.getText())
                                                                 .build()
                                                 )))
                                                 .build()

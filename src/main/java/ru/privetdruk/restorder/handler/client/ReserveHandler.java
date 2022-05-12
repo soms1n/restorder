@@ -323,7 +323,11 @@ public class ReserveHandler implements MessageHandler {
     }
 
     private SendMessage configureChoiceTime(Long chatId) {
-        return configureMessage(chatId, "Введите время резерва <i>(в формате ЧЧММ, пример: 1830 или 0215)</i>:", KeyboardService.BOOKING_CHOICE_TIME_KEYBOARD);
+        return configureMessage(
+                chatId,
+                "Введите время резерва <i>(в формате ЧЧММ, пример: 1830 или 0215)</i>:",
+                KeyboardService.RESERVE_CHOICE_TIME_KEYBOARD
+        );
     }
 
     private SendMessage configureChoicePersons(Long chatId) {
