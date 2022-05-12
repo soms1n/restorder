@@ -47,8 +47,8 @@ class UserBotServiceTest {
     @DisplayName("Presets")
     void beforeEach() {
         BookingHandler bookingHandler = new BookingHandler(
+                new InfoService(),
                 new ReserveService(reserveRepository),
-                new ScheduleService(scheduleRepository),
                 new StringService(),
                 new TavernService(tavernRepository),
                 userService
