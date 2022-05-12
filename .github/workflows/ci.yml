@@ -47,10 +47,9 @@ jobs:
         run: |
           echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
           echo "branch coverage = ${{ steps.jacoco.outputs.branches }}"
-      - uses: actions/labeler@v2
+      - name: Commit the badge (if it changed)
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Commit the badge (if it changed)
         run: |
           if [[ `git status --porcelain` ]]; then
             git config --global user.name 'Sergey'
