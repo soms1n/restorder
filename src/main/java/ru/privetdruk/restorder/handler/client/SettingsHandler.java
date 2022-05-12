@@ -187,7 +187,7 @@ public class SettingsHandler implements MessageHandler {
                 case VIEW_SETTINGS -> {
                     switch (button) {
                         case GENERAL -> {
-                            if (user.getRoles().contains(Role.CLIENT_EMPLOYEE)) {
+                            if (user.getRoles().contains(Role.CLIENT_ADMIN)) {
                                 userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS);
                             } else {
                                 return configureMessage(
@@ -199,7 +199,7 @@ public class SettingsHandler implements MessageHandler {
                         }
                         case PROFILE -> userService.updateSubState(user, SubState.VIEW_PROFILE_SETTINGS);
                         case EMPLOYEES -> {
-                            if (user.getRoles().contains(Role.CLIENT_EMPLOYEE)) {
+                            if (user.getRoles().contains(Role.CLIENT_ADMIN)) {
                                 userService.updateSubState(user, SubState.VIEW_EMPLOYEE_SETTINGS);
                             } else {
                                 return configureMessage(

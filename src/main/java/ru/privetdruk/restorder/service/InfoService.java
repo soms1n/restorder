@@ -91,7 +91,9 @@ public class InfoService {
     }
 
     public String fillEmployee(Set<UserEntity> employees) {
-        return "<b>Сотрудники:</b>" + employees.stream()
+        return "<b>Сотрудники:</b>"
+                + System.lineSeparator()
+                + employees.stream()
                 .sorted(Comparator.comparing(UserEntity::getId))
                 .map(employee -> String.format(
                         "ID: %d, Имя: <b>%s</b>, %s",
