@@ -216,7 +216,7 @@ public class SettingsHandler implements MessageHandler {
                 case VIEW_GENERAL_SETTINGS -> {
                     switch (button) {
                         case TAVERN_NAME -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_NAME);
-                        case CONTACTS -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS);
+                        case PHONE_NUMBER -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS);
                         case TAVERN_ADDRESS -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS);
                         case CATEGORIES -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_CATEGORIES);
                     }
@@ -285,7 +285,7 @@ public class SettingsHandler implements MessageHandler {
                 case VIEW_PROFILE_SETTINGS -> {
                     switch (button) {
                         case USER_NAME -> userService.updateSubState(user, SubState.VIEW_PROFILE_SETTINGS_USER_NAME);
-                        case CONTACTS -> userService.updateSubState(user, SubState.VIEW_PROFILE_SETTINGS_USER_CONTACTS);
+                        case PHONE_NUMBER -> userService.updateSubState(user, SubState.VIEW_PROFILE_SETTINGS_USER_CONTACTS);
                         case DELETE_PROFILE -> {
                             userService.updateSubState(user, SubState.DELETE_PROFILE_SETTINGS);
 

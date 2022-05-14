@@ -171,20 +171,21 @@ public class RegistrationTavernHandler implements MessageHandler {
                 sendMessage = showPersonalData(user, chatId);
             }
             case REGISTRATION_APPROVING -> {
-                if (callback != null) {
-                    if (Button.fromName(callback.getData()) == Button.APPROVE) {
-                        changeState(user, subState);
-                        sendMessage = configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
+                Button button = Button.fromText(messageText)
+                        .orElse(null);
 
-                        sendClaimToApprove(user);
-                    } else {
-                        sendMessage = configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
+                if (button == Button.APPROVE) {
+                    changeState(user, subState);
+                    sendMessage = configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
 
-                        attachMainEditMenu(sendMessage);
+                    sendClaimToApprove(user);
+                } else if (button == Button.EDIT) {
+                    sendMessage = configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
 
-                        user.setSubState(EDIT_PERSONAL_DATA);
-                        userService.save(user);
-                    }
+                    attachMainEditMenu(sendMessage);
+
+                    user.setSubState(EDIT_PERSONAL_DATA);
+                    userService.save(user);
                 } else {
                     sendMessage = showPersonalData(user, chatId);
                 }
@@ -205,7 +206,7 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                         attachEditMenu(sendMessage);
                     }
-                    case TAVERN -> {
+                    case TAVERN_NAME -> {
                         sendMessage = configureMessage(chatId, SubState.ENTER_TAVERN_NAME.getMessage());
                         user.setSubState(SubState.EDIT_TAVERN);
                         userService.save(user);
@@ -225,7 +226,7 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                         attachEditMenu(sendMessage);
                     }
-                    case ADDRESS -> {
+                    case TAVERN_ADDRESS -> {
                         sendMessage = configureMessage(chatId, SubState.ENTER_ADDRESS.getMessage());
                         user.setSubState(SubState.EDIT_ADDRESS);
                         userService.save(user);
@@ -300,11 +301,11 @@ public class RegistrationTavernHandler implements MessageHandler {
                         .keyboard(List.of(
                                 new KeyboardRow(List.of(
                                         new KeyboardButton(Button.NAME.getText()),
-                                        new KeyboardButton(Button.TAVERN.getText())
+                                        new KeyboardButton(Button.TAVERN_NAME.getText())
                                 )),
                                 new KeyboardRow(List.of(
                                         new KeyboardButton(Button.DESCRIPTION.getText()),
-                                        new KeyboardButton(Button.ADDRESS.getText()),
+                                        new KeyboardButton(Button.TAVERN_ADDRESS.getText()),
                                         new KeyboardButton(Button.PHONE_NUMBER.getText())
                                 )),
                                 new KeyboardRow(List.of(
@@ -416,7 +417,7 @@ public class RegistrationTavernHandler implements MessageHandler {
         String yourPersonalData = "<b>Ваши данные</b>" + System.lineSeparator() +
                 "Имя: <i>" + user.getName() + "</i>" + System.lineSeparator() +
                 "Заведение: <i>" + tavern.getName() + "</i>" + System.lineSeparator() +
-                "Описание: <i>" + tavern.getDescription() + "</i>" + System.lineSeparator() +
+                "Описание: <i>" + Optional.ofNullable(tavern.getDescription()).orElse("отсутствует") + "</i>" + System.lineSeparator() +
                 "Адрес: <i>" + tavern.getAddress().getStreet() + "</i>" + System.lineSeparator() +
                 "Номер телефона: <i>" + user.getContacts().stream()
                 .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
@@ -424,19 +425,6 @@ public class RegistrationTavernHandler implements MessageHandler {
                 .findFirst()
                 .orElse("") + "</i>" + System.lineSeparator();
 
-        SendMessage sendMessage = configureMessage(chatId, yourPersonalData);
-
-        sendMessage.setReplyMarkup(
-                InlineKeyboardMarkup.builder()
-                        .keyboard(List.of(List.of(
-                                keyboardService.createInlineButton(Button.EDIT),
-                                keyboardService.createInlineButton(Button.APPROVE)
-                        )))
-                        .build()
-        );
-
-        sendMessage.enableHtml(true);
-
-        return sendMessage;
+        return configureMessage(chatId, yourPersonalData, KeyboardService.REGISTRATION_APPROVING);
     }
 }

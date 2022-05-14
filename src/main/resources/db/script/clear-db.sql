@@ -5,7 +5,7 @@ TRUNCATE TABLE event CASCADE;
 DO
 $$
     DECLARE
-        v_user_id   BIGINT := 57;
+        v_user_id   BIGINT := 18;
         v_tavern_id BIGINT;
     BEGIN
         DELETE FROM contact WHERE user_id = v_user_id;

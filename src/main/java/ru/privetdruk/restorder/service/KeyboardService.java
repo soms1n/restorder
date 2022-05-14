@@ -56,6 +56,7 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup BOOKING_CHOICE_TIME_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup RESERVE_CHOICE_TIME_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup WITHOUT_DESCRIPTION_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup REGISTRATION_APPROVING = new ReplyKeyboardMarkup();
 
     {
         init();
@@ -77,7 +78,13 @@ public class KeyboardService {
         WITHOUT_DESCRIPTION_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(new KeyboardButton(Button.WITHOUT_DESCRIPTION.getText())))
         ));
-        WITHOUT_DESCRIPTION_KEYBOARD.setResizeKeyboard(true);
+
+        REGISTRATION_APPROVING.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.EDIT.getText()), new KeyboardButton(Button.APPROVE.getText())
+                ))
+        ));
+        REGISTRATION_APPROVING.setResizeKeyboard(true);
 
         RESERVE_CHOICE_TIME_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(new KeyboardButton(Button.NOW.getText()))),
@@ -182,10 +189,11 @@ public class KeyboardService {
         GENERAL_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.TAVERN_NAME.getText()),
+                        new KeyboardButton(Button.DESCRIPTION.getText()),
                         new KeyboardButton(Button.CATEGORIES.getText())
                 )),
                 new KeyboardRow(List.of(
-                        new KeyboardButton(Button.CONTACTS.getText()),
+                        new KeyboardButton(Button.PHONE_NUMBER.getText()),
                         new KeyboardButton(Button.TAVERN_ADDRESS.getText())
                 )),
                 BACK_AND_MAIN_MENU_ROW
@@ -220,7 +228,7 @@ public class KeyboardService {
         PROFILE_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.USER_NAME.getText()),
-                        new KeyboardButton(Button.CONTACTS.getText())
+                        new KeyboardButton(Button.PHONE_NUMBER.getText())
                 )),
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.DELETE_PROFILE.getText())
