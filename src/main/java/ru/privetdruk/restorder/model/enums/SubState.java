@@ -209,6 +209,28 @@ public enum SubState {
             return VIEW_GENERAL_SETTINGS_TAVERN_NAME;
         }
     },
+    VIEW_GENERAL_SETTINGS_TAVERN_DESCRIPTION() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS;
+        }
+    },
+    CHANGE_GENERAL_SETTINGS_TAVERN_DESCRIPTION() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS_TAVERN_DESCRIPTION;
+        }
+    },
     VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS() {
         @Override
         public State getState() {

@@ -85,6 +85,8 @@ public class SettingsHandler implements MessageHandler {
                 switch (subState) {
                     case VIEW_GENERAL_SETTINGS_TAVERN_NAME:
                         return configureMessageWithCancel(user, chatId, SubState.CHANGE_GENERAL_SETTINGS_TAVERN_NAME, "Введите новое название:");
+                    case VIEW_GENERAL_SETTINGS_TAVERN_DESCRIPTION:
+                        return configureMessageWithCancel(user, chatId, SubState.CHANGE_GENERAL_SETTINGS_TAVERN_DESCRIPTION, "Введите новое описание:");
                     case VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS:
                         return configureMessageWithCancel(user, chatId, SubState.CHANGE_GENERAL_SETTINGS_TAVERN_ADDRESS, "Введите новый адрес:");
                     case VIEW_PROFILE_SETTINGS_USER_NAME:
@@ -216,6 +218,7 @@ public class SettingsHandler implements MessageHandler {
                 case VIEW_GENERAL_SETTINGS -> {
                     switch (button) {
                         case TAVERN_NAME -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_NAME);
+                        case DESCRIPTION -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_DESCRIPTION);
                         case PHONE_NUMBER -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS);
                         case TAVERN_ADDRESS -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS);
                         case CATEGORIES -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_CATEGORIES);
@@ -227,6 +230,16 @@ public class SettingsHandler implements MessageHandler {
                     }
 
                     tavern.setName(messageText);
+                    tavernService.save(tavern);
+
+                    userService.updateSubState(user, user.getSubState().getParentSubState());
+                }
+                case CHANGE_GENERAL_SETTINGS_TAVERN_DESCRIPTION -> {
+                    if (!StringUtils.hasText(messageText)) {
+                        return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE_RETRY);
+                    }
+
+                    tavern.setDescription(messageText);
                     tavernService.save(tavern);
 
                     userService.updateSubState(user, user.getSubState().getParentSubState());
@@ -583,6 +596,7 @@ public class SettingsHandler implements MessageHandler {
 
             case VIEW_GENERAL_SETTINGS -> configureMessage(chatId, infoService.fillGeneral(tavern), KeyboardService.GENERAL_KEYBOARD);
             case VIEW_GENERAL_SETTINGS_TAVERN_NAME -> configureMessage(chatId, infoService.fillTavernName(tavern.getName()), KeyboardService.TAVERN_NAME_KEYBOARD);
+            case VIEW_GENERAL_SETTINGS_TAVERN_DESCRIPTION -> configureMessage(chatId, infoService.fillTavernDescription(tavern.getDescription()), KeyboardService.TAVERN_DESCRIPTION_KEYBOARD);
             case VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS -> configureMessage(chatId, infoService.fillContact(tavern.getContacts()), KeyboardService.TAVERN_CONTACTS_KEYBOARD);
             case VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS -> configureMessage(chatId, infoService.fillAddress(tavern.getAddress()), KeyboardService.TAVERN_ADDRESS_KEYBOARD);
             case VIEW_GENERAL_SETTINGS_CATEGORIES -> configureMessage(chatId, infoService.fillCategory(tavern.getCategory()), KeyboardService.CATEGORIES_KEYBOARD);
