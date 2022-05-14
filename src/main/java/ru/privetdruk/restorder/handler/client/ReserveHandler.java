@@ -298,7 +298,7 @@ public class ReserveHandler implements MessageHandler {
                     user.setState(State.MAIN_MENU);
                     userService.updateSubState(user, SubState.VIEW_MAIN_MENU);
 
-                    if (button == Button.APPROVE) {
+                    if (button == Button.ACCEPT) {
                         ReserveEntity reserve = addReservesTemporary.get(user);
                         reserveService.save(reserve);
                         addReservesTemporary.remove(user);

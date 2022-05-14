@@ -89,6 +89,23 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                 changeState(user, subState);
 
+                sendMessage = configureMessage(
+                        chatId,
+                        MessageText.ENTER_TAVERN_DESCRIPTION,
+                        KeyboardService.WITHOUT_DESCRIPTION_KEYBOARD
+                );
+            }
+            case ENTER_TAVERN_DESCRIPTION -> {
+                Button button = Button.fromText(messageText)
+                        .orElse(null);
+                if (button != Button.WITHOUT_DESCRIPTION) {
+                    TavernEntity tavern = user.getTavern();
+                    tavern.setDescription(messageText);
+                    tavernService.save(tavern);
+                }
+
+                changeState(user, subState);
+
                 Map<String, String> cities = Arrays.stream(City.values())
                         .collect(toMap(City::getDescription, City::getName));
 
@@ -195,6 +212,12 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                         attachEditMenu(sendMessage);
                     }
+                    case DESCRIPTION -> {
+                        sendMessage = configureMessage(chatId, SubState.ENTER_TAVERN_DESCRIPTION.getMessage());
+                        userService.updateSubState(user, SubState.EDIT_DESCRIPTION);
+
+                        attachEditMenu(sendMessage);
+                    }
                     case PHONE_NUMBER -> {
                         sendMessage = configureMessage(chatId, SubState.ENTER_PHONE_NUMBER.getMessage());
                         user.setSubState(SubState.EDIT_PHONE_NUMBER);
@@ -243,6 +266,11 @@ public class RegistrationTavernHandler implements MessageHandler {
                     user.getTavern().setName(messageText);
                 }
             }
+            case EDIT_DESCRIPTION -> {
+                if (!isUserPressKeyBoardElement(sendMessage, user, messageText, chatId)) {
+                    user.getTavern().setDescription(messageText);
+                }
+            }
             case EDIT_PHONE_NUMBER -> {
                 if (!isUserPressKeyBoardElement(sendMessage, user, messageText, chatId)) {
                     final String finalMessageText = messageText;
@@ -275,6 +303,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                                         new KeyboardButton(Button.TAVERN.getText())
                                 )),
                                 new KeyboardRow(List.of(
+                                        new KeyboardButton(Button.DESCRIPTION.getText()),
                                         new KeyboardButton(Button.ADDRESS.getText()),
                                         new KeyboardButton(Button.PHONE_NUMBER.getText())
                                 )),
@@ -382,10 +411,13 @@ public class RegistrationTavernHandler implements MessageHandler {
     }
 
     private SendMessage showPersonalData(UserEntity user, Long chatId) {
+        TavernEntity tavern = user.getTavern();
+
         String yourPersonalData = "<b>Ваши данные</b>" + System.lineSeparator() +
                 "Имя: <i>" + user.getName() + "</i>" + System.lineSeparator() +
-                "Заведение: <i>" + user.getTavern().getName() + "</i>" + System.lineSeparator() +
-                "Адрес: <i>" + user.getTavern().getAddress().getStreet() + "</i>" + System.lineSeparator() +
+                "Заведение: <i>" + tavern.getName() + "</i>" + System.lineSeparator() +
+                "Описание: <i>" + tavern.getDescription() + "</i>" + System.lineSeparator() +
+                "Адрес: <i>" + tavern.getAddress().getStreet() + "</i>" + System.lineSeparator() +
                 "Номер телефона: <i>" + user.getContacts().stream()
                 .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
                 .map(ContactEntity::getValue)

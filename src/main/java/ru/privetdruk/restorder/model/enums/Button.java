@@ -75,7 +75,9 @@ public enum Button {
     BILLIARDS("\uD83C\uDFB1 Бильярдные"),
     BOWLING("\uD83C\uDFB3 Боулинг"),
     MY_RESERVE("📋 Мои бронирования"),
-    NOW("\uD83D\uDD51 Сейчас");
+    NOW("\uD83D\uDD51 Сейчас"),
+    DESCRIPTION("Описание"),
+    WITHOUT_DESCRIPTION("\uD83D\uDDEF Без описания");
 
     private final String text;
 

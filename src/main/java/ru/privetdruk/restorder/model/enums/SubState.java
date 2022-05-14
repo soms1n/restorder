@@ -47,6 +47,17 @@ public enum SubState {
 
         @Override
         public SubState getNextSubState() {
+            return ENTER_TAVERN_DESCRIPTION;
+        }
+    },
+    ENTER_TAVERN_DESCRIPTION(MessageText.ENTER_TAVERN_DESCRIPTION) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION_TAVERN;
+        }
+
+        @Override
+        public SubState getNextSubState() {
             return CHOICE_CITY;
         }
     },
@@ -142,6 +153,12 @@ public enum SubState {
         }
     },
     EDIT_TAVERN() {
+        @Override
+        public State getState() {
+            return State.REGISTRATION_TAVERN;
+        }
+    },
+    EDIT_DESCRIPTION() {
         @Override
         public State getState() {
             return State.REGISTRATION_TAVERN;
