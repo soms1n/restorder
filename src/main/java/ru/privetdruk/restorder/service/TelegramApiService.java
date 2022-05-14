@@ -79,10 +79,8 @@ public class TelegramApiService {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setReplyMarkup(replyKeyboard);
 
-            ObjectMapper objectMapper = new ObjectMapper();
-
             try {
-                String payload = objectMapper.writeValueAsString(sendMessage);
+                String payload = new ObjectMapper().writeValueAsString(sendMessage);
                 requestBodySpec.bodyValue(payload);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
@@ -109,13 +107,25 @@ public class TelegramApiService {
                 .path(BOT_TOKEN_PATH)
                 .path(SEND_MESSAGE_PATH)
                 .queryParam("chat_id", chatId)
-                .queryParam("text", text)
                 .buildAndExpand(client ? botClientToken : "")
                 .toUriString();
 
-        return webClient.post()
+        WebClient.RequestBodySpec requestBodySpec = webClient.post()
                 .uri(uri)
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON);
+
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText(text);
+        sendMessage.enableHtml(true);
+
+        try {
+            String payload = new ObjectMapper().writeValueAsString(sendMessage);
+            requestBodySpec.bodyValue(payload);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        return requestBodySpec
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(SendMessageResponse.class);

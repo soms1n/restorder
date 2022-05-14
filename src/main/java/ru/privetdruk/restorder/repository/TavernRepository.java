@@ -14,7 +14,7 @@ import java.util.List;
 public interface TavernRepository extends CrudRepository<TavernEntity, Long> {
     List<TavernEntity> findAllByAddressCityAndCategoryOrderByName(City city, Category category);
 
-    @EntityGraph(attributePaths = {"address", "contacts", "schedules"})
+    @EntityGraph(attributePaths = {"address", "contacts", "schedules", "employees.roles"})
     TavernEntity findByIdAndAddressCity(Long id, City city);
 
     @EntityGraph(attributePaths = {"schedules", "tables.reserves"})

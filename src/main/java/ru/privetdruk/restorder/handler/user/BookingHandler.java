@@ -1,6 +1,7 @@
 package ru.privetdruk.restorder.handler.user;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -10,6 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+import reactor.core.publisher.Flux;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.consts.Constant;
 import ru.privetdruk.restorder.model.consts.MessageText;
@@ -31,6 +33,7 @@ import java.util.stream.Collectors;
 
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class BookingHandler implements MessageHandler {
@@ -38,6 +41,7 @@ public class BookingHandler implements MessageHandler {
     private final ReserveService reserveService;
     private final StringService stringService;
     private final TavernService tavernService;
+    private final TelegramApiService telegramApiService;
     private final UserService userService;
 
     private final Map<UserEntity, BookingDto> bookings = new HashMap<>();
@@ -170,19 +174,7 @@ public class BookingHandler implements MessageHandler {
                         BookingDto booking = bookings.get(user);
                         booking.setPersons(persons);
 
-                        DayWeek dayWeek = DayWeek.fromDate(booking.getDate());
-
                         TavernEntity tavern = tavernService.findByIdWithSchedulesAndReserves(booking.getTavern().getId());
-
-                        boolean isWork = tavern.getSchedules().stream()
-                                .filter(schedule -> schedule.getDayWeek() == dayWeek)
-                                .anyMatch(schedule -> !(booking.getTime().isBefore(schedule.getStartPeriod())
-                                        || booking.getTime().isAfter(schedule.getEndPeriod())));
-
-                        // TODO перенести на пару этапов выше с возвратом ввода новых значений
-                        if (!isWork) {
-                            return toMainMenu(user, "В выбранный день нельзя забронировать место.");
-                        }
 
                         List<TableEntity> tables = tavern.getTables().stream()
                                 .filter(table -> table.getNumberSeats() >= booking.getPersons())
@@ -211,7 +203,7 @@ public class BookingHandler implements MessageHandler {
 
                                 userService.updateSubState(user, SubState.BOOKING_APPROVE);
 
-                                return configureMessage(chatId, fillReserveInfo(booking), KeyboardService.APPROVE_KEYBOARD);
+                                return configureMessage(chatId, fillReserveInfo(booking, true), KeyboardService.APPROVE_KEYBOARD);
                             }
                         }
 
@@ -258,7 +250,7 @@ public class BookingHandler implements MessageHandler {
                     if (button == Button.ACCEPT) {
                         userService.updateSubState(user, SubState.BOOKING_APPROVE);
 
-                        return configureMessage(chatId, fillReserveInfo(bookings.get(user)), KeyboardService.APPROVE_KEYBOARD);
+                        return configureMessage(chatId, fillReserveInfo(bookings.get(user), true), KeyboardService.APPROVE_KEYBOARD);
                     } else {
                         bookings.remove(user);
                         return toMainMenu(user, "Вы отменили бронирование.");
@@ -278,6 +270,18 @@ public class BookingHandler implements MessageHandler {
                         reserveService.save(reserve);
 
                         bookings.remove(user);
+
+                        String messageForAdmin = "Только что забронировали новый столик."
+                                + System.lineSeparator() + System.lineSeparator()
+                                + fillReserveInfo(booking, false);
+
+                        Flux.fromIterable(
+                                        booking.getTavern().getEmployees().stream()
+                                                .filter(employee -> employee.getRoles().contains(Role.CLIENT_EMPLOYEE))
+                                                .collect(Collectors.toSet())
+                                )
+                                .flatMap(employee -> telegramApiService.sendMessage(employee.getTelegramId(), messageForAdmin, true))
+                                .subscribe();
 
                         return toMainMenu(user, "Вы успешно забронировали столик!");
                     }
@@ -341,12 +345,11 @@ public class BookingHandler implements MessageHandler {
         };
     }
 
-    private String fillReserveInfo(BookingDto booking) {
+    private String fillReserveInfo(BookingDto booking, boolean fillTavernName) {
         return "<b>Информация о бронировании</b>"
                 + System.lineSeparator()
-                + "Заведение: <i>" + booking.getTavern().getName() + "</i>"
-                + System.lineSeparator()
-                + "Дата: <i>" + booking.getDate() + "</i>"
+                + (fillTavernName ? "Заведение: <i>" + booking.getTavern().getName() + "</i>" + System.lineSeparator() : "")
+                + "Дата: <i>" + booking.getDate().format(Constant.DD_MM_YYYY_FORMATTER) + "</i>"
                 + System.lineSeparator()
                 + "Время: <i>" + booking.getTime().format(Constant.HH_MM_FORMATTER) + "</i>"
                 + System.lineSeparator()
