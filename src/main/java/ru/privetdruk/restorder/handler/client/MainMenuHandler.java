@@ -6,13 +6,11 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.privetdruk.restorder.handler.MessageHandler;
-import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Button;
 import ru.privetdruk.restorder.service.InfoService;
 import ru.privetdruk.restorder.service.KeyboardService;
-import ru.privetdruk.restorder.service.TavernService;
 
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
@@ -21,14 +19,11 @@ public class MainMenuHandler implements MessageHandler {
     private final InfoService infoService;
     private final SettingsHandler settingsHandler;
     private final ReserveHandler reserveHandler;
-    private final TavernService tavernService;
 
-    public MainMenuHandler(TavernService tavernService,
-                           InfoService infoService,
+    public MainMenuHandler(InfoService infoService,
                            @Lazy SettingsHandler settingsHandler,
                            @Lazy ReserveHandler reserveHandler) {
         this.infoService = infoService;
-        this.tavernService = tavernService;
         this.settingsHandler = settingsHandler;
         this.reserveHandler = reserveHandler;
     }
@@ -36,11 +31,6 @@ public class MainMenuHandler implements MessageHandler {
     @Override
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
         SendMessage sendMessage = configureMessage(message.getChatId(), "Открываю главное меню.");
-
-        boolean validTavern = tavernService.isValid(user.getTavern());
-        if (!validTavern) {
-            sendMessage.setText(MessageText.TAVERN_INVALID);
-        }
 
         Button button = Button.fromText(message.getText())
                 .orElse(Button.NOTHING);

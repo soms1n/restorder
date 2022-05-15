@@ -61,7 +61,7 @@ public class RegistrationEmployeeHandler implements MessageHandler {
                     return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }
 
-                if (!validationService.isValidPhone(messageText)) {
+                if (validationService.isNotValidPhone(messageText)) {
                     return configureMessage(chatId, "Вы ввели некорректный номер мобильного телефона. Повторите попытку.", KeyboardService.SHARE_PHONE_KEYBOARD);
                 }
 

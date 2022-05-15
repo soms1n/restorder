@@ -27,12 +27,9 @@ import ru.privetdruk.restorder.service.TelegramApiService;
 import ru.privetdruk.restorder.service.UserService;
 import ru.privetdruk.restorder.service.util.ValidationService;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static java.util.stream.Collectors.toMap;
 import static ru.privetdruk.restorder.model.consts.MessageText.SELECT_ELEMENT_FOR_EDIT;
 import static ru.privetdruk.restorder.model.enums.SubState.EDIT_PERSONAL_DATA;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
@@ -40,9 +37,6 @@ import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 @RequiredArgsConstructor
 @Component
 public class RegistrationTavernHandler implements MessageHandler {
-    private final static int MAX_BUTTONS_PER_ROW = 8;
-
-    private final KeyboardService keyboardService;
     private final UserService userService;
     private final TelegramApiService telegramApiService;
     private final TavernService tavernService;
@@ -57,22 +51,17 @@ public class RegistrationTavernHandler implements MessageHandler {
         SubState nextSubState;
         SendMessage sendMessage = new SendMessage();
 
+        Button button = Button.fromText(messageText)
+                .orElse(Button.NOTHING);
+
         switch (subState) {
             case SHOW_REGISTER_BUTTON -> {
-                if (callback != null) {
+                if (button == Button.REGISTRATION) {
                     subState = subState.getNextSubState();
-                    sendMessage = configureMessage(chatId, changeState(user, subState).getMessage());
-
-                    break;
+                    sendMessage = configureMessage(chatId, changeState(user, subState).getMessage(), KeyboardService.REMOVE_KEYBOARD);
+                } else {
+                    sendMessage = configureMessage(chatId, subState.getMessage(), KeyboardService.REGISTRATION_TAVERN);
                 }
-
-                sendMessage = configureMessage(chatId, subState.getMessage());
-
-                sendMessage.setReplyMarkup(
-                        InlineKeyboardMarkup.builder()
-                                .keyboard(List.of(List.of(keyboardService.createInlineButton(Button.REGISTRATION))))
-                                .build()
-                );
             }
             case ENTER_FULL_NAME -> {
                 user.setName(messageText);
@@ -96,8 +85,6 @@ public class RegistrationTavernHandler implements MessageHandler {
                 );
             }
             case ENTER_TAVERN_DESCRIPTION -> {
-                Button button = Button.fromText(messageText)
-                        .orElse(null);
                 if (button != Button.WITHOUT_DESCRIPTION) {
                     TavernEntity tavern = user.getTavern();
                     tavern.setDescription(messageText);
@@ -106,20 +93,13 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                 changeState(user, subState);
 
-                Map<String, String> cities = Arrays.stream(City.values())
-                        .collect(toMap(City::getDescription, City::getName));
-
-                sendMessage = configureMessage(
-                        chatId,
-                        MessageText.CHOICE_CITY,
-                        keyboardService.createInlineKeyboard(cities, MAX_BUTTONS_PER_ROW)
-                );
+                sendMessage = configureMessage(chatId, MessageText.CHOICE_CITY, KeyboardService.CITIES_KEYBOARD);
             }
             case CHOICE_CITY -> {
-                if (callback != null) {
-                    String data = callback.getData();
-                    City city = City.fromName(data);
-
+                City city = City.fromDescription(messageText);
+                if (city == null) {
+                    sendMessage = configureMessage(chatId, subState.getMessage(), KeyboardService.CITIES_KEYBOARD);
+                } else {
                     TavernEntity tavern = user.getTavern();
 
                     AddressEntity address = AddressEntity.builder()
@@ -129,16 +109,7 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                     tavern.setAddress(address);
 
-                    sendMessage = configureMessage(chatId, changeState(user, subState).getMessage());
-                } else {
-                    Map<String, String> cities = Arrays.stream(City.values())
-                            .collect(toMap(City::getDescription, City::getName));
-
-                    sendMessage = configureMessage(
-                            chatId,
-                            subState.getMessage(),
-                            keyboardService.createInlineKeyboard(cities, MAX_BUTTONS_PER_ROW)
-                    );
+                    sendMessage = configureMessage(chatId, changeState(user, subState).getMessage(), KeyboardService.REMOVE_KEYBOARD);
                 }
             }
             case ENTER_ADDRESS -> {
@@ -154,8 +125,12 @@ public class RegistrationTavernHandler implements MessageHandler {
                     messageText = sendContact.getPhoneNumber().replace("+", "");
                 }
 
-                if (!validationService.isValidPhone(messageText)) {
-                    return configureMessage(chatId, "Вы ввели некорректный номер мобильного телефона. Повторите попытку.", KeyboardService.SHARE_PHONE_KEYBOARD);
+                if (validationService.isNotValidPhone(messageText)) {
+                    return configureMessage(
+                            chatId,
+                            "Вы ввели некорректный номер мобильного телефона. Повторите попытку.",
+                            KeyboardService.SHARE_PHONE_KEYBOARD
+                    );
                 }
 
                 ContactEntity contact = ContactEntity.builder()
@@ -171,12 +146,9 @@ public class RegistrationTavernHandler implements MessageHandler {
                 sendMessage = showPersonalData(user, chatId);
             }
             case REGISTRATION_APPROVING -> {
-                Button button = Button.fromText(messageText)
-                        .orElse(null);
-
                 if (button == Button.APPROVE) {
                     changeState(user, subState);
-                    sendMessage = configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
+                    sendMessage = configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage(), KeyboardService.REMOVE_KEYBOARD);
 
                     sendClaimToApprove(user);
                 } else if (button == Button.EDIT) {
@@ -194,9 +166,6 @@ public class RegistrationTavernHandler implements MessageHandler {
                 sendMessage = configureMessage(chatId, SELECT_ELEMENT_FOR_EDIT);
 
                 attachMainEditMenu(sendMessage);
-
-                Button button = Button.fromText(messageText)
-                        .orElse(Button.NOTHING);
 
                 switch (button) {
                     case NAME -> {
@@ -276,12 +245,10 @@ public class RegistrationTavernHandler implements MessageHandler {
                 if (!isUserPressKeyBoardElement(sendMessage, user, messageText, chatId)) {
                     final String finalMessageText = messageText;
 
-                    // TODO валидация номера
                     user.getContacts().stream()
                             .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
                             .findFirst()
                             .ifPresent(contact -> contact.setValue(finalMessageText));
-
                 }
             }
             case EDIT_ADDRESS -> {

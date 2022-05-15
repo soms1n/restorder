@@ -12,7 +12,7 @@ import java.util.List;
 
 @Repository
 public interface TavernRepository extends CrudRepository<TavernEntity, Long> {
-    List<TavernEntity> findAllByAddressCityAndCategoryOrderByName(City city, Category category);
+    List<TavernEntity> findAllByValidAndAddressCityAndCategoryOrderByName(Boolean valid, City city, Category category);
 
     @EntityGraph(attributePaths = {"address", "contacts", "schedules", "employees.roles"})
     TavernEntity findByIdAndAddressCity(Long id, City city);

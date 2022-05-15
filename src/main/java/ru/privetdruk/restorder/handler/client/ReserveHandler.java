@@ -13,13 +13,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.consts.Constant;
 import ru.privetdruk.restorder.model.consts.MessageText;
+import ru.privetdruk.restorder.model.dto.ValidateTavernResult;
 import ru.privetdruk.restorder.model.entity.*;
 import ru.privetdruk.restorder.model.enums.*;
-import ru.privetdruk.restorder.service.KeyboardService;
-import ru.privetdruk.restorder.service.MessageService;
-import ru.privetdruk.restorder.service.ReserveService;
-import ru.privetdruk.restorder.service.UserService;
+import ru.privetdruk.restorder.service.*;
 import ru.privetdruk.restorder.service.util.StringService;
+import ru.privetdruk.restorder.service.util.ValidationService;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -32,11 +31,13 @@ import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 @Component
 @RequiredArgsConstructor
 public class ReserveHandler implements MessageHandler {
-    private final UserService userService;
     private final MessageService messageService;
     private final MainMenuHandler mainMenuHandler;
     private final ReserveService reserveService;
     private final StringService stringService;
+    private final TavernService tavernService;
+    private final UserService userService;
+    private final ValidationService validationService;
 
     private final Map<UserEntity, LocalDate> deleteReservesTemporary = new HashMap<>();
     private final Map<UserEntity, ReserveEntity> addReservesTemporary = new HashMap<>();
@@ -49,6 +50,23 @@ public class ReserveHandler implements MessageHandler {
                 .orElse(Button.NOTHING);
         Long chatId = message.getChatId();
         TavernEntity tavern = user.getTavern();
+
+        if (!tavern.isValid()) {
+            ValidateTavernResult validate = validationService.validate(tavern);
+
+            tavern.setValid(validate.isValid());
+            tavernService.save(tavern);
+
+            if (!validate.isValid()) {
+                return configureMessage(
+                        chatId,
+                        "Чтобы воспользоваться бронированием, выполните настройку заведения:"
+                                + System.lineSeparator()
+                                + validate.printMessages(),
+                        KeyboardService.CLIENT_MAIN_MENU
+                );
+            }
+        }
 
         // обработка функциональных клавиш
         switch (button) {

@@ -36,6 +36,7 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup USER_CONTACTS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup EMPLOYEE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup CATEGORIES_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup CATEGORIES_LIST_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup CATEGORIES_LIST_WITH_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup SCHEDULE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup DAY_WEEK_WITH_PERIOD_KEYBOARD = new ReplyKeyboardMarkup();
@@ -57,6 +58,7 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup BOOKING_CHOICE_TIME_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup RESERVE_CHOICE_TIME_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup WITHOUT_DESCRIPTION_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup REGISTRATION_TAVERN = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup REGISTRATION_APPROVING = new ReplyKeyboardMarkup();
 
     {
@@ -79,6 +81,12 @@ public class KeyboardService {
         WITHOUT_DESCRIPTION_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(new KeyboardButton(Button.WITHOUT_DESCRIPTION.getText())))
         ));
+        WITHOUT_DESCRIPTION_KEYBOARD.setResizeKeyboard(true);
+
+        REGISTRATION_TAVERN.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton(Button.REGISTRATION.getText())))
+        ));
+        REGISTRATION_TAVERN.setResizeKeyboard(true);
 
         REGISTRATION_APPROVING.setKeyboard(List.of(
                 new KeyboardRow(List.of(
@@ -295,6 +303,11 @@ public class KeyboardService {
                 keyboardRow = new KeyboardRow();
             }
         }
+
+        CATEGORIES_LIST_KEYBOARD.setKeyboard(rows);
+        CATEGORIES_LIST_KEYBOARD.setResizeKeyboard(true);
+
+        rows.add(CANCEL_ROW);
 
         CATEGORIES_LIST_WITH_CANCEL_KEYBOARD.setKeyboard(rows);
         CATEGORIES_LIST_WITH_CANCEL_KEYBOARD.setResizeKeyboard(true);

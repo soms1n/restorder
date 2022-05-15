@@ -90,6 +90,11 @@ public class TavernEntity {
     @Enumerated(EnumType.STRING)
     private Category category;
 
+    /**
+     * Признак валидного заведения
+     */
+    private Boolean valid = false;
+
     @Builder
     public TavernEntity(UserEntity owner, String name) {
         this.name = name;
@@ -124,5 +129,9 @@ public class TavernEntity {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 '}';
+    }
+
+    public Boolean isValid() {
+        return valid;
     }
 }

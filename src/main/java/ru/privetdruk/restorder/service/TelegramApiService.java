@@ -27,6 +27,9 @@ public class TelegramApiService {
     @Value("${bot.client.token}")
     private String botClientToken;
 
+    @Value("${bot.user.token}")
+    private String botUserToken;
+
     public TelegramApiService(WebClient webClient) {
         this.webClient = webClient;
     }
@@ -68,7 +71,7 @@ public class TelegramApiService {
                 .path(SEND_MESSAGE_PATH)
                 .queryParam("chat_id", chatId)
                 .queryParam("text", text)
-                .buildAndExpand(client ? botClientToken : "")
+                .buildAndExpand(client ? botClientToken : botUserToken)
                 .toUriString();
 
         WebClient.RequestBodySpec requestBodySpec = webClient.post()
@@ -107,7 +110,7 @@ public class TelegramApiService {
                 .path(BOT_TOKEN_PATH)
                 .path(SEND_MESSAGE_PATH)
                 .queryParam("chat_id", chatId)
-                .buildAndExpand(client ? botClientToken : "")
+                .buildAndExpand(client ? botClientToken : botUserToken)
                 .toUriString();
 
         WebClient.RequestBodySpec requestBodySpec = webClient.post()

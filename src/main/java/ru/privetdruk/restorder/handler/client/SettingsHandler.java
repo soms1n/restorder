@@ -16,6 +16,7 @@ import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.mapper.ScheduleMapper;
 import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.dto.ScheduleDto;
+import ru.privetdruk.restorder.model.dto.ValidateTavernResult;
 import ru.privetdruk.restorder.model.entity.*;
 import ru.privetdruk.restorder.model.enums.*;
 import ru.privetdruk.restorder.service.*;
@@ -230,6 +231,10 @@ public class SettingsHandler implements MessageHandler {
                     }
 
                     tavern.setName(messageText);
+
+                    ValidateTavernResult validate = validationService.validate(tavern);
+                    tavern.setValid(validate.isValid());
+
                     tavernService.save(tavern);
 
                     userService.updateSubState(user, user.getSubState().getParentSubState());
@@ -249,7 +254,7 @@ public class SettingsHandler implements MessageHandler {
                         return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE_RETRY);
                     }
 
-                    if (!validationService.isValidPhone(messageText)) {
+                    if (validationService.isNotValidPhone(messageText)) {
                         return configureMessage(chatId, "Вы ввели некорректный номер. Повторите попытку:");
                     }
 
@@ -260,6 +265,10 @@ public class SettingsHandler implements MessageHandler {
                             .build();
 
                     tavern.addContact(contact);
+
+                    ValidateTavernResult validate = validationService.validate(tavern);
+                    tavern.setValid(validate.isValid());
+
                     contactService.save(contact);
 
                     userService.updateSubState(user, user.getSubState().getParentSubState());
@@ -271,7 +280,13 @@ public class SettingsHandler implements MessageHandler {
                         return configureMessage(chatId, "Вы не выбрали номер! Операция отменяется.");
                     }
 
-                    tavern.getContacts().removeIf(contact -> contact.getValue().equals(messageText));
+                    tavern.getContacts()
+                            .removeIf(contact -> contact.getValue().equals(messageText));
+
+
+                    ValidateTavernResult validate = validationService.validate(tavern);
+                    tavern.setValid(validate.isValid());
+
                     tavernService.save(tavern);
                 }
                 case CHANGE_GENERAL_SETTINGS_TAVERN_ADDRESS -> {
@@ -280,6 +295,10 @@ public class SettingsHandler implements MessageHandler {
                     }
 
                     tavern.getAddress().setStreet(messageText);
+
+                    ValidateTavernResult validate = validationService.validate(tavern);
+                    tavern.setValid(validate.isValid());
+
                     tavernService.save(tavern);
 
                     userService.updateSubState(user, user.getSubState().getParentSubState());
@@ -291,6 +310,10 @@ public class SettingsHandler implements MessageHandler {
                     }
 
                     tavern.setCategory(category);
+
+                    ValidateTavernResult validate = validationService.validate(tavern);
+                    tavern.setValid(validate.isValid());
+
                     tavernService.save(tavern);
 
                     userService.updateSubState(user, user.getSubState().getParentSubState());
@@ -391,7 +414,12 @@ public class SettingsHandler implements MessageHandler {
 
                     schedules.removeIf(schedule -> schedule.getId().equals(scheduleId));
 
-                    scheduleService.save(schedules);
+                    tavern.setSchedules(schedules);
+
+                    ValidateTavernResult validate = validationService.validate(tavern);
+                    tavern.setValid(validate.isValid());
+
+                    tavernService.save(tavern);
 
                     userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
@@ -527,8 +555,12 @@ public class SettingsHandler implements MessageHandler {
                             .peek(scheduleEntity -> scheduleEntity.setTavern(tavern))
                             .collect(Collectors.toSet());
 
-                    scheduleService.save(scheduleEntities);
                     tavern.getSchedules().addAll(scheduleEntities);
+
+                    ValidateTavernResult validate = validationService.validate(tavern);
+                    tavern.setValid(validate.isValid());
+
+                    tavernService.save(tavern);
 
                     userService.updateSubState(user, subState.getParentSubState());
                 }
@@ -568,8 +600,12 @@ public class SettingsHandler implements MessageHandler {
                                 KeyboardService.TABLE_KEYBOARD);
                     }
 
-                    table = tableService.save(table);
                     tavern.getTables().add(table);
+
+                    ValidateTavernResult validate = validationService.validate(tavern);
+                    tavern.setValid(validate.isValid());
+
+                    tavernService.save(tavern);
                 }
                 case DELETE_TABLE_SETTINGS -> {
                     final Long tableId = messageService.parseId(messageText);
@@ -582,8 +618,12 @@ public class SettingsHandler implements MessageHandler {
                     Set<TableEntity> tables = tavern.getTables();
 
                     tables.removeIf(table -> table.getId().equals(tableId));
+                    tavern.setTables(tables);
 
-                    tableService.save(tables);
+                    ValidateTavernResult validate = validationService.validate(tavern);
+                    tavern.setValid(validate.isValid());
+
+                    tavernService.save(tavern);
 
                     userService.updateSubState(user, user.getSubState().getParentSubState());
                 }

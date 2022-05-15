@@ -2,8 +2,13 @@ package ru.privetdruk.restorder.handler.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.*;
-import org.mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -23,9 +28,10 @@ import ru.privetdruk.restorder.model.entity.ContactEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.*;
-import ru.privetdruk.restorder.service.*;
+import ru.privetdruk.restorder.service.TavernService;
+import ru.privetdruk.restorder.service.TelegramApiService;
+import ru.privetdruk.restorder.service.UserService;
 import ru.privetdruk.restorder.service.util.ValidationService;
-
 
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +60,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     @DisplayName("Presets")
     void beforeEach() {
         Mockito.when(message.getChatId()).thenReturn(1L);
-        registrationTavernHandler = new RegistrationTavernHandler(new KeyboardService(), userService, telegramApiService, tavernService, new ValidationService());
+        registrationTavernHandler = new RegistrationTavernHandler(userService, telegramApiService, tavernService, new ValidationService());
     }
 
     @Test
