@@ -34,6 +34,8 @@ import java.util.Optional;
 class UserBotServiceTest {
     @Mock
     UserService userService;
+    @Mock
+    TelegramApiService telegramApiService;
     @InjectMocks
     UserBotService userBotService;
     @InjectMocks
@@ -51,6 +53,7 @@ class UserBotServiceTest {
                 new ReserveService(reserveRepository),
                 new StringService(),
                 new TavernService(tavernRepository),
+                telegramApiService,
                 userService
         );
 
