@@ -219,12 +219,19 @@ public class BookingHandler implements MessageHandler {
                         if (tablesTime.isEmpty()) {
                             bookings.remove(user);
 
-                            return toMainMenu(user, "К сожалению в выбранный день все столы заняты.");
+                            return toMainMenu(user, "К сожалению в выбранный день и время все столы заняты.");
                         }
 
                         LocalTime maxTime = tablesTime.keySet().stream()
                                 .max(LocalTime::compareTo)
                                 .orElse(null);
+
+                        LocalTime time = booking.getTime();
+                        if (maxTime.isBefore(time) || (maxTime.getHour() == time.getHour() && maxTime.getMinute() == time.getMinute())) {
+                            bookings.remove(user);
+
+                            return toMainMenu(user, "К сожалению в выбранный день и время все столы заняты.");
+                        }
 
                         booking.setTable(tablesTime.get(maxTime));
 
