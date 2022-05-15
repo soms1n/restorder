@@ -3,6 +3,7 @@ package ru.privetdruk.restorder.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import ru.privetdruk.restorder.model.entity.*;
 import ru.privetdruk.restorder.model.enums.Category;
 import ru.privetdruk.restorder.model.enums.DayWeek;
@@ -25,6 +26,7 @@ public class InfoService {
 
     public String fillGeneral(TavernEntity tavern) {
         return fillTavernName(tavern.getName()) + System.lineSeparator() + System.lineSeparator() +
+                fillTavernDescription(tavern.getDescription()) + System.lineSeparator() + System.lineSeparator() +
                 fillCategory(tavern.getCategory()) + System.lineSeparator() + System.lineSeparator() +
                 fillContact(tavern.getContacts()) + System.lineSeparator() + System.lineSeparator() +
                 fillAddress(tavern.getAddress()) + System.lineSeparator() + System.lineSeparator() +
@@ -32,7 +34,12 @@ public class InfoService {
     }
 
     public String fillTavernName(String name) {
-        return "™ <b>Заведение:</b> " + name + "";
+        return "™ <b>Заведение:</b> " + name;
+    }
+
+    public String fillTavernDescription(String description) {
+        return !StringUtils.hasText(description) ? "Описание отсутствует." : "\uD83D\uDCC3 <b>Описание:</b> " + description;
+
     }
 
     public String fillUser(String name) {
@@ -112,7 +119,7 @@ public class InfoService {
      */
     public String fillSchedules(Set<ScheduleEntity> schedules) {
         if (CollectionUtils.isEmpty(schedules)) {
-            return "График работы не установлен.";
+            return "График работы не установлен." + System.lineSeparator();
         }
 
         StringBuilder scheduleDescription = new StringBuilder();

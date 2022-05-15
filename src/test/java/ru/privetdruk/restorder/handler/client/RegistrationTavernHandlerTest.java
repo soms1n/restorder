@@ -309,7 +309,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     void client_In_EditPersonalData_SubState_And_Click_Edit_Tavern() {
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
-        Mockito.when(message.getText()).thenReturn(Button.TAVERN.getText());
+        Mockito.when(message.getText()).thenReturn(Button.TAVERN_NAME.getText());
 
         SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
@@ -341,7 +341,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     void client_In_EditPersonalData_SubState_And_Click_Edit_Address() {
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
-        Mockito.when(message.getText()).thenReturn(Button.ADDRESS.getText());
+        Mockito.when(message.getText()).thenReturn(Button.TAVERN_ADDRESS.getText());
 
         SendMessage sendMessage = registrationTavernHandler.handle(
                 user,

@@ -48,6 +48,12 @@ public class TavernEntity {
     private String name;
 
     /**
+     * Описание
+     */
+    @Column(name = "description")
+    private String description;
+
+    /**
      * Адрес
      */
     @OneToOne(

@@ -28,6 +28,7 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup SETTINGS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup GENERAL_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TAVERN_NAME_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup TAVERN_DESCRIPTION_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TAVERN_CONTACTS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TAVERN_ADDRESS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup PROFILE_KEYBOARD = new ReplyKeyboardMarkup();
@@ -55,6 +56,8 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup BOOKING_CHOICE_DATE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup BOOKING_CHOICE_TIME_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup RESERVE_CHOICE_TIME_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup WITHOUT_DESCRIPTION_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup REGISTRATION_APPROVING = new ReplyKeyboardMarkup();
 
     {
         init();
@@ -72,6 +75,17 @@ public class KeyboardService {
                 BACK_AND_MAIN_MENU_ROW
         ));
         BOOKING_CHOICE_TIME_KEYBOARD.setResizeKeyboard(true);
+
+        WITHOUT_DESCRIPTION_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(new KeyboardButton(Button.WITHOUT_DESCRIPTION.getText())))
+        ));
+
+        REGISTRATION_APPROVING.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.EDIT.getText()), new KeyboardButton(Button.APPROVE.getText())
+                ))
+        ));
+        REGISTRATION_APPROVING.setResizeKeyboard(true);
 
         RESERVE_CHOICE_TIME_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(new KeyboardButton(Button.NOW.getText()))),
@@ -176,10 +190,11 @@ public class KeyboardService {
         GENERAL_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.TAVERN_NAME.getText()),
+                        new KeyboardButton(Button.DESCRIPTION.getText()),
                         new KeyboardButton(Button.CATEGORIES.getText())
                 )),
                 new KeyboardRow(List.of(
-                        new KeyboardButton(Button.CONTACTS.getText()),
+                        new KeyboardButton(Button.PHONE_NUMBER.getText()),
                         new KeyboardButton(Button.TAVERN_ADDRESS.getText())
                 )),
                 BACK_AND_MAIN_MENU_ROW
@@ -193,6 +208,14 @@ public class KeyboardService {
                 BACK_AND_MAIN_MENU_ROW
         ));
         TAVERN_NAME_KEYBOARD.setResizeKeyboard(true);
+
+        TAVERN_DESCRIPTION_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.CHANGE.getText())
+                )),
+                BACK_AND_MAIN_MENU_ROW
+        ));
+        TAVERN_DESCRIPTION_KEYBOARD.setResizeKeyboard(true);
 
         TAVERN_ADDRESS_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
@@ -214,7 +237,7 @@ public class KeyboardService {
         PROFILE_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.USER_NAME.getText()),
-                        new KeyboardButton(Button.CONTACTS.getText())
+                        new KeyboardButton(Button.PHONE_NUMBER.getText())
                 )),
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.DELETE_PROFILE.getText())

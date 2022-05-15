@@ -47,6 +47,17 @@ public enum SubState {
 
         @Override
         public SubState getNextSubState() {
+            return ENTER_TAVERN_DESCRIPTION;
+        }
+    },
+    ENTER_TAVERN_DESCRIPTION(MessageText.ENTER_TAVERN_DESCRIPTION) {
+        @Override
+        public State getState() {
+            return State.REGISTRATION_TAVERN;
+        }
+
+        @Override
+        public SubState getNextSubState() {
             return CHOICE_CITY;
         }
     },
@@ -147,6 +158,12 @@ public enum SubState {
             return State.REGISTRATION_TAVERN;
         }
     },
+    EDIT_DESCRIPTION() {
+        @Override
+        public State getState() {
+            return State.REGISTRATION_TAVERN;
+        }
+    },
     EDIT_PHONE_NUMBER() {
         @Override
         public State getState() {
@@ -190,6 +207,28 @@ public enum SubState {
         @Override
         public SubState getParentSubState() {
             return VIEW_GENERAL_SETTINGS_TAVERN_NAME;
+        }
+    },
+    VIEW_GENERAL_SETTINGS_TAVERN_DESCRIPTION() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS;
+        }
+    },
+    CHANGE_GENERAL_SETTINGS_TAVERN_DESCRIPTION() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS_TAVERN_DESCRIPTION;
         }
     },
     VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS() {
