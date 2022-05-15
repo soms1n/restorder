@@ -17,7 +17,6 @@ import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
 import ru.privetdruk.restorder.model.enums.UserType;
 import ru.privetdruk.restorder.repository.ReserveRepository;
-import ru.privetdruk.restorder.repository.ScheduleRepository;
 import ru.privetdruk.restorder.repository.TavernRepository;
 import ru.privetdruk.restorder.service.user.UserBotService;
 import ru.privetdruk.restorder.service.user.UserHandlerService;
@@ -40,8 +39,6 @@ class UserBotServiceTest {
     UserBotService userBotService;
     @InjectMocks
     ReserveRepository reserveRepository;
-    @InjectMocks
-    ScheduleRepository scheduleRepository;
     @InjectMocks
     TavernRepository tavernRepository;
 
