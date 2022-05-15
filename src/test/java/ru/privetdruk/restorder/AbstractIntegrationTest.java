@@ -16,7 +16,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @ContextConfiguration(initializers = AbstractIntegrationTest.DockerPostgresDataSourceInitializer.class)
 @Testcontainers
 public abstract class AbstractIntegrationTest extends AbstractTest {
-    public static PostgreSQLContainer<?> postgresDBContainer = new PostgreSQLContainer<>("postgres:14.1");
+    public static PostgreSQLContainer<?> postgresDBContainer = new PostgreSQLContainer<>("postgres:14.1")
+            .withDatabaseName("restorder");
 
     static {
         postgresDBContainer.start();

@@ -17,7 +17,6 @@ import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
 import ru.privetdruk.restorder.model.enums.UserType;
 import ru.privetdruk.restorder.repository.ReserveRepository;
-import ru.privetdruk.restorder.repository.ScheduleRepository;
 import ru.privetdruk.restorder.repository.TavernRepository;
 import ru.privetdruk.restorder.service.user.UserBotService;
 import ru.privetdruk.restorder.service.user.UserHandlerService;
@@ -34,12 +33,12 @@ import java.util.Optional;
 class UserBotServiceTest {
     @Mock
     UserService userService;
+    @Mock
+    TelegramApiService telegramApiService;
     @InjectMocks
     UserBotService userBotService;
     @InjectMocks
     ReserveRepository reserveRepository;
-    @InjectMocks
-    ScheduleRepository scheduleRepository;
     @InjectMocks
     TavernRepository tavernRepository;
 
@@ -51,6 +50,7 @@ class UserBotServiceTest {
                 new ReserveService(reserveRepository),
                 new StringService(),
                 new TavernService(tavernRepository),
+                telegramApiService,
                 userService
         );
 
