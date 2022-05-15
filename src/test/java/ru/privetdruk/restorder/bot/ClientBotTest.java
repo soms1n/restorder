@@ -13,7 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
-import ru.privetdruk.restorder.AbstractTest;
+import ru.privetdruk.restorder.AbstractIntegrationTest;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.handler.client.RegistrationTavernHandler;
 import ru.privetdruk.restorder.model.consts.MessageText;
@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
         "bot.client.token = test_token",
         "bot.client.web-hook-path = http://test"
 })
-class ClientBotTest extends AbstractTest {
+class ClientBotTest extends AbstractIntegrationTest {
     @Autowired
     private ClientBot clientBot;
 
