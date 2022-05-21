@@ -29,6 +29,7 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup GENERAL_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TAVERN_NAME_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TAVERN_DESCRIPTION_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup TAVERN_DESCRIPTION_LINK_TABLE_LAYOUT = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TAVERN_CONTACTS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TAVERN_ADDRESS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup PROFILE_KEYBOARD = new ReplyKeyboardMarkup();
@@ -203,7 +204,8 @@ public class KeyboardService {
                 )),
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.PHONE_NUMBER.getText()),
-                        new KeyboardButton(Button.TAVERN_ADDRESS.getText())
+                        new KeyboardButton(Button.TAVERN_ADDRESS.getText()),
+                        new KeyboardButton(Button.TAVERN_TABLE_LAYOUT.getText())
                 )),
                 BACK_AND_MAIN_MENU_ROW
         ));
@@ -224,6 +226,15 @@ public class KeyboardService {
                 BACK_AND_MAIN_MENU_ROW
         ));
         TAVERN_DESCRIPTION_KEYBOARD.setResizeKeyboard(true);
+
+        TAVERN_DESCRIPTION_LINK_TABLE_LAYOUT.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.CHANGE.getText()),
+                        new KeyboardButton(Button.DELETE.getText())
+                )),
+                BACK_AND_MAIN_MENU_ROW
+        ));
+        TAVERN_DESCRIPTION_LINK_TABLE_LAYOUT.setResizeKeyboard(true);
 
         TAVERN_ADDRESS_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(

@@ -220,6 +220,17 @@ public enum SubState {
             return VIEW_GENERAL_SETTINGS;
         }
     },
+    VIEW_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS;
+        }
+    },
     CHANGE_GENERAL_SETTINGS_TAVERN_DESCRIPTION() {
         @Override
         public State getState() {
@@ -229,6 +240,17 @@ public enum SubState {
         @Override
         public SubState getParentSubState() {
             return VIEW_GENERAL_SETTINGS_TAVERN_DESCRIPTION;
+        }
+    },
+    CHANGE_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT;
         }
     },
     VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS() {
@@ -284,6 +306,17 @@ public enum SubState {
         @Override
         public SubState getParentSubState() {
             return VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS;
+        }
+    },
+    DELETE_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT;
         }
     },
     VIEW_PROFILE_SETTINGS() {

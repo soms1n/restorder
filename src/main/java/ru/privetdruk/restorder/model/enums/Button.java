@@ -27,6 +27,7 @@ public enum Button {
     TAVERN_NAME("™ Название"),
     PHONE_NUMBER("\uD83D\uDCDE Телефон"),
     TAVERN_ADDRESS("\uD83D\uDDFA Адрес"),
+    TAVERN_TABLE_LAYOUT("\uD83D\uDCC8 Схема столов"),
     RETURN_MAIN_MENU("↩ Главное меню"),
     CHANGE("〰 Изменить"),
     CANCEL("⭕ Отменить"),

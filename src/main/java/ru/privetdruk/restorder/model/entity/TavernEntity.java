@@ -44,13 +44,13 @@ public class TavernEntity {
     /**
      * Название
      */
-    @Column(name = "name")
+    @Column
     private String name;
 
     /**
      * Описание
      */
-    @Column(name = "description")
+    @Column
     private String description;
 
     /**
@@ -61,7 +61,7 @@ public class TavernEntity {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    @JoinColumn(name = "address_id")
+    @JoinColumn
     private AddressEntity address;
 
     /**
@@ -86,14 +86,21 @@ public class TavernEntity {
     /**
      * Категория заведения
      */
-    @Column(name = "category")
+    @Column
     @Enumerated(EnumType.STRING)
     private Category category;
 
     /**
      * Признак валидного заведения
      */
+    @Column
     private Boolean valid = false;
+
+    /**
+     * Ссылка на схему столов
+     */
+    @Column
+    private String linkTableLayout;
 
     @Builder
     public TavernEntity(UserEntity owner, String name) {

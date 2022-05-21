@@ -28,6 +28,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ru.privetdruk.restorder.service.MessageService.configureMarkdownMessage;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
 @Slf4j
@@ -66,14 +67,18 @@ public class SettingsHandler implements MessageHandler {
         switch (button) {
             case BACK, CANCEL, NO -> user.setSubState(subState.getParentSubState());
             case YES -> {
-                if (subState == SubState.DELETE_PROFILE_SETTINGS) {
-                    if (user.getRoles().contains(Role.CLIENT_ADMIN)) {
-                        tavernService.delete(tavern);
-                    } else {
-                        userService.delete(user);
+                switch (subState) {
+                    case DELETE_PROFILE_SETTINGS -> {
+                        if (user.getRoles().contains(Role.CLIENT_ADMIN)) {
+                            tavernService.delete(tavern);
+                        } else {
+                            userService.delete(user);
+                        }
+                        return configureMessage(chatId, "Данные успешно удалены. Хорошего дня!", KeyboardService.REMOVE_KEYBOARD);
                     }
-
-                    return configureMessage(chatId, "Данные успешно удалены. Хорошего дня!", KeyboardService.REMOVE_KEYBOARD);
+                    case DELETE_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT -> {
+                        return configureDeleteLinkTableLayout(user, chatId);
+                    }
                 }
             }
             case RETURN_MAIN_MENU -> {
@@ -88,6 +93,8 @@ public class SettingsHandler implements MessageHandler {
                         return configureMessageWithCancel(user, chatId, SubState.CHANGE_GENERAL_SETTINGS_TAVERN_NAME, "Введите новое название:");
                     case VIEW_GENERAL_SETTINGS_TAVERN_DESCRIPTION:
                         return configureMessageWithCancel(user, chatId, SubState.CHANGE_GENERAL_SETTINGS_TAVERN_DESCRIPTION, "Введите новое описание:");
+                    case VIEW_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT:
+                        return configureMessageWithCancel(user, chatId, SubState.CHANGE_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT, "Введите новую ссылку:");
                     case VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS:
                         return configureMessageWithCancel(user, chatId, SubState.CHANGE_GENERAL_SETTINGS_TAVERN_ADDRESS, "Введите новый адрес:");
                     case VIEW_PROFILE_SETTINGS_USER_NAME:
@@ -165,14 +172,19 @@ public class SettingsHandler implements MessageHandler {
                                 chatId,
                                 KeyboardService.USER_CONTACTS_KEYBOARD
                         );
-                    case VIEW_EMPLOYEE_SETTINGS: {
+                    case VIEW_EMPLOYEE_SETTINGS:
                         return configureDeleteEmployees(user, chatId);
-                    }
-                    case VIEW_SCHEDULE_SETTINGS: {
+                    case VIEW_SCHEDULE_SETTINGS:
                         return configureDeleteSchedule(user, chatId);
-                    }
-                    case VIEW_TABLE_SETTINGS: {
+                    case VIEW_TABLE_SETTINGS:
                         return configureDeleteTables(user, chatId);
+                    case VIEW_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT: {
+                        if (!StringUtils.hasText(tavern.getLinkTableLayout())) {
+                            return configureMessage(chatId, "Нечего удалять.", KeyboardService.TAVERN_DESCRIPTION_LINK_TABLE_LAYOUT);
+                        }
+
+                        userService.updateSubState(user, SubState.DELETE_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT);
+                        return configureMessage(chatId, "Вы действительно хотите удалить ссылку?", KeyboardService.YES_NO_KEYBOARD);
                     }
                 }
             }
@@ -222,6 +234,7 @@ public class SettingsHandler implements MessageHandler {
                         case DESCRIPTION -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_DESCRIPTION);
                         case PHONE_NUMBER -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS);
                         case TAVERN_ADDRESS -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS);
+                        case TAVERN_TABLE_LAYOUT -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT);
                         case CATEGORIES -> userService.updateSubState(user, SubState.VIEW_GENERAL_SETTINGS_CATEGORIES);
                     }
                 }
@@ -245,6 +258,16 @@ public class SettingsHandler implements MessageHandler {
                     }
 
                     tavern.setDescription(messageText);
+                    tavernService.save(tavern);
+
+                    userService.updateSubState(user, user.getSubState().getParentSubState());
+                }
+                case CHANGE_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT -> {
+                    if (!StringUtils.hasText(messageText)) {
+                        return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE_RETRY);
+                    }
+
+                    tavern.setLinkTableLayout(messageText);
                     tavernService.save(tavern);
 
                     userService.updateSubState(user, user.getSubState().getParentSubState());
@@ -637,6 +660,7 @@ public class SettingsHandler implements MessageHandler {
             case VIEW_GENERAL_SETTINGS -> configureMessage(chatId, infoService.fillGeneral(tavern), KeyboardService.GENERAL_KEYBOARD);
             case VIEW_GENERAL_SETTINGS_TAVERN_NAME -> configureMessage(chatId, infoService.fillTavernName(tavern.getName()), KeyboardService.TAVERN_NAME_KEYBOARD);
             case VIEW_GENERAL_SETTINGS_TAVERN_DESCRIPTION -> configureMessage(chatId, infoService.fillTavernDescription(tavern.getDescription()), KeyboardService.TAVERN_DESCRIPTION_KEYBOARD);
+            case VIEW_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT -> configureMarkdownMessage(chatId, infoService.fillTavernLinkTableLayout(tavern.getLinkTableLayout()), KeyboardService.TAVERN_DESCRIPTION_LINK_TABLE_LAYOUT);
             case VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS -> configureMessage(chatId, infoService.fillContact(tavern.getContacts()), KeyboardService.TAVERN_CONTACTS_KEYBOARD);
             case VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS -> configureMessage(chatId, infoService.fillAddress(tavern.getAddress()), KeyboardService.TAVERN_ADDRESS_KEYBOARD);
             case VIEW_GENERAL_SETTINGS_CATEGORIES -> configureMessage(chatId, infoService.fillCategory(tavern.getCategory()), KeyboardService.CATEGORIES_KEYBOARD);
@@ -654,6 +678,17 @@ public class SettingsHandler implements MessageHandler {
 
             default -> new SendMessage();
         };
+    }
+
+    private SendMessage configureDeleteLinkTableLayout(UserEntity user, Long chatId) {
+        TavernEntity tavern = user.getTavern();
+        tavern.setLinkTableLayout(null);
+
+        tavernService.save(tavern);
+
+        userService.updateSubState(user, user.getSubState().getParentSubState());
+
+        return configureMessage(chatId, "Ссылка успешно удалена.", KeyboardService.TAVERN_DESCRIPTION_LINK_TABLE_LAYOUT);
     }
 
     private SendMessage configureMessageWithCancel(UserEntity user, Long chatId, SubState subState, String text) {

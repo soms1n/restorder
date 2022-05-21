@@ -156,4 +156,14 @@ public class InfoService {
                 + System.lineSeparator()
                 + scheduleDescription + "</pre>";
     }
+
+    public String fillTavernLinkTableLayout(String linkTableLayout) {
+        if (!StringUtils.hasText(linkTableLayout)) {
+            return "Ссылка на схему расположения столов не добавлена."
+                    + System.lineSeparator()
+                    + "Добавив её, вы позволите вашим клиентам самим выбирать свободный стол для бронирования, иначе стол будет подобран автоматически.";
+        }
+
+        return "*Схема расположения столов:* [\u200B](" + linkTableLayout + ")";
+    }
 }

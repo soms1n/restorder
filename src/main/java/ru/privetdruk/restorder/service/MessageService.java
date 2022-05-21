@@ -50,6 +50,21 @@ public class MessageService {
     }
 
     /**
+     * Сконфигурировать ответное сообщение
+     *
+     * @param chatId   Идентификатор чата
+     * @param message  Сообщение
+     * @param keyboard Меню
+     * @return Ответное сообщение
+     */
+    public static SendMessage configureMarkdownMessage(Long chatId, String message, ReplyKeyboard keyboard) {
+        SendMessage sendMessage = new SendMessage(chatId.toString(), message);
+        sendMessage.setReplyMarkup(keyboard);
+        sendMessage.enableMarkdown(true);
+        return sendMessage;
+    }
+
+    /**
      * Распарсить идентификатор
      *
      * @param messageText Текст сообщения
