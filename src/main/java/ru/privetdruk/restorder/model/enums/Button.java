@@ -75,7 +75,9 @@ public enum Button {
     MY_RESERVE("📋 Мои бронирования"),
     NOW("\uD83D\uDD51 Сейчас"),
     DESCRIPTION("\uD83D\uDCC3 Описание"),
-    WITHOUT_DESCRIPTION("\uD83D\uDDEF Без описания");
+    WITHOUT_DESCRIPTION("\uD83D\uDDEF Без описания"),
+    MANUALLY("\uD83D\uDC46 Выберу сам(а)"),
+    AUTOMATIC("🎲 Подобрать автоматически");
 
     private final String text;
 

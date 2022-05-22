@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -31,6 +32,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static ru.privetdruk.restorder.service.MessageService.configureMarkdownMessage;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
 @Slf4j
@@ -175,83 +177,60 @@ public class BookingHandler implements MessageHandler {
                         booking.setPersons(persons);
 
                         TavernEntity tavern = tavernService.findByIdWithSchedulesAndReserves(booking.getTavern().getId());
+                        booking.setTavern(tavern);
 
-                        List<TableEntity> tables = tavern.getTables().stream()
-                                .filter(table -> table.getNumberSeats() >= booking.getPersons())
-                                .sorted(Comparator.comparingInt(TableEntity::getNumberSeats))
-                                .collect(Collectors.toList());
-
-                        if (CollectionUtils.isEmpty(tables)) {
-                            return toMainMenu(
-                                    user,
-                                    "К сожалению не удалось найти подходящий столик на "
-                                            + booking.getPersons()
-                                            + " "
-                                            + stringService.declensionWords(booking.getPersons(), StringService.SEATS_WORDS)
-                                            + " в выбранную дату."
+                        if (StringUtils.hasText(tavern.getLinkTableLayout())) {
+                            userService.updateSubState(user, SubState.BOOKING_CHOICE_TABLE_ANSWER);
+                            return configureMessage(
+                                    chatId,
+                                    "Хотите сами выбрать место или мы подберем его автоматически?",
+                                    KeyboardService.BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD
                             );
                         }
 
-                        for (TableEntity table : tables) {
-                            Set<ReserveEntity> reserves = table.getReserves().stream()
-                                    .filter(reserve -> reserve.getDate().equals(booking.getDate())
-                                            && reserve.getStatus() == ReserveStatus.ACTIVE)
-                                    .collect(Collectors.toSet());
-
-                            if (CollectionUtils.isEmpty(reserves)) {
-                                booking.setTable(table);
-
-                                userService.updateSubState(user, SubState.BOOKING_APPROVE);
-
-                                return configureMessage(chatId, fillReserveInfo(booking, true), KeyboardService.APPROVE_KEYBOARD);
-                            }
-                        }
-
-                        Map<LocalTime, TableEntity> tablesTime = new HashMap<>();
-                        for (TableEntity table : tables) {
-                            table.getReserves().stream()
-                                    .filter(reserve -> reserve.getDate().equals(booking.getDate())
-                                            && reserve.getStatus() == ReserveStatus.ACTIVE)
-                                    .min(Comparator.comparing(ReserveEntity::getTime))
-                                    .ifPresent(minReserve -> tablesTime.putIfAbsent(minReserve.getTime(), table));
-                        }
-
-                        if (tablesTime.isEmpty()) {
-                            bookings.remove(user);
-
-                            return toMainMenu(user, "К сожалению в выбранный день и время все столы заняты.");
-                        }
-
-                        LocalTime maxTime = tablesTime.keySet().stream()
-                                .max(LocalTime::compareTo)
-                                .orElse(null);
-
-                        LocalTime time = booking.getTime();
-                        if (maxTime.isBefore(time) || (maxTime.getHour() == time.getHour() && maxTime.getMinute() == time.getMinute())) {
-                            bookings.remove(user);
-
-                            return toMainMenu(user, "К сожалению в выбранный день и время все столы заняты.");
-                        }
-
-                        booking.setTable(tablesTime.get(maxTime));
-
-                        userService.updateSubState(user, SubState.BOOKING_APPROVE_BEFORE);
-
-                        return configureMessage(
-                                chatId,
-                                "В указанное вами время столик свободен до "
-                                        + maxTime.format(Constant.HH_MM_FORMATTER)
-                                        + ". Данный столик нужно будет освободить не позднее "
-                                        + maxTime.minusMinutes(10L) + ". Подтверждаете бронирование?",
-                                KeyboardService.APPROVE_BEFORE_KEYBOARD
-                        );
+                        return choiceTableAutomatic(user, chatId, booking);
                     } catch (Throwable t) {
-                        return configureMessage(
-                                chatId,
+                        return configureMessage(chatId,
                                 "Вы ввели некорректное значение. Повторите попытку.",
                                 KeyboardService.NUMBERS_KEYBOARD
                         );
                     }
+                }
+                case BOOKING_CHOICE_TABLE_ANSWER -> {
+                    if (button == Button.MANUALLY) {
+                        return choiceTableManually(user, chatId, bookings.get(user));
+                    } else if (button == Button.AUTOMATIC) {
+                        return choiceTableAutomatic(user, chatId, bookings.get(user));
+                    } else {
+                        return configureMessage(
+                                chatId,
+                                "Вы ввели некорректное значение. Повторите попытку.",
+                                KeyboardService.BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD
+                        );
+                    }
+                }
+                case BOOKING_CHOICE_TABLE_MANUALLY -> {
+                    Long tableId = parseId(messageText);
+                    BookingDto booking = bookings.get(user);
+                    TableEntity reserveTable = booking.getTavern().getTables().stream()
+                            .filter(table -> table.getId().equals(tableId))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (reserveTable == null) {
+                        return toMainMenu(user, "Выбрано некорректное значение.");
+                    }
+
+                    int beforeIndex = messageText.indexOf(" до ");
+                    if (beforeIndex != -1) {
+                        booking.setBeforeTime(LocalTime.parse(messageText.substring(beforeIndex + 4, beforeIndex + 9)));
+                    }
+
+                    booking.setTable(reserveTable);
+
+                    userService.updateSubState(user, SubState.BOOKING_APPROVE);
+
+                    return configureMessage(chatId, fillReserveInfo(bookings.get(user), true), KeyboardService.APPROVE_KEYBOARD);
                 }
                 case BOOKING_APPROVE_BEFORE -> {
                     if (button == Button.ACCEPT) {
@@ -344,12 +323,175 @@ public class BookingHandler implements MessageHandler {
 
         // отрисовка меню
         return switch (user.getSubState()) {
-            case VIEW_MAIN_MENU -> configureMessage(chatId, "Открываю главное меню.", KeyboardService.USER_MAIN_MENU);
+            case VIEW_MAIN_MENU -> configureMainMenu(chatId, user);
             case VIEW_RESERVE_LIST -> configureMessage(chatId, fillReserves(user.getReserves()), KeyboardService.USER_RESERVE_LIST_KEYBOARD);
             case VIEW_TAVERN_LIST -> fillTaverns(user);
 
             default -> new SendMessage();
         };
+    }
+
+    private SendMessage configureMainMenu(Long chatId, UserEntity user) {
+        bookings.remove(user);
+        return configureMessage(chatId, "Открываю главное меню.", KeyboardService.USER_MAIN_MENU);
+    }
+
+    private SendMessage choiceTableManually(UserEntity user, Long chatId, BookingDto booking) {
+        TavernEntity tavern = booking.getTavern();
+
+        List<TableEntity> tables = tavern.getTables().stream()
+                .filter(table -> table.getNumberSeats() >= booking.getPersons())
+                .sorted(Comparator.comparingInt(TableEntity::getNumberSeats))
+                .collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(tables)) {
+            return toMainMenu(user, tableFullMessage(booking));
+        }
+
+        Set<TableEntity> freeTables = new HashSet<>();
+
+        for (TableEntity table : tables) {
+            Set<ReserveEntity> reserves = table.getReserves().stream()
+                    .filter(reserve -> reserve.getDate().equals(booking.getDate())
+                            && reserve.getStatus() == ReserveStatus.ACTIVE)
+                    .collect(Collectors.toSet());
+
+            if (CollectionUtils.isEmpty(reserves)) {
+                freeTables.add(table);
+            }
+        }
+
+        LocalTime time = booking.getTime();
+
+        Map<LocalTime, TableEntity> tablesTime = new HashMap<>();
+        for (TableEntity table : tables) {
+            ReserveEntity foundReserve = table.getReserves().stream()
+                    .filter(reserve -> reserve.getDate().equals(booking.getDate())
+                            && reserve.getStatus() == ReserveStatus.ACTIVE)
+                    .min(Comparator.comparing(ReserveEntity::getTime))
+                    .orElse(null);
+
+            if (foundReserve == null || (foundReserve.getTime().isBefore(time)
+                    || (foundReserve.getTime().getHour() == time.getHour() && foundReserve.getTime().getMinute() == time.getMinute()))) {
+                continue;
+            }
+
+            tablesTime.putIfAbsent(foundReserve.getTime(), table);
+        }
+
+        if (freeTables.isEmpty() && tablesTime.isEmpty()) {
+            return toMainMenu(user, tableFullMessage(booking));
+        }
+
+        ReplyKeyboardMarkup tablesKeyboard = new ReplyKeyboardMarkup();
+        List<KeyboardRow> rows = new ArrayList<>();
+
+        if (!freeTables.isEmpty()) {
+            freeTables.forEach(table ->
+                    rows.add(new KeyboardRow(List.of(new KeyboardButton(
+                            table.getLabel() + " " + table.getNumberSeats() + " "
+                                    + stringService.declensionWords(table.getNumberSeats(), StringService.SEATS_WORDS)
+                                    + " [" + table.getId() + "]"
+                    ))))
+            );
+        }
+
+        if (!tablesTime.isEmpty()) {
+            for (var entry : tablesTime.entrySet()) {
+                TableEntity table = entry.getValue();
+                rows.add(new KeyboardRow(List.of(new KeyboardButton(
+                        table.getLabel() + " " + table.getNumberSeats() + " "
+                                + stringService.declensionWords(table.getNumberSeats(), StringService.SEATS_WORDS)
+                                + ", освободить до " + entry.getKey().minusMinutes(10L) + " [" + table.getId() + "]"
+                ))));
+            }
+        }
+
+        rows.add(new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()))));
+
+        tablesKeyboard.setKeyboard(rows);
+        tablesKeyboard.setResizeKeyboard(true);
+
+        userService.updateSubState(user, SubState.BOOKING_CHOICE_TABLE_MANUALLY);
+
+        return configureMarkdownMessage(chatId, "Выберите стол.\n\nСхема расположения столов: [\u200B](" + tavern.getLinkTableLayout() + ")", tablesKeyboard);
+    }
+
+    private SendMessage choiceTableAutomatic(UserEntity user, Long chatId, BookingDto booking) {
+        TavernEntity tavern = booking.getTavern();
+
+        List<TableEntity> tables = tavern.getTables().stream()
+                .filter(table -> table.getNumberSeats() >= booking.getPersons())
+                .sorted(Comparator.comparingInt(TableEntity::getNumberSeats))
+                .collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(tables)) {
+            return toMainMenu(user, tableFullMessage(booking));
+        }
+
+        for (TableEntity table : tables) {
+            Set<ReserveEntity> reserves = table.getReserves().stream()
+                    .filter(reserve -> reserve.getDate().equals(booking.getDate())
+                            && reserve.getStatus() == ReserveStatus.ACTIVE)
+                    .collect(Collectors.toSet());
+
+            if (CollectionUtils.isEmpty(reserves)) {
+                booking.setTable(table);
+
+                userService.updateSubState(user, SubState.BOOKING_APPROVE);
+
+                return configureMessage(chatId, fillReserveInfo(booking, true), KeyboardService.APPROVE_KEYBOARD);
+            }
+        }
+
+        LocalTime time = booking.getTime();
+
+        Map<LocalTime, TableEntity> tablesTime = new HashMap<>();
+        for (TableEntity table : tables) {
+            ReserveEntity foundReserve = table.getReserves().stream()
+                    .filter(reserve -> reserve.getDate().equals(booking.getDate())
+                            && reserve.getStatus() == ReserveStatus.ACTIVE)
+                    .min(Comparator.comparing(ReserveEntity::getTime))
+                    .orElse(null);
+
+            if (foundReserve == null || (foundReserve.getTime().isBefore(time)
+                    || (foundReserve.getTime().getHour() == time.getHour() && foundReserve.getTime().getMinute() == time.getMinute()))) {
+                continue;
+            }
+
+            tablesTime.putIfAbsent(foundReserve.getTime(), table);
+        }
+
+        if (tablesTime.isEmpty()) {
+            bookings.remove(user);
+
+            return toMainMenu(user, tableFullMessage(booking));
+        }
+
+        LocalTime maxTime = tablesTime.keySet().stream()
+                .max(LocalTime::compareTo)
+                .orElse(null);
+
+        booking.setTable(tablesTime.get(maxTime));
+
+        userService.updateSubState(user, SubState.BOOKING_APPROVE_BEFORE);
+
+        return configureMessage(
+                chatId,
+                "В указанное вами время столик свободен до "
+                        + maxTime.format(Constant.HH_MM_FORMATTER)
+                        + ". Данный столик нужно будет освободить не позднее "
+                        + maxTime.minusMinutes(10L) + ". Подтверждаете бронирование?",
+                KeyboardService.APPROVE_BEFORE_KEYBOARD
+        );
+    }
+
+    private String tableFullMessage(BookingDto booking) {
+        return "К сожалению не удалось найти подходящий столик на "
+                + booking.getPersons()
+                + " "
+                + stringService.declensionWords(booking.getPersons(), StringService.SEATS_WORDS)
+                + " в выбранную дату и время.";
     }
 
     private String fillReserveInfo(BookingDto booking, boolean fillTavernName) {
@@ -360,7 +502,10 @@ public class BookingHandler implements MessageHandler {
                 + System.lineSeparator()
                 + "Время: <i>" + booking.getTime().format(Constant.HH_MM_FORMATTER) + "</i>"
                 + System.lineSeparator()
-                + "Кол-во персон: <i>" + booking.getPersons() + "</i>";
+                + "Кол-во персон: <i>" + booking.getPersons() + "</i>"
+                + (booking.getBeforeTime() == null ? ""
+                : System.lineSeparator()
+                + "Примечание: <i>стол нужно будет освободить до " + booking.getBeforeTime().format(Constant.HH_MM_FORMATTER) + "</i>");
     }
 
     private SendMessage fillTaverns(UserEntity user) {
@@ -402,6 +547,7 @@ public class BookingHandler implements MessageHandler {
     }
 
     private SendMessage toMainMenu(UserEntity user, String message) {
+        bookings.remove(user);
         userService.updateState(user, State.BOOKING);
         return configureMessage(user.getTelegramId(), message, KeyboardService.USER_MAIN_MENU);
     }

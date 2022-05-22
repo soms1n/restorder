@@ -16,6 +16,7 @@ public class BookingDto {
     private TavernEntity tavern;
     private LocalDate date;
     private LocalTime time;
+    private LocalTime beforeTime;
     private int persons;
     private TableEntity table;
 

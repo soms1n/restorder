@@ -61,6 +61,7 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup WITHOUT_DESCRIPTION_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup REGISTRATION_TAVERN = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup REGISTRATION_APPROVING = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD = new ReplyKeyboardMarkup();
 
     {
         init();
@@ -83,6 +84,14 @@ public class KeyboardService {
                 new KeyboardRow(List.of(new KeyboardButton(Button.WITHOUT_DESCRIPTION.getText())))
         ));
         WITHOUT_DESCRIPTION_KEYBOARD.setResizeKeyboard(true);
+
+        BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD.setKeyboard(List.of(
+                new KeyboardRow(List.of(
+                        new KeyboardButton(Button.MANUALLY.getText()), new KeyboardButton(Button.AUTOMATIC.getText())
+                )),
+                BACK_AND_MAIN_MENU_ROW
+        ));
+        BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD.setResizeKeyboard(true);
 
         REGISTRATION_TAVERN.setKeyboard(List.of(
                 new KeyboardRow(List.of(new KeyboardButton(Button.REGISTRATION.getText())))
@@ -118,7 +127,6 @@ public class KeyboardService {
 
         CITIES_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
-                        new KeyboardButton(City.BRYANSK.getDescription()),
                         new KeyboardButton(City.YOSHKAR_OLA.getDescription())
                 ))
         ));

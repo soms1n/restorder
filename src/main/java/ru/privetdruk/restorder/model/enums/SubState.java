@@ -809,6 +809,39 @@ public enum SubState {
             return BOOKING_CHOICE_DATE;
         }
     },
+    BOOKING_CHOICE_TABLE_ANSWER() {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MAIN_MENU;
+        }
+    },
+    BOOKING_CHOICE_TABLE_AUTOMATIC() {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MAIN_MENU;
+        }
+    },
+    BOOKING_CHOICE_TABLE_MANUALLY() {
+        @Override
+        public State getState() {
+            return State.BOOKING;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MAIN_MENU;
+        }
+    },
     BOOKING_APPROVE() {
         @Override
         public State getState() {
