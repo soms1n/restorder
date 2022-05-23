@@ -3,7 +3,6 @@ package ru.privetdruk.restorder.handler.client;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Contact;
@@ -54,6 +53,8 @@ public class RegistrationTavernHandler implements MessageHandler {
         Button button = Button.fromText(messageText)
                 .orElse(Button.NOTHING);
 
+        TavernEntity tavern = user.getTavern();
+
         switch (subState) {
             case SHOW_REGISTER_BUTTON -> {
                 if (button == Button.REGISTRATION) {
@@ -69,7 +70,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                 sendMessage = configureMessage(chatId, changeState(user, subState).getMessage());
             }
             case ENTER_TAVERN_NAME -> {
-                TavernEntity tavern = TavernEntity.builder()
+                tavern = TavernEntity.builder()
                         .name(messageText)
                         .owner(user)
                         .build();
@@ -86,7 +87,6 @@ public class RegistrationTavernHandler implements MessageHandler {
             }
             case ENTER_TAVERN_DESCRIPTION -> {
                 if (button != Button.WITHOUT_DESCRIPTION) {
-                    TavernEntity tavern = user.getTavern();
                     tavern.setDescription(messageText);
                     tavernService.save(tavern);
                 }
@@ -100,8 +100,6 @@ public class RegistrationTavernHandler implements MessageHandler {
                 if (city == null) {
                     sendMessage = configureMessage(chatId, subState.getMessage(), KeyboardService.CITIES_KEYBOARD);
                 } else {
-                    TavernEntity tavern = user.getTavern();
-
                     AddressEntity address = AddressEntity.builder()
                             .tavern(tavern)
                             .city(city)
@@ -109,12 +107,15 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                     tavern.setAddress(address);
 
+                    tavernService.save(tavern);
+
                     sendMessage = configureMessage(chatId, changeState(user, subState).getMessage(), KeyboardService.REMOVE_KEYBOARD);
                 }
             }
             case ENTER_ADDRESS -> {
-                AddressEntity address = user.getTavern().getAddress();
-                address.setStreet(messageText);
+                tavern.getAddress().setStreet(messageText);
+                tavernService.save(tavern);
+
                 nextSubState = changeState(user, subState);
 
                 sendMessage = configureMessage(chatId, nextSubState.getMessage(), KeyboardService.SHARE_PHONE_KEYBOARD);
@@ -170,15 +171,13 @@ public class RegistrationTavernHandler implements MessageHandler {
                 switch (button) {
                     case NAME -> {
                         sendMessage = configureMessage(chatId, SubState.ENTER_FULL_NAME.getMessage());
-                        user.setSubState(SubState.EDIT_NAME);
-                        userService.save(user);
+                        userService.updateSubState(user, SubState.EDIT_NAME);
 
                         attachEditMenu(sendMessage);
                     }
                     case TAVERN_NAME -> {
                         sendMessage = configureMessage(chatId, SubState.ENTER_TAVERN_NAME.getMessage());
-                        user.setSubState(SubState.EDIT_TAVERN);
-                        userService.save(user);
+                        userService.updateSubState(user, SubState.EDIT_TAVERN);
 
                         attachEditMenu(sendMessage);
                     }
@@ -190,15 +189,13 @@ public class RegistrationTavernHandler implements MessageHandler {
                     }
                     case PHONE_NUMBER -> {
                         sendMessage = configureMessage(chatId, SubState.ENTER_PHONE_NUMBER.getMessage());
-                        user.setSubState(SubState.EDIT_PHONE_NUMBER);
-                        userService.save(user);
+                        userService.updateSubState(user, SubState.EDIT_PHONE_NUMBER);
 
                         attachEditMenu(sendMessage);
                     }
                     case TAVERN_ADDRESS -> {
                         sendMessage = configureMessage(chatId, SubState.ENTER_ADDRESS.getMessage());
-                        user.setSubState(SubState.EDIT_ADDRESS);
-                        userService.save(user);
+                        userService.updateSubState(user, SubState.EDIT_ADDRESS);
 
                         attachEditMenu(sendMessage);
                     }
@@ -208,14 +205,12 @@ public class RegistrationTavernHandler implements MessageHandler {
                                 .removeKeyboard(true)
                                 .build());
 
-                        user.setSubState(SubState.EDIT_CITY);
-                        userService.save(user);
+                        userService.updateSubState(user, SubState.EDIT_CITY);
 
                         return sendMessage;
                     }
                     case COMPLETE_REGISTRATION -> {
-                        user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
-                        userService.save(user);
+                        userService.updateSubState(user, SubState.WAITING_APPROVE_APPLICATION);
 
                         sendMessage = configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
                         sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder()
@@ -229,16 +224,19 @@ public class RegistrationTavernHandler implements MessageHandler {
             case EDIT_NAME -> {
                 if (!isUserPressKeyBoardElement(sendMessage, user, messageText, chatId)) {
                     user.setName(messageText);
+                    userService.save(user);
                 }
             }
             case EDIT_TAVERN -> {
                 if (!isUserPressKeyBoardElement(sendMessage, user, messageText, chatId)) {
-                    user.getTavern().setName(messageText);
+                    tavern.setName(messageText);
+                    tavernService.save(tavern);
                 }
             }
             case EDIT_DESCRIPTION -> {
                 if (!isUserPressKeyBoardElement(sendMessage, user, messageText, chatId)) {
-                    user.getTavern().setDescription(messageText);
+                    tavern.setDescription(messageText);
+                    tavernService.save(tavern);
                 }
             }
             case EDIT_PHONE_NUMBER -> {
@@ -249,12 +247,14 @@ public class RegistrationTavernHandler implements MessageHandler {
                             .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
                             .findFirst()
                             .ifPresent(contact -> contact.setValue(finalMessageText));
+
+                    userService.save(user);
                 }
             }
             case EDIT_ADDRESS -> {
                 if (!isUserPressKeyBoardElement(sendMessage, user, messageText, chatId)) {
-                    AddressEntity address = user.getTavern().getAddress();
-                    address.setStreet(messageText);
+                    tavern.getAddress().setStreet(messageText);
+                    tavernService.save(tavern);
                 }
             }
         }
@@ -298,11 +298,6 @@ public class RegistrationTavernHandler implements MessageHandler {
     }
 
     private void sendClaimToApprove(UserEntity user) {
-        // TODO вынести в механизм апрува
-        if (CollectionUtils.isEmpty(user.getRoles())) {
-            user.getRoles().add(Role.CLIENT_ADMIN);
-        }
-
         String message = "Пользователь с telegramId " + user.getTelegramId() + " запросил подтверждение регистрации. " + System.lineSeparator() + System.lineSeparator()
                 + "Данные пользователя " + System.lineSeparator() + System.lineSeparator()
                 + "Имя пользователя: " + user.getName() + System.lineSeparator()

@@ -2,11 +2,13 @@ package ru.privetdruk.restorder.handler.client;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.entity.UserEntity;
+import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
 import ru.privetdruk.restorder.model.enums.SubState;
 import ru.privetdruk.restorder.model.enums.UserType;
@@ -41,6 +43,9 @@ public class AdminHandler implements MessageHandler {
             }
 
             foundUser.setRegistered(true);
+            if (CollectionUtils.isEmpty(foundUser.getRoles())) {
+                foundUser.getRoles().add(Role.CLIENT_ADMIN);
+            }
 
             userService.updateState(foundUser, State.MAIN_MENU);
 

@@ -43,7 +43,6 @@ public class SettingsHandler implements MessageHandler {
     private final UserService userService;
     private final ScheduleMapper scheduleMapper;
     private final ScheduleService scheduleService;
-    private final TableService tableService;
     private final TavernService tavernService;
     private final TypeService typeService;
     private final ValidationService validationService;
@@ -65,7 +64,7 @@ public class SettingsHandler implements MessageHandler {
 
         // обработка функциональных клавиш
         switch (button) {
-            case BACK, CANCEL, NO -> user.setSubState(subState.getParentSubState());
+            case BACK, CANCEL, NO -> userService.updateSubState(user, subState.getParentSubState());
             case YES -> {
                 switch (subState) {
                     case DELETE_PROFILE_SETTINGS -> {
@@ -82,8 +81,7 @@ public class SettingsHandler implements MessageHandler {
                 }
             }
             case RETURN_MAIN_MENU -> {
-                user.setState(State.MAIN_MENU);
-                userService.updateSubState(user, SubState.VIEW_MAIN_MENU);
+                userService.update(user, State.MAIN_MENU, SubState.VIEW_MAIN_MENU);
 
                 return mainMenuHandler.handle(user, message, callback);
             }
@@ -161,6 +159,7 @@ public class SettingsHandler implements MessageHandler {
                     case VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS:
                         return configureDeleteContacts(
                                 user,
+                                tavern.getContacts(),
                                 SubState.DELETE_GENERAL_SETTINGS_TAVERN_CONTACTS,
                                 chatId,
                                 KeyboardService.TAVERN_CONTACTS_KEYBOARD
@@ -168,6 +167,7 @@ public class SettingsHandler implements MessageHandler {
                     case VIEW_PROFILE_SETTINGS_USER_CONTACTS:
                         return configureDeleteContacts(
                                 user,
+                                user.getContacts(),
                                 SubState.DELETE_PROFILE_SETTINGS_USER_CONTACTS,
                                 chatId,
                                 KeyboardService.USER_CONTACTS_KEYBOARD
@@ -354,7 +354,7 @@ public class SettingsHandler implements MessageHandler {
 
                             return configureMessage(
                                     chatId,
-                                    "Вы является владельцем заведения X. Вместе с вашим профилем будет удалено и заведение. Продолжить удаление?",
+                                    "Вы является владельцем заведения. Вместе с вашим профилем будет удалено и заведение. Продолжить удаление?",
                                     KeyboardService.YES_NO_KEYBOARD
                             );
                         }
@@ -365,6 +365,14 @@ public class SettingsHandler implements MessageHandler {
                         return configureMessage(chatId, "Вы ввели пустое значение! Повторите попытку.");
                     }
 
+                    if (validationService.isNotValidName(messageText)) {
+                        return configureMessage(
+                                chatId,
+                                "Имя должно содержать только символы кириллицы. Повторите попытку.",
+                                KeyboardService.CANCEL_KEYBOARD
+                        );
+                    }
+
                     user.setName(messageText);
                     userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
@@ -373,7 +381,13 @@ public class SettingsHandler implements MessageHandler {
                         return configureMessage(chatId, "Вы ввели пустое значение! Повторите попытку.");
                     }
 
-                    // TODO валидация номера
+                    if (validationService.isNotValidPhone(messageText)) {
+                        return configureMessage(
+                                chatId,
+                                "Вы ввели некорректный номер мобильного телефона. Повторите попытку.",
+                                KeyboardService.CANCEL_KEYBOARD
+                        );
+                    }
 
                     ContactEntity contact = ContactEntity.builder()
                             .user(user)
@@ -703,10 +717,10 @@ public class SettingsHandler implements MessageHandler {
     }
 
     private SendMessage configureDeleteContacts(UserEntity user,
+                                                Set<ContactEntity> contacts,
                                                 SubState subState,
                                                 Long chatId,
                                                 ReplyKeyboardMarkup keyboard) {
-        Set<ContactEntity> contacts = user.getTavern().getContacts();
         if (CollectionUtils.isEmpty(contacts)) {
             return configureMessage(chatId, "Нечего удалять.", keyboard);
         }

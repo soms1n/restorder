@@ -62,7 +62,11 @@ public class RegistrationEmployeeHandler implements MessageHandler {
                 }
 
                 if (validationService.isNotValidPhone(messageText)) {
-                    return configureMessage(chatId, "Вы ввели некорректный номер мобильного телефона. Повторите попытку.", KeyboardService.SHARE_PHONE_KEYBOARD);
+                    return configureMessage(
+                            chatId,
+                            "Вы ввели некорректный номер мобильного телефона. Повторите попытку.",
+                            KeyboardService.SHARE_PHONE_KEYBOARD
+                    );
                 }
 
                 ContactEntity contact = ContactEntity.builder()
