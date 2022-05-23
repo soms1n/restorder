@@ -142,11 +142,11 @@ public class ReserveHandler implements MessageHandler {
 
                     reserves.forEach(reserve ->
                             rows.add(new KeyboardRow(List.of(new KeyboardButton(String.format(
-                                    "ID: %s %s %s %s",
-                                    reserve.getId(),
+                                    "%s %s %s [%s]",
                                     reserve.getTime(),
                                     reserve.getTable().getLabel(),
-                                    reserve.getUser().getName()
+                                    reserve.getManualMode() ? reserve.getName() : reserve.getUser().getName(),
+                                    reserve.getId()
                             )))))
                     );
 
@@ -476,7 +476,7 @@ public class ReserveHandler implements MessageHandler {
                     .sorted(Comparator.comparing(ReserveEntity::getTime, LocalTime::compareTo))
                     .map(reserve -> String.format(
                             "<i>%s</i> <b>%s</b> %s %s %s",
-                            reserve.getTime(),
+                            reserve.getTime().format(Constant.HH_MM_FORMATTER),
                             reserve.getTable().getLabel(),
                             reserve.getNumberPeople(),
                             reserve.getManualMode() ? Optional.ofNullable(reserve.getName())

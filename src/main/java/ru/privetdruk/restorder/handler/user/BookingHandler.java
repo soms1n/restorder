@@ -40,6 +40,7 @@ import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 @RequiredArgsConstructor
 public class BookingHandler implements MessageHandler {
     private final InfoService infoService;
+    private final MessageService messageService;
     private final ReserveService reserveService;
     private final StringService stringService;
     private final TavernService tavernService;
@@ -210,7 +211,7 @@ public class BookingHandler implements MessageHandler {
                     }
                 }
                 case BOOKING_CHOICE_TABLE_MANUALLY -> {
-                    Long tableId = parseId(messageText);
+                    Long tableId = messageService.parseId(messageText);
                     BookingDto booking = bookings.get(user);
                     TableEntity reserveTable = booking.getTavern().getTables().stream()
                             .filter(table -> table.getId().equals(tableId))
@@ -282,7 +283,7 @@ public class BookingHandler implements MessageHandler {
                         tavern = bookings.get(user)
                                 .getTavern();
                     } else {
-                        Long tavernId = parseId(messageText);
+                        Long tavernId = messageService.parseId(messageText);
                         if (tavernId == null) {
                             return toMainMenu(user, "Вы не выбрали заведение.");
                         }
@@ -301,7 +302,7 @@ public class BookingHandler implements MessageHandler {
                     return configureMessage(chatId, infoService.fillGeneral(tavern), KeyboardService.TAVERN_INFO_KEYBOARD);
                 }
                 case DELETE_RESERVE_CHOICE_TAVERN -> {
-                    Long id = parseId(messageText);
+                    Long id = messageService.parseId(messageText);
                     if (id == null) {
                         return configureMessage(chatId, MessageText.INCORRECT_VALUE_CANCELLED, KeyboardService.USER_MAIN_MENU);
                     }
@@ -550,14 +551,6 @@ public class BookingHandler implements MessageHandler {
         bookings.remove(user);
         userService.updateState(user, State.BOOKING);
         return configureMessage(user.getTelegramId(), message, KeyboardService.USER_MAIN_MENU);
-    }
-
-    private Long parseId(String messageText) {
-        try {
-            return Long.valueOf(messageText.substring(messageText.indexOf('[') + 1, messageText.indexOf(']')));
-        } catch (NumberFormatException e) {
-            return null;
-        }
     }
 
     private void returnToMainMenu(UserEntity user) {

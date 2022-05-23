@@ -71,14 +71,10 @@ public class MessageService {
      * @return Идентификатор
      */
     public Long parseId(String messageText) {
-        Long id;
-
         try {
-            id = Long.valueOf(messageText.split(" ")[1]);
-        } catch (Throwable t) {
-            id = null;
+            return Long.valueOf(messageText.substring(messageText.indexOf('[') + 1, messageText.indexOf(']')));
+        } catch (NumberFormatException e) {
+            return null;
         }
-
-        return id;
     }
 }

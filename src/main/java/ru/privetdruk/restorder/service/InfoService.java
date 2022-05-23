@@ -103,10 +103,10 @@ public class InfoService {
                 + employees.stream()
                 .sorted(Comparator.comparing(UserEntity::getId))
                 .map(employee -> String.format(
-                        "ID: %d, Имя: <b>%s</b>, %s",
-                        employee.getId(),
+                        "Имя: <b>%s</b>, %s [%s]",
                         employee.getName(),
-                        fillRoleInfo(employee.getRoles())
+                        fillRoleInfo(employee.getRoles()),
+                        employee.getId()
                 ))
                 .collect(Collectors.joining(System.lineSeparator()));
     }
