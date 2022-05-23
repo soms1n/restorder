@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.privetdruk.restorder.service.TelegramApiService;
 import ru.privetdruk.restorder.service.client.ClientBotService;
@@ -50,12 +49,7 @@ public class ClientBot extends TelegramWebhookBot {
 
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
-        try {
-            return clientBotService.handleUpdate(update);
-        } catch (Throwable t) {
-            log.error(t.getMessage(), t);
-            return new SendMessage();
-        }
+        return clientBotService.handleUpdate(update);
     }
 
     @Override

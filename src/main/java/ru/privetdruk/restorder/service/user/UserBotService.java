@@ -1,6 +1,7 @@
 package ru.privetdruk.restorder.service.user;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -21,11 +22,15 @@ import java.util.Map;
 public class UserBotService {
     private final UserService userService;
 
+    private final boolean debugMessage;
     private final Map<State, MessageHandler> handlers;
 
-    public UserBotService(UserService userService, UserHandlerService handlerService) {
+    public UserBotService(UserService userService,
+                          UserHandlerService handlerService,
+                          @Value("${bot.client.debug.message:false}") String debugMessage) {
         this.userService = userService;
         this.handlers = handlerService.loadHandlers();
+        this.debugMessage = Boolean.parseBoolean(debugMessage);
     }
 
     public SendMessage handleUpdate(Update update) {
@@ -37,7 +42,9 @@ public class UserBotService {
         if (message != null) {
             telegramUserId = message.getFrom().getId();
 
-            log.info("user: " + message.getFrom());
+            if (debugMessage) {
+                log.info(message.toString());
+            }
         }
 
         if (message == null || (!message.hasText() && message.getContact() == null)) {
@@ -61,8 +68,19 @@ public class UserBotService {
 
         prepareState(message, user);
 
-        return handlers.get(user.getState())
-                .handle(user, message, callback);
+        try {
+            return handlers.get(user.getState())
+                    .handle(user, message, callback);
+        } catch (Throwable t) {
+            log.error(
+                    "Произошла непредвиденная ошибка."
+                            + System.lineSeparator() + System.lineSeparator()
+                            + user + System.lineSeparator()
+                            + "Сообщение: " + message.getText() + System.lineSeparator()
+                            + (callback == null ? "" : callback)
+            );
+            return new SendMessage();
+        }
     }
 
     private void prepareState(Message message, UserEntity user) {

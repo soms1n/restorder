@@ -138,8 +138,9 @@ public class UserEntity {
     public String toString() {
         return "User{" +
                 "id=" + id +
-                ", firstName='" + name + '\'' +
                 ", telegramId=" + telegramId +
+                ", state=" + state +
+                ", subState=" + subState +
                 '}';
     }
 

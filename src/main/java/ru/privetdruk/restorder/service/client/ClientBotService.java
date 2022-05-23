@@ -1,8 +1,8 @@
 package ru.privetdruk.restorder.service.client;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -20,15 +20,17 @@ import java.util.Map;
 public class ClientBotService {
     private final UserService userService;
 
+    private final boolean debugMessage;
     private final Map<State, MessageHandler> handlers;
 
-    public ClientBotService(UserService userService, ClientHandlerService handlerService) {
+    public ClientBotService(UserService userService,
+                            ClientHandlerService handlerService,
+                            @Value("${bot.client.debug.message:false}") String debugMessage) {
         this.userService = userService;
         this.handlers = handlerService.loadHandlers();
+        this.debugMessage = Boolean.parseBoolean(debugMessage);
     }
 
-    //TODO Transactional отсюда перенести минимум в handler, а лучше в конкретный сервис, надо обсуждать, как лучше. Чтобы долго не стопориться оставляю пока тут
-    @Transactional
     public SendMessage handleUpdate(Update update) {
         Message message = update.getMessage();
         CallbackQuery callback = update.getCallbackQuery();
@@ -38,7 +40,9 @@ public class ClientBotService {
         if (message != null) {
             telegramUserId = message.getFrom().getId();
 
-            log.info("user: " + message.getFrom());
+            if (debugMessage) {
+                log.info(message.toString());
+            }
         }
 
         if (message == null || (!message.hasText() && message.getContact() == null)) {
@@ -61,8 +65,19 @@ public class ClientBotService {
 
         State state = prepareState(message, user, callback);
 
-        return handlers.get(state)
-                .handle(user, message, callback);
+        try {
+            return handlers.get(state)
+                    .handle(user, message, callback);
+        } catch (Throwable t) {
+            log.error(
+                    "Произошла непредвиденная ошибка."
+                            + System.lineSeparator() + System.lineSeparator()
+                            + user + System.lineSeparator()
+                            + "Сообщение: " + message.getText() + System.lineSeparator()
+                            + (callback == null ? "" : callback)
+            );
+            return new SendMessage();
+        }
     }
 
     private State prepareState(Message message, UserEntity user, CallbackQuery callback) {

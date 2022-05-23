@@ -47,6 +47,7 @@ class UserBotServiceTest {
     void beforeEach() {
         BookingHandler bookingHandler = new BookingHandler(
                 new InfoService(),
+                new MessageService(),
                 new ReserveService(reserveRepository),
                 new StringService(),
                 new TavernService(tavernRepository),
@@ -63,7 +64,8 @@ class UserBotServiceTest {
                                 new ValidationService()
                         ),
                         bookingHandler
-                )
+                ),
+                "false"
         );
     }
 
