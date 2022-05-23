@@ -14,9 +14,16 @@ import java.util.regex.Pattern;
 @Service
 public class ValidationService {
     private final Pattern MOBILE_PHONE_PATTERN = Pattern.compile("^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}$");
+    private final Pattern NAME_PATTERN = Pattern.compile("^[а-яА-ЯёЁ]*$");
 
     public boolean isNotValidPhone(String phone) {
         Matcher matcher = MOBILE_PHONE_PATTERN.matcher(phone);
+
+        return !matcher.matches();
+    }
+
+    public boolean isNotValidName(String name) {
+        Matcher matcher = NAME_PATTERN.matcher(name);
 
         return !matcher.matches();
     }

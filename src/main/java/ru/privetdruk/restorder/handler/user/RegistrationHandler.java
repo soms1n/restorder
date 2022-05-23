@@ -82,6 +82,14 @@ public class RegistrationHandler implements MessageHandler {
                 return configureMessage(chatId, MessageText.ENTER_NAME, KeyboardService.REMOVE_KEYBOARD);
             }
             case ENTER_FULL_NAME -> {
+                if (validationService.isNotValidName(messageText)) {
+                    return configureMessage(
+                            chatId,
+                            "Имя должно содержать только символы кириллицы. Повторите попытку.",
+                            KeyboardService.REMOVE_KEYBOARD
+                    );
+                }
+
                 user.setName(messageText);
                 user.setRegistered(true);
 
