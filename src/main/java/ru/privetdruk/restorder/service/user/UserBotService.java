@@ -77,7 +77,8 @@ public class UserBotService {
                             + System.lineSeparator() + System.lineSeparator()
                             + user + System.lineSeparator()
                             + "Сообщение: " + message.getText() + System.lineSeparator()
-                            + (callback == null ? "" : callback)
+                            + (callback == null ? "" : callback),
+                    t
             );
             return new SendMessage();
         }
