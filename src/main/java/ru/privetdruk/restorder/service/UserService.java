@@ -41,8 +41,8 @@ public class UserService {
      * @param user Пользователь
      */
     @Transactional
-    public void save(UserEntity user) {
-        userRepository.save(user);
+    public UserEntity save(UserEntity user) {
+        return userRepository.save(user);
     }
 
     /**

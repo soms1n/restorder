@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.consts.Constant;
 import ru.privetdruk.restorder.model.consts.MessageText;
@@ -131,11 +132,18 @@ public class BookingHandler implements MessageHandler {
 
                             BookingDto booking = bookings.get(user);
 
-                            DayWeek dayWeek = DayWeek.fromDate(LocalDate.now());
+                            DayWeek dayWeek = DayWeek.fromDate(booking.getDate());
 
                             boolean available = booking.getTavern().getSchedules().stream()
                                     .filter(schedule -> schedule.getDayWeek() == dayWeek)
-                                    .anyMatch(schedule -> !(time.isBefore(schedule.getStartPeriod()) || time.isAfter(schedule.getEndPeriod())));
+                                    .anyMatch(schedule -> {
+                                        LocalTime start = schedule.getStartPeriod();
+                                        LocalTime end = schedule.getEndPeriod();
+
+                                        return ((time.isAfter(start) || time.equals(start))
+                                                && (end.isBefore(start) || (end.isAfter(start) && time.isBefore(end))))
+                                                || (time.isBefore(start) && (time.isBefore(end) || time.equals(end)));
+                                    });
 
                             if (!available) {
                                 return configureMessage(
@@ -268,6 +276,7 @@ public class BookingHandler implements MessageHandler {
                                                 .collect(Collectors.toSet())
                                 )
                                 .flatMap(employee -> telegramApiService.sendMessage(employee.getTelegramId(), messageForAdmin, true))
+                                .subscribeOn(Schedulers.boundedElastic())
                                 .subscribe();
 
                         return toMainMenu(user, "Вы успешно забронировали столик!");

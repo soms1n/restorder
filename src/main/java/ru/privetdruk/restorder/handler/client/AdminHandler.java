@@ -6,6 +6,7 @@ import org.springframework.util.CollectionUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import reactor.core.scheduler.Schedulers;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Role;
@@ -55,6 +56,7 @@ public class AdminHandler implements MessageHandler {
                             true,
                             KeyboardService.CLIENT_MAIN_MENU
                     )
+                    .subscribeOn(Schedulers.boundedElastic())
                     .subscribe();
 
             return configureMessageForAdmin(user, chatId, "Заявка подтверждена.");

@@ -21,6 +21,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import ru.privetdruk.restorder.AbstractTest;
 import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.entity.AddressEntity;
@@ -482,6 +483,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(String.class)
+                .subscribeOn(Schedulers.boundedElastic())
                 .subscribe();
         Thread.sleep(10000);
 

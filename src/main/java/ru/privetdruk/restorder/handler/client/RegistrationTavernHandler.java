@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRem
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+import reactor.core.scheduler.Schedulers;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.entity.AddressEntity;
@@ -322,6 +323,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                                                 )))
                                                 .build()
                                 )
+                                .subscribeOn(Schedulers.boundedElastic())
                                 .subscribe()
                 );
     }

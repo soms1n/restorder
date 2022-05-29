@@ -9,6 +9,7 @@ import ru.privetdruk.restorder.model.enums.Category;
 import ru.privetdruk.restorder.model.enums.City;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TavernRepository extends CrudRepository<TavernEntity, Long> {
@@ -20,4 +21,7 @@ public interface TavernRepository extends CrudRepository<TavernEntity, Long> {
     @EntityGraph(attributePaths = {"schedules", "employees.roles", "tables.reserves"})
     @Query("SELECT t FROM TavernEntity t WHERE t.id = :id")
     TavernEntity findByIdWithSchedulesAndReserves(Long id);
+
+    @EntityGraph(attributePaths = {"employees.roles"})
+    Optional<TavernEntity> findById(Long id);
 }

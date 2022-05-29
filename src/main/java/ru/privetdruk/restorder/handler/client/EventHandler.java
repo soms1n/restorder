@@ -80,7 +80,7 @@ public class EventHandler implements MessageHandler {
                 user.setState(eventType.getState());
                 user.setSubState(eventType.getSubState());
 
-                userService.save(user);
+                user = userService.save(user);
                 eventService.complete(event);
 
                 return registrationEmployeeHandler.handle(user, message, callback);
