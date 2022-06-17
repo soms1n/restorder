@@ -373,7 +373,7 @@ public class KeyboardService {
                 new KeyboardRow(List.of(new KeyboardButton("21"))),
                 new KeyboardRow(List.of(new KeyboardButton("22"))),
                 new KeyboardRow(List.of(new KeyboardButton("23"))),
-                new KeyboardRow(List.of(new KeyboardButton("24"))),
+                new KeyboardRow(List.of(new KeyboardButton("00"))),
                 new KeyboardRow(List.of(new KeyboardButton("1"))),
                 new KeyboardRow(List.of(new KeyboardButton("2"))),
                 new KeyboardRow(List.of(new KeyboardButton("3"))),
