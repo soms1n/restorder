@@ -22,26 +22,25 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("Test Client bot logic")
-@TestPropertySource(
-        properties = {
-        "bot.client.username = user4",
-        "bot.client.token = test_token",
-        "bot.client.web-hook-path = http://test"
+@DisplayName("Test User bot logic")
+@TestPropertySource(properties = {
+        "bot.user.username = user5",
+        "bot.user.token = test_token",
+        "bot.user.web-hook-path = http://test"
 })
-class ClientBotTest extends AbstractTest {
+class UserBotTest extends AbstractTest {
     @Autowired
-    private ClientBot clientBot;
+    UserBot userBot;
 
     @MockBean
     private UserService userService;
 
     @Test
-    void test_client_bot_bean_init() {
+    void test_user_bot_bean_init() {
         assertAll(
-                () -> assertEquals("user4", clientBot.getBotUsername()),
-                () -> assertEquals("test_token", clientBot.getBotToken()),
-                () -> assertEquals("http://test", clientBot.getBotPath()));
+                () -> assertEquals("user5", userBot.getBotUsername()),
+                () -> assertEquals("test_token", userBot.getBotToken()),
+                () -> assertEquals("http://test", userBot.getBotPath()));
     }
 
     @Test
@@ -58,12 +57,12 @@ class ClientBotTest extends AbstractTest {
 
         UserEntity userEntity = new UserEntity(
                 telegramId,
-                State.REGISTRATION_TAVERN,
-                State.REGISTRATION_TAVERN.getInitialSubState(),
-                UserType.CLIENT);
+                State.REGISTRATION_USER,
+                State.REGISTRATION_USER.getInitialSubState(),
+                UserType.USER);
 
         Mockito.when(userService.findByTelegramId(Mockito.anyLong(), Mockito.any(UserType.class))).thenReturn(Optional.of(userEntity));
 
-        assertEquals(MessageText.REGISTER, ((SendMessage) clientBot.onWebhookUpdateReceived(update)).getText());
+        assertEquals(MessageText.GREETING, ((SendMessage) userBot.onWebhookUpdateReceived(update)).getText());
     }
 }
