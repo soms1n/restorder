@@ -1,87 +1,54 @@
 package ru.privetdruk.restorder.service.user;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Command;
 import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
 import ru.privetdruk.restorder.model.enums.UserType;
+import ru.privetdruk.restorder.service.AbstractBotService;
+import ru.privetdruk.restorder.service.BotHandler;
 import ru.privetdruk.restorder.service.UserService;
 
-import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Slf4j
-public class UserBotService {
-    private final UserService userService;
-
-    private final boolean debugMessage;
-    private final Map<State, MessageHandler> handlers;
+public class UserBotService extends AbstractBotService {
 
     public UserBotService(UserService userService,
-                          UserHandlerService handlerService,
-                          @Value("${bot.client.debug.message:false}") String debugMessage) {
-        this.userService = userService;
-        this.handlers = handlerService.loadHandlers();
-        this.debugMessage = Boolean.parseBoolean(debugMessage);
+                          @Qualifier("userHandlerService") BotHandler handlerService) {
+        super(userService, handlerService);
     }
 
     public SendMessage handleUpdate(Update update) {
-        Message message = update.getMessage();
-        CallbackQuery callback = update.getCallbackQuery();
+        ShortUpdate shortUpdate = ShortUpdate.builder()
+                .callback(update.getCallbackQuery())
+                .message(update.getMessage())
+                .build();
 
-        Long telegramUserId = null;
+        Optional<SendMessage> sendMessage = prepareUpdate(shortUpdate);
 
-        if (message != null) {
-            telegramUserId = message.getFrom().getId();
-
-            if (debugMessage) {
-                log.info(message.toString());
-            }
+        if (sendMessage.isPresent()) {
+            return sendMessage.get();
         }
 
-        if (message == null || (!message.hasText() && message.getContact() == null)) {
-            if (callback == null) {
-                return new SendMessage();
-            }
-
-            message = callback.getMessage();
-            telegramUserId = message.getChat().getId();
-        }
-
-        final Long finalTelegramUserId = telegramUserId;
-
-        UserEntity user = userService.findByTelegramId(telegramUserId, UserType.USER)
+        UserEntity user = userService.findByTelegramId(shortUpdate.getTelegramUserId(), UserType.USER)
                 .orElseGet(() -> userService.create(
-                        finalTelegramUserId,
+                        shortUpdate.getTelegramUserId(),
                         State.REGISTRATION_USER,
                         Role.USER,
                         UserType.USER
                 ));
 
-        prepareState(message, user);
+        prepareState(shortUpdate.getMessage(), user);
 
-        try {
-            return handlers.get(user.getState())
-                    .handle(user, message, callback);
-        } catch (Throwable t) {
-            log.error(
-                    "Произошла непредвиденная ошибка."
-                            + System.lineSeparator() + System.lineSeparator()
-                            + user + System.lineSeparator()
-                            + "Сообщение: " + message.getText() + System.lineSeparator()
-                            + (callback == null ? "" : callback),
-                    t
-            );
-            return new SendMessage();
-        }
+        return getSendMessage(shortUpdate, user, handlers.get(user.getState()));
     }
 
     private void prepareState(Message message, UserEntity user) {
