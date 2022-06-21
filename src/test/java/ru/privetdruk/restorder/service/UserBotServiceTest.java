@@ -64,8 +64,7 @@ class UserBotServiceTest {
                                 new ValidationService()
                         ),
                         bookingHandler
-                ),
-                "false"
+                )
         );
     }
 

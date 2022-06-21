@@ -5,11 +5,12 @@ import org.springframework.stereotype.Service;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.handler.client.*;
 import ru.privetdruk.restorder.model.enums.State;
+import ru.privetdruk.restorder.service.BotHandler;
 
 import java.util.Map;
 
 @Service
-public class ClientHandlerService {
+public class ClientHandlerService implements BotHandler {
     private final RegistrationEmployeeHandler registrationEmployeeHandler;
     private final RegistrationTavernHandler registrationTavernHandler;
     private final MainMenuHandler mainMenuHandler;
@@ -39,6 +40,7 @@ public class ClientHandlerService {
      *
      * @return Обработчики
      */
+    @Override
     public Map<State, MessageHandler> loadHandlers() {
         return Map.of(
                 State.REGISTRATION_EMPLOYEE, registrationEmployeeHandler,
