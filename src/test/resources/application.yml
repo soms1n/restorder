@@ -20,10 +20,12 @@ spring:
 
 bot:
   client:
+    rest: /client
     username: test
     token: test
     web-hook-path: https://test.test
   user:
+    rest: /user
     enabled: true
     username: test
     token: test
