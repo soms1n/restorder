@@ -18,7 +18,6 @@ import java.util.Optional;
 @Service
 public class ClientBotService extends AbstractBotService {
 
-
     public ClientBotService(UserService userService,
                             @Qualifier("clientHandlerService") BotHandler handlerService) {
         super(userService, handlerService);
