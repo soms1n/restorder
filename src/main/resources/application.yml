@@ -15,7 +15,7 @@ spring:
   datasource:
     url: ${DATASOURCE_URL}
     username: ${DATASOURCE_USERNAME}
-    password: ${DATASOURCE_URL}
+    password: ${DATASOURCE_PASSWORD}
 
 logging:
   level:
