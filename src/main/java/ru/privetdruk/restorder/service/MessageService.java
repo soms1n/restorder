@@ -6,9 +6,6 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -77,16 +74,8 @@ public class MessageService {
      */
     public Long parseId(String messageText) {
         try {
-            Matcher matcher = Pattern.compile("^ID: [0-9]+").matcher(messageText);
-
-            if (matcher.find()) {
-                return Long.valueOf(matcher.group().substring(matcher.group().indexOf(' ') + 1));
-            } else {
-                log.error(String.format("Parsing error, ID is not recognized. Source message text: %s", messageText));
-                return null;
-            }
-        } catch (NumberFormatException e) {
-            log.error(String.format("Parsing exception, ID is not recognized. Source message text: %s", messageText), e);
+            return Long.valueOf(messageText.substring(messageText.indexOf('[') + 1, messageText.indexOf(']')));
+        } catch (Throwable t) {
             return null;
         }
     }

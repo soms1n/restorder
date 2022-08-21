@@ -753,7 +753,7 @@ public class SettingsHandler implements MessageHandler {
         ReplyKeyboardMarkup employeesKeyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> rows = new ArrayList<>();
         employees.forEach(employee ->
-                rows.add(new KeyboardRow(List.of(new KeyboardButton("ID: " + employee.getId() + " " + employee.getName()))))
+                rows.add(new KeyboardRow(List.of(new KeyboardButton(employee.getName() + " [" + employee.getId() + "]"))))
         );
 
         rows.add(new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()))));
@@ -776,7 +776,7 @@ public class SettingsHandler implements MessageHandler {
         ReplyKeyboardMarkup tablesKeyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> rows = new ArrayList<>();
         tables.forEach(table ->
-                rows.add(new KeyboardRow(List.of(new KeyboardButton("ID: " + table.getId() + " " + table.getLabel()))))
+                rows.add(new KeyboardRow(List.of(new KeyboardButton(table.getLabel() + " [" + table.getId() + "]"))))
         );
 
         rows.add(new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()))));
@@ -812,12 +812,12 @@ public class SettingsHandler implements MessageHandler {
                     .forEach(schedule ->
                             rows.add(new KeyboardRow(List.of(new KeyboardButton(
                                     String.format(
-                                            "ID: %s %s %s - %s %sр.",
-                                            schedule.getId(),
+                                            "%s %s - %s %sр. [%s]",
                                             schedule.getDayWeek().getFullName(),
                                             schedule.getStartPeriod(),
                                             schedule.getEndPeriod(),
-                                            schedule.getPrice()
+                                            schedule.getPrice(),
+                                            schedule.getId()
                                     )
                             ))))
                     );
