@@ -39,7 +39,6 @@ public class InfoService {
 
     public String fillTavernDescription(String description) {
         return !StringUtils.hasText(description) ? "Описание отсутствует." : "\uD83D\uDCC3 <b>Описание:</b> " + description;
-
     }
 
     public String fillUser(String name) {
