@@ -32,7 +32,7 @@ public class TavernEntity {
     /**
      * Сотрудники
      */
-    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinTable(
             name = "tavern_to_employee",
             joinColumns = @JoinColumn(name = "tavern_id"),

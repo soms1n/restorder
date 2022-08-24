@@ -74,13 +74,14 @@ public class EventHandler implements MessageHandler {
             if (CollectionUtils.isEmpty(user.getRoles()) || user.getTavern() == null) {
                 user.getRoles().clear();
                 user.addRole(Role.CLIENT_EMPLOYEE);
-
-                tavern.addEmployee(user);
-
+                user.setRegistered(true);
                 user.setState(eventType.getState());
                 user.setSubState(eventType.getSubState());
 
+                tavern.addEmployee(user);
+
                 user = userService.save(user);
+
                 eventService.complete(event);
 
                 return registrationEmployeeHandler.handle(user, message, callback);
