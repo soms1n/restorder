@@ -24,7 +24,7 @@ logging:
     reactor:
       netty:
         http:
-          client: DEBUG
+          client: INFO
 bot:
   client:
     rest: /client

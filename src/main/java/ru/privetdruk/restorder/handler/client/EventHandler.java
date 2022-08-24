@@ -77,9 +77,7 @@ public class EventHandler implements MessageHandler {
                 user.setRegistered(true);
                 user.setState(eventType.getState());
                 user.setSubState(eventType.getSubState());
-
-                tavern.addEmployee(user);
-
+                user.setTavern(tavern);
                 user = userService.save(user);
 
                 eventService.complete(event);
