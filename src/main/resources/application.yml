@@ -1,1 +1,49 @@
+spring:
+  main:
+    banner-mode: off
+  jpa:
+    properties:
+      hibernate:
+#        show_sql: true
+#        format_sql: true
+#        generate_statistics: true
+        types:
+          print:
+            banner: false
+  flyway:
+    enabled: true
+  datasource:
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
 
+logging:
+  level:
+    ru:
+      privetdruk: INFO
+    reactor:
+      netty:
+        http:
+          client: INFO
+bot:
+  client:
+    rest: /client
+    username: ${BOT_CLIENT_USERNAME}
+    token: ${BOT_CLIENT_TOKEN}
+    web-hook-path: ${BOT_CLIENT_WEB_HOOK_PATH}
+  user:
+    rest: /user
+    username: ${BOT_USER_USERNAME}
+    token: ${BOT_USER_TOKEN}
+    web-hook-path: ${BOT_USER_WEB_HOOK_PATH}
+
+server:
+  port: ${SERVER_PORT}
+  ssl:
+    enabled: false
+    key-store-type: PKCS12
+    key-store: classpath:keystore.p12
+    key-store-password: ${SERVER_SSL_KEY_STORE_PASSWORD}
+    protocol: TLS
+    enabled-protocols:
+      - TLSv1.2

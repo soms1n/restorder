@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS restorder.public.users DROP CONSTRAINT IF EXISTS users_telegram_id_unique;

@@ -2,11 +2,12 @@ plugins {
 	id 'org.springframework.boot' version '2.6.2'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
+	id 'jacoco'
 }
 
 group = 'ru.privetdruk'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
+sourceCompatibility = '16'
 
 configurations {
 	compileOnly {
@@ -19,21 +20,37 @@ repositories {
 }
 
 ext {
+	flywayVersion = '8.4.1'
+	hibernateTypesVersion = '2.14.0'
 	lombokVersion = '1.18.22'
 	postgresVersion = '42.3.1'
 	springVersion = '2.6.2'
 	telegramApiVersion = '5.6.0'
+	testcontainersVersion = '1.16.3'
 }
 
 dependencies {
 	implementation "org.springframework.boot:spring-boot-starter-data-jpa:$springVersion"
+	implementation "org.springframework.boot:spring-boot-starter-webflux:$springVersion"
 	implementation "org.telegram:telegrambots-spring-boot-starter:$telegramApiVersion"
-	compileOnly "org.projectlombok:lombok:$lombokVersion"
+	implementation "org.flywaydb:flyway-core:$flywayVersion"
+	implementation "com.vladmihalcea:hibernate-types-55:$hibernateTypesVersion"
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
 	runtimeOnly "org.postgresql:postgresql:$postgresVersion"
 	annotationProcessor "org.projectlombok:lombok:$lombokVersion"
 	testImplementation "org.springframework.boot:spring-boot-starter-test:$springVersion"
+	testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.3.1'
+	testImplementation "org.testcontainers:testcontainers:$testcontainersVersion"
+	testImplementation "org.testcontainers:postgresql:$testcontainersVersion"
+	testImplementation "org.testcontainers:junit-jupiter:$testcontainersVersion"
 }
 
 test {
 	useJUnitPlatform()
+}
+
+jacocoTestReport {
+    reports {
+        csv.enabled true
+    }
 }

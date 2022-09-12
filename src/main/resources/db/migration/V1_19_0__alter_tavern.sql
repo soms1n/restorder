@@ -1,0 +1,1 @@
+ALTER TABLE tavern DROP COLUMN IF EXISTS user_id;
