@@ -42,6 +42,8 @@ public class RegistrationTavernHandler implements MessageHandler {
     private final TavernService tavernService;
     private final ValidationService validationService;
 
+    final String CLAIM_APPROVE_WAIT = "Ваша заявка на модерации, ожидайте.";
+
     @Override
     @Transactional
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
@@ -258,6 +260,8 @@ public class RegistrationTavernHandler implements MessageHandler {
                     tavernService.save(tavern);
                 }
             }
+            case WAITING_APPROVE_APPLICATION ->
+                sendMessage = configureMessage(chatId, CLAIM_APPROVE_WAIT);
         }
 
         return sendMessage;
