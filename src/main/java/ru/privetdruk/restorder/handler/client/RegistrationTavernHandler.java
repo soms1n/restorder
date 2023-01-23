@@ -274,6 +274,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                                 new KeyboardRow(List.of(
                                         new KeyboardButton(Button.NAME.getText()),
                                         new KeyboardButton(Button.TAVERN_NAME.getText())
+
                                 )),
                                 new KeyboardRow(List.of(
                                         new KeyboardButton(Button.DESCRIPTION.getText()),
