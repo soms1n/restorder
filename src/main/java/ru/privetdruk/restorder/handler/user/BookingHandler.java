@@ -33,7 +33,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static ru.privetdruk.restorder.model.consts.MessageText.NOTIFY_USER_RESERVE_CANCELLED;
 import static ru.privetdruk.restorder.service.MessageService.configureMarkdownMessage;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
@@ -326,24 +325,6 @@ public class BookingHandler implements MessageHandler {
                     user.getReserves().add(cancelledReserve);
 
                     userService.save(user);
-
-                    if (cancelledReserve != null) {
-                        UserEntity reserveUser = cancelledReserve.getUser();
-                        if (reserveUser != null) {
-                            telegramApiService.sendMessage(
-                                            reserveUser.getTelegramId(),
-                                            String.format(
-                                                    NOTIFY_USER_RESERVE_CANCELLED,
-                                                    cancelledReserve.getDate().format(Constant.DD_MM_YYYY_FORMATTER),
-                                                    cancelledReserve.getTime().format(Constant.HH_MM_FORMATTER),
-                                                    cancelledReserve.getTable().getTavern().getName()
-                                            ),
-                                            false
-                                    )
-                                    .subscribeOn(Schedulers.boundedElastic())
-                                    .subscribe();
-                        }
-                    }
 
                     returnToMainMenu(user);
                 }
