@@ -626,7 +626,7 @@ public class BookingHandler implements MessageHandler {
                                 \uD83D\uDC65 <b>Кол-во персон:</b> <i>%s</i>""",
                         reserve.getTable().getTavern().getName(),
                         reserve.getDate().format(Constant.DD_MM_YYYY_FORMATTER),
-                        reserve.getTime(),
+                        reserve.getTime().format(Constant.HH_MM_FORMATTER),
                         reserve.getNumberPeople()
                 ))
                 .collect(Collectors.joining("\n\n"));
