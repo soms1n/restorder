@@ -513,7 +513,7 @@ public class BookingHandler implements MessageHandler {
     private String fillReserveInfo(BookingDto booking, boolean fillTavernName) {
         return "<b>Информация о бронировании</b>"
                 + System.lineSeparator()
-                + (fillTavernName ? "" : booking.getName() + " " + booking.getPhoneNumber())
+                + (fillTavernName ? "" : booking.getName() + " " + booking.getPhoneNumber() + System.lineSeparator())
                 + (fillTavernName ? "Заведение: <i>" + booking.getTavern().getName() + "</i>" + System.lineSeparator() : "")
                 + "Дата: <i>" + booking.getDate().format(Constant.DD_MM_YYYY_FORMATTER) + "</i>"
                 + System.lineSeparator()
