@@ -77,12 +77,12 @@ class BookingHandlerTest extends AbstractTest {
         message.setText("Some text");
 
         CallbackQuery callbackQuery = new CallbackQuery();
-        callbackQuery.setData(City.BRYANSK.name());
+        callbackQuery.setData(City.YOSHKAR_OLA.name());
 
         SendMessage sendMessage = registrationHandler.handle(user, message, callbackQuery);
         assertNotNull(sendMessage);
         assertEquals(sendMessage.getText(), MessageText.CHOICE_TAVERN_TYPE);
-        assertEquals(user.getCity().getName(), City.BRYANSK.getName());
+        assertEquals(user.getCity().getName(), City.YOSHKAR_OLA.getName());
         assertEquals(Long.valueOf(sendMessage.getChatId()), chat.getId());
         //assertEquals(user.getSubState(), SubState.USER_BOT_MAIN_MENU);
         assertEquals(((InlineKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size(), 2);
@@ -111,12 +111,12 @@ class BookingHandlerTest extends AbstractTest {
         message.setText("Some text");
 
         CallbackQuery callbackQuery = new CallbackQuery();
-        callbackQuery.setData(City.BRYANSK.name());
+        callbackQuery.setData(City.YOSHKAR_OLA.name());
 
         SendMessage sendMessage = registrationHandler.handle(user, message, callbackQuery);
         assertNotNull(sendMessage);
         assertEquals(sendMessage.getText(), MessageText.CHOICE_TAVERN_TYPE);
-        assertEquals(user.getCity().getName(), City.BRYANSK.getName());
+        assertEquals(user.getCity().getName(), City.YOSHKAR_OLA.getName());
         assertEquals(Long.valueOf(sendMessage.getChatId()), chat.getId());
       //  assertEquals(user.getSubState(), SubState.USER_BOT_MAIN_MENU);
         assertEquals(((InlineKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size(), 3);

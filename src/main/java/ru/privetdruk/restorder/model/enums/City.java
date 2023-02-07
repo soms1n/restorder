@@ -8,7 +8,6 @@ import org.springframework.util.StringUtils;
  */
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum City {
-    BRYANSK("Брянск"),
     YOSHKAR_OLA("Йошкар-Ола");
 
     private final String description;

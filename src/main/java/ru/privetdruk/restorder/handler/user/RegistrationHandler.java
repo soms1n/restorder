@@ -2,7 +2,6 @@ package ru.privetdruk.restorder.handler.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Contact;
@@ -49,22 +48,24 @@ public class RegistrationHandler implements MessageHandler {
 
                 userService.updateSubState(user, SubState.ENTER_PHONE_NUMBER);
 
-                return configureMessage(chatId, MessageText.ENTER_PHONE_NUMBER, KeyboardService.SHARE_PHONE_KEYBOARD);
+                return configureMessage(chatId, MessageText.SHARE_PHONE_NUMBER, KeyboardService.SHARE_PHONE_KEYBOARD);
             }
             case ENTER_PHONE_NUMBER -> {
                 Contact sendContact = message.getContact();
-                if (sendContact != null) {
-                    messageText = sendContact.getPhoneNumber().replace("+", "");
+                if (sendContact == null) {
+                    return configureMessage(
+                            chatId,
+                            MessageText.SHARE_PHONE_NUMBER,
+                            KeyboardService.SHARE_PHONE_KEYBOARD
+                    );
                 }
 
-                if (!StringUtils.hasText(messageText)) {
-                    return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
-                }
+                messageText = sendContact.getPhoneNumber().replace("+", "");
 
                 if (validationService.isNotValidPhone(messageText)) {
                     return configureMessage(
                             chatId,
-                            "Вы ввели некорректный номер мобильного телефона. Повторите попытку.",
+                            MessageText.INCORRECT_PHONE_NUMBER,
                             KeyboardService.SHARE_PHONE_KEYBOARD
                     );
                 }

@@ -19,6 +19,8 @@ public class BookingDto {
     private LocalTime beforeTime;
     private int persons;
     private TableEntity table;
+    private String name;
+    private String phoneNumber;
 
     public BookingDto(Category category) {
         this.category = category;

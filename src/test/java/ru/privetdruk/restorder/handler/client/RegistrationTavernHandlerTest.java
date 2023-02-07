@@ -154,7 +154,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     @Test
     void client_In_ChoiceCity_SubState_And_Selected_Any_City() {
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
-        Mockito.when(callback.getData()).thenReturn(City.BRYANSK.getName());
+        Mockito.when(callback.getData()).thenReturn(City.YOSHKAR_OLA.getName());
 
         UserEntity user = generateTestUser(SubState.CHOICE_CITY);
 
