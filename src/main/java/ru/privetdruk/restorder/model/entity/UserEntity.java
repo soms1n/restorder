@@ -28,15 +28,9 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * Имя
-     */
     @Column(name = "first_name")
     private String name;
 
-    /**
-     * Контакты
-     */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(FetchMode.SUBSELECT)
     private Set<ContactEntity> contacts = new HashSet<>();
@@ -66,7 +60,7 @@ public class UserEntity {
     /**
      * Заведение
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(
             name = "tavern_to_employee",
             joinColumns = @JoinColumn(name = "user_id"),
