@@ -10,6 +10,7 @@ public class ScheduleMapper {
     public ScheduleEntity toEntity(ScheduleDto dto) {
         ScheduleEntity entity = new ScheduleEntity();
         BeanUtils.copyProperties(dto, entity);
+
         return entity;
     }
 }

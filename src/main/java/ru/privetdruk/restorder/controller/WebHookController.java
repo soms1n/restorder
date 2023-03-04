@@ -1,6 +1,7 @@
 package ru.privetdruk.restorder.controller;
 
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,15 +11,11 @@ import reactor.core.publisher.Mono;
 import ru.privetdruk.restorder.bot.ClientBot;
 import ru.privetdruk.restorder.bot.UserBot;
 
+@RequiredArgsConstructor
 @RestController
 public class WebHookController {
     private final ClientBot clientBot;
     private final UserBot userBot;
-
-    public WebHookController(ClientBot clientBot, UserBot userBot) {
-        this.clientBot = clientBot;
-        this.userBot = userBot;
-    }
 
     @PostMapping(value = "${bot.user.rest}")
     public Mono<BotApiMethod<?>> onUserUpdateReceived(@RequestBody Update update) {

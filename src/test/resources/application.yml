@@ -11,7 +11,7 @@ spring:
   flyway:
     enabled: false
   datasource:
-    url: jdbc:postgresql://localhost:5432/restorder
+    url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
     password: postgres
   test:

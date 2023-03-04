@@ -42,7 +42,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static ru.privetdruk.restorder.model.consts.MessageText.SELECT_ELEMENT_FOR_EDIT;
 
 @DisplayName("Checking the registration logic")
-@Disabled
 class RegistrationTavernHandlerTest extends AbstractTest {
     @Mock
     Message message;
@@ -78,10 +77,9 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         assertEquals(user.getSubState(), SubState.SHOW_REGISTER_BUTTON);
         assertAll("sendMessage",
                 () -> assertEquals(sendMessage.getText(), MessageText.REGISTER),
-                () -> assertEquals(((InlineKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().size(), 1),
-                () -> assertEquals(((InlineKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().get(0).size(), 1),
-                () -> assertEquals(((InlineKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().get(0).get(0).getCallbackData(), Button.REGISTRATION.getName()),
-                () -> assertEquals(((InlineKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().get(0).get(0).getText(), Button.REGISTRATION.getText()));
+                () -> assertEquals(((ReplyKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().size(), 1),
+                () -> assertEquals(((ReplyKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().get(0).size(), 1),
+                () -> assertEquals(((ReplyKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().get(0).get(0).getText(), Button.REGISTRATION.getText()));
 
     }
 

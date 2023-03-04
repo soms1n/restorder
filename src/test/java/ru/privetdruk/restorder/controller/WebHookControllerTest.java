@@ -25,16 +25,12 @@ import ru.privetdruk.restorder.bot.UserBot;
 class WebHookControllerTest {
     @MockBean
     private ClientBot clientBot;
-
     @MockBean
     private UserBot userBot;
-
     @Autowired
     private WebTestClient webClient;
-
     @Value("${bot.user.rest}")
     private String userEndpoint;
-
     @Value("${bot.client.rest}")
     private String clientEndpoint;
 
