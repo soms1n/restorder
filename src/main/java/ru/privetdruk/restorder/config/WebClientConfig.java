@@ -18,13 +18,10 @@ import java.util.concurrent.TimeUnit;
 public class WebClientConfig {
     @Value("${webclient.connection.timeout.ms:1000}")
     private int connectionTimeout;
-
     @Value("${webclient.read.timeout.ms:10000}")
     private int readTimeout;
-
     @Value("${webclient.max.in.memory.size.byte:10485760}")
     private int maxInMemorySize;
-
     @Value("${webclient.wiretap.format:TEXTUAL}")
     private AdvancedByteBufFormat wiretapFormat;
 

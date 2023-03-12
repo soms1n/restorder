@@ -28,6 +28,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ru.privetdruk.restorder.model.consts.MessageText.INCORRECT_ENTER_PHONE_NUMBER;
 import static ru.privetdruk.restorder.service.MessageService.configureMarkdownMessage;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
@@ -384,7 +385,7 @@ public class SettingsHandler implements MessageHandler {
                     if (validationService.isNotValidPhone(messageText)) {
                         return configureMessage(
                                 chatId,
-                                "Вы ввели некорректный номер мобильного телефона. Повторите попытку.",
+                                INCORRECT_ENTER_PHONE_NUMBER,
                                 KeyboardService.CANCEL_KEYBOARD
                         );
                     }

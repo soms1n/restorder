@@ -15,9 +15,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.Contact;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import reactor.core.publisher.Mono;
@@ -40,6 +42,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.privetdruk.restorder.model.consts.MessageText.SELECT_ELEMENT_FOR_EDIT;
+import static ru.privetdruk.restorder.model.enums.City.YOSHKAR_OLA;
 
 @DisplayName("Checking the registration logic")
 class RegistrationTavernHandlerTest extends AbstractTest {
@@ -55,16 +58,17 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     TelegramApiService telegramApiService;
     @Mock
     TavernService tavernService;
+    @Mock
+    ValidationService validationService;
 
     @BeforeEach
     @DisplayName("Presets")
     void beforeEach() {
         Mockito.when(message.getChatId()).thenReturn(1L);
-        registrationTavernHandler = new RegistrationTavernHandler(userService, telegramApiService, tavernService, new ValidationService());
     }
 
     @Test
-    void client_In_ShowRegistrationButton_SubState_And_Does_Not_Click_Registration_Button() {
+    void client_in_SHOW_REGISTER_BUTTON_SUB_STATE_and_does_not_click_registration_button() {
         UserEntity user = generateTestUser(SubState.SHOW_REGISTER_BUTTON);
         Mockito.when(message.getText()).thenReturn("Any string");
 
@@ -74,19 +78,22 @@ class RegistrationTavernHandlerTest extends AbstractTest {
                 null
         );
 
-        assertEquals(user.getSubState(), SubState.SHOW_REGISTER_BUTTON);
+        assertEquals(State.REGISTRATION_TAVERN, user.getState());
+        assertEquals(SubState.SHOW_REGISTER_BUTTON, user.getSubState());
         assertAll("sendMessage",
-                () -> assertEquals(sendMessage.getText(), MessageText.REGISTER),
-                () -> assertEquals(((ReplyKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().size(), 1),
-                () -> assertEquals(((ReplyKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().get(0).size(), 1),
-                () -> assertEquals(((ReplyKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().get(0).get(0).getText(), Button.REGISTRATION.getText()));
-
+                () -> assertEquals(MessageText.REGISTER, sendMessage.getText()),
+                () -> assertEquals(1,
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size()),
+                () -> assertEquals(1,
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().get(0).size()),
+                () -> assertEquals(Button.REGISTRATION.getText(),
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().get(0).get(0).getText()));
     }
 
     @Test
-    void client_In_ShowRegistrationButton_SubState_And_Click_Registration_Button() {
-        Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
+    void client_in_SHOW_REGISTER_BUTTON_SUB_STATE_and_click_registration_button() {
         UserEntity user = generateTestUser(SubState.SHOW_REGISTER_BUTTON);
+        Mockito.when(message.getText()).thenReturn(Button.REGISTRATION.getText());
 
         SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
@@ -94,14 +101,15 @@ class RegistrationTavernHandlerTest extends AbstractTest {
                 callback
         );
 
-        assertEquals(user.getSubState(), SubState.ENTER_FULL_NAME);
-        assertEquals(sendMessage.getText(), SubState.ENTER_FULL_NAME.getMessage());
+        assertEquals(State.REGISTRATION_TAVERN, user.getState());
+        assertEquals(SubState.ENTER_FULL_NAME, user.getSubState());
+        assertEquals(SubState.ENTER_FULL_NAME.getMessage(), sendMessage.getText());
     }
 
     @Test
-    void client_In_EnterFullName_SubState_And_Entered_Your_Name() {
-        Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
+    void client_in_ENTER_FULL_NAME_SUB_STATE_and_entered_your_name() {
         UserEntity user = generateTestUser(SubState.ENTER_FULL_NAME);
+        Mockito.when(message.getText()).thenReturn("Any string");
 
         SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
@@ -109,13 +117,24 @@ class RegistrationTavernHandlerTest extends AbstractTest {
                 callback
         );
 
-        assertEquals(user.getSubState(), SubState.ENTER_TAVERN_NAME);
-        assertEquals(sendMessage.getText(), SubState.ENTER_TAVERN_NAME.getMessage());
+        assertEquals(State.REGISTRATION_TAVERN, user.getState());
+        assertEquals(SubState.ENTER_TAVERN_NAME, user.getSubState());
+        assertEquals(SubState.ENTER_TAVERN_NAME.getMessage(), sendMessage.getText());
     }
 
     @Test
-    void client_In_EnterTavernName_SubState_And_Entered_Tavern_Name() {
-        Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
+    void client_in_ENTER_TAVERN_NAME_SUB_STATE_and_entered_tavern_name() {
+        String tavernName = "Супер ресторан";
+
+        TavernEntity tavern = new TavernEntity();
+        tavern.setName(tavernName);
+        tavern.setAddress(new AddressEntity());
+        tavern.getAddress().setStreet("Дерибасовская 34А");
+        tavern.getAddress().setCity(YOSHKAR_OLA);
+
+        Mockito.when(tavernService.save(Mockito.any(TavernEntity.class))).thenReturn(tavern);
+        Mockito.when(message.getText()).thenReturn(tavernName);
+
         UserEntity user = generateTestUser(SubState.ENTER_TAVERN_NAME);
 
         SendMessage sendMessage = registrationTavernHandler.handle(
@@ -124,16 +143,78 @@ class RegistrationTavernHandlerTest extends AbstractTest {
                 callback
         );
 
-        assertEquals(user.getSubState(), SubState.CHOICE_CITY);
+        assertEquals(State.REGISTRATION_TAVERN, user.getState());
+        assertEquals(SubState.ENTER_TAVERN_DESCRIPTION, user.getSubState());
 
         assertAll("sendMessage",
-                () -> assertEquals(sendMessage.getText(), MessageText.CHOICE_CITY),
-                () -> assertEquals(((InlineKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().size(), 1),
-                () -> assertEquals(((InlineKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().get(0).size(), City.values().length));
+                () -> assertEquals(MessageText.ENTER_TAVERN_DESCRIPTION, sendMessage.getText()),
+                () -> assertEquals(1, ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size()),
+                () -> assertEquals(Button.WITHOUT_DESCRIPTION.getText(),
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard()
+                                .get(0)
+                                .get(0)
+                                .getText()));
     }
 
     @Test
-    void client_In_ChoiceCity_SubState_And_Entered_Any_Text() {
+    void client_in_ENTER_TAVERN_DESCRIPTION_SUB_STATE_and_entered_tavern_description() {
+        Mockito.when(tavernService.save(Mockito.any(TavernEntity.class))).thenReturn(new TavernEntity());
+        Mockito.when(message.getText()).thenReturn("Какое-то описание");
+
+        UserEntity user = generateTestUser(SubState.ENTER_TAVERN_DESCRIPTION);
+
+        SendMessage sendMessage = registrationTavernHandler.handle(
+                user,
+                message,
+                callback
+        );
+
+        assertEquals(State.REGISTRATION_TAVERN, user.getState());
+        assertEquals(SubState.CHOICE_CITY, user.getSubState());
+
+        assertAll("sendMessage",
+                () -> assertEquals(MessageText.CHOICE_CITY, sendMessage.getText()),
+                () -> assertEquals(1, ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size()),
+                () -> assertEquals(YOSHKAR_OLA.getDescription(),
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard()
+                                .get(0)
+                                .get(0)
+                                .getText()));
+    }
+
+    @Test
+    void client_in_ENTER_TAVERN_DESCRIPTION_SUB_STATE_and_press_button() {
+        Mockito.when(tavernService.save(Mockito.any(TavernEntity.class))).thenReturn(new TavernEntity());
+        Mockito.when(message.getText()).thenReturn(Button.WITHOUT_DESCRIPTION.getText());
+
+        UserEntity user = generateTestUser(SubState.ENTER_TAVERN_DESCRIPTION);
+
+        SendMessage sendMessage = registrationTavernHandler.handle(
+                user,
+                message,
+                callback
+        );
+
+        Mockito.verifyNoMoreInteractions(tavernService);
+
+        assertEquals(State.REGISTRATION_TAVERN, user.getState());
+        assertEquals(SubState.CHOICE_CITY, user.getSubState());
+
+        assertAll("sendMessage",
+                () -> assertEquals(MessageText.CHOICE_CITY, sendMessage.getText()),
+                () -> assertEquals(1, ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size()),
+                () -> assertEquals(YOSHKAR_OLA.getDescription(),
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard()
+                                .get(0)
+                                .get(0)
+                                .getText()));
+    }
+
+    @Test
+    void client_in_CHOICE_CITY_SUB_STATE_and_entered_text_which_not_equals_available_city() {
+        Mockito.when(tavernService.save(Mockito.any(TavernEntity.class))).thenReturn(new TavernEntity());
+        Mockito.when(message.getText()).thenReturn("Что-то случайное");
+
         UserEntity user = generateTestUser(SubState.CHOICE_CITY);
 
         SendMessage sendMessage = registrationTavernHandler.handle(
@@ -142,32 +223,47 @@ class RegistrationTavernHandlerTest extends AbstractTest {
                 null
         );
 
-        assertEquals(user.getSubState(), SubState.CHOICE_CITY);
+        Mockito.verifyNoMoreInteractions(tavernService);
+
+        assertEquals(State.REGISTRATION_TAVERN, user.getState());
+        assertEquals(SubState.CHOICE_CITY, user.getSubState());
+
         assertAll("sendMessage",
-                () -> assertEquals(sendMessage.getText(), MessageText.CHOICE_CITY),
-                () -> assertEquals(((InlineKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().size(), 1),
-                () -> assertEquals(((InlineKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().get(0).size(), City.values().length));
+                () -> assertEquals(MessageText.CHOICE_CITY, sendMessage.getText()),
+                () -> assertEquals(1, ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size()),
+                () -> assertEquals(YOSHKAR_OLA.getDescription(),
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard()
+                                .get(0)
+                                .get(0)
+                                .getText()));
     }
 
     @Test
-    void client_In_ChoiceCity_SubState_And_Selected_Any_City() {
-        Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
-        Mockito.when(callback.getData()).thenReturn(City.YOSHKAR_OLA.getName());
+    void client_in_CHOICE_CITY_SUB_STATE_and_entered_text_which_equals_available_city_or_select_city() {
+        Mockito.when(tavernService.save(Mockito.any(TavernEntity.class))).thenReturn(new TavernEntity());
+        Mockito.when(message.getText()).thenReturn(YOSHKAR_OLA.getDescription());
 
         UserEntity user = generateTestUser(SubState.CHOICE_CITY);
 
         SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
                 message,
-                callback
+                null
         );
 
-        assertEquals(user.getSubState(), SubState.ENTER_ADDRESS);
-        assertEquals(sendMessage.getText(), SubState.ENTER_ADDRESS.getMessage());
+        assertEquals(State.REGISTRATION_TAVERN, user.getState());
+        assertEquals(SubState.ENTER_ADDRESS, user.getSubState());
+
+        assertAll("sendMessage",
+                () -> assertEquals(MessageText.ENTER_ADDRESS, sendMessage.getText()),
+                () -> assertTrue(((ReplyKeyboardRemove) sendMessage.getReplyMarkup()).getRemoveKeyboard()));
     }
 
     @Test
-    void client_In_EnterAddress_SubState_And_Entered_Your_Address() {
+    void client_in_ENTER_ADDRESS_SUB_STATE_and_entered_your_address() {
+        Mockito.when(tavernService.save(Mockito.any(TavernEntity.class))).thenReturn(new TavernEntity());
+        Mockito.when(message.getText()).thenReturn("Улица Ульянова, д. 132");
+
         UserEntity user = generateTestUser(SubState.ENTER_ADDRESS);
 
         SendMessage sendMessage = registrationTavernHandler.handle(
@@ -176,48 +272,123 @@ class RegistrationTavernHandlerTest extends AbstractTest {
                 null
         );
 
-        assertEquals(user.getSubState(), SubState.ENTER_PHONE_NUMBER);
-        assertEquals(sendMessage.getText(), SubState.ENTER_PHONE_NUMBER.getMessage());
+        assertEquals(State.REGISTRATION_TAVERN, user.getState());
+        assertEquals(SubState.ENTER_PHONE_NUMBER, user.getSubState());
+
+        assertAll("sendMessage",
+                () -> assertEquals(MessageText.ENTER_PHONE_NUMBER, sendMessage.getText()),
+                () -> assertEquals(1, ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size()),
+                () -> assertEquals(Button.SHARE_PHONE.getText(),
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard()
+                                .get(0)
+                                .get(0)
+                                .getText()),
+                () -> assertTrue(((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard()
+                        .get(0)
+                        .get(0)
+                        .getRequestContact())
+        );
     }
 
     @Test
-    void client_In_EnterPhoneNumber_SubState_And_Entered_Your_Phone_Number() {
+    void client_in_ENTER_PHONE_NUMBER_SUB_STATE_and_entered_correct_phone_number() {
+        Mockito.when(message.getText()).thenReturn("89208595867");
+        Mockito.when(validationService.isNotValidPhone(Mockito.anyString())).thenReturn(false);
+
         UserEntity user = generateTestUser(SubState.ENTER_PHONE_NUMBER);
-        String messageText =  "Ваши данные:" + System.lineSeparator() +
-                "Имя: " + user.getName() + System.lineSeparator() +
-                "Заведение: " + user.getTavern().getName() + System.lineSeparator() +
-                "Адрес: " + user.getTavern().getAddress().getStreet() + System.lineSeparator() +
-                "Номер телефона: " + user.getContacts()
-                .stream()
-                .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
-                .map(ContactEntity::getValue)
-                .findFirst()
-                .orElse("") + System.lineSeparator();
         user.getContacts().clear();
 
-        Mockito.when(message.getText()).thenReturn("+79208586754");
+        SendMessage sendMessage = registrationTavernHandler.handle(user, message, null);
 
-        Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
+        String expectedMessageText = "<b>Ваши данные</b>" + System.lineSeparator() +
+                "Имя: <i>Иванов Иван Иванович</i>" + System.lineSeparator() +
+                "Заведение: <i>Августин</i>" + System.lineSeparator() +
+                "Описание: <i>отсутствует</i>" + System.lineSeparator() +
+                "Адрес: <i>Почтовая 136, д. 12</i>" + System.lineSeparator() +
+                "Номер телефона: <i>89208595867</i>" + System.lineSeparator();
 
-        SendMessage sendMessage = registrationTavernHandler.handle(
-                user,
-                message,
-                null
+        assertEquals(State.REGISTRATION_TAVERN, user.getState());
+        assertEquals(SubState.REGISTRATION_APPROVING, user.getSubState());
+
+        assertAll("sendMessage",
+                () -> assertEquals(expectedMessageText, sendMessage.getText()),
+                () -> assertEquals(1, ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup())
+                        .getKeyboard().size()),
+                () -> assertEquals(2, ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup())
+                        .getKeyboard().get(0).size()),
+                () -> assertEquals(Button.EDIT.getText(), ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup())
+                        .getKeyboard().get(0).get(0).getText()),
+                () -> assertEquals(Button.APPROVE.getText(), ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup())
+                        .getKeyboard().get(0).get(1).getText())
+        );
+    }
+
+    @Test
+    void client_in_ENTER_PHONE_NUMBER_SUB_STATE_and_entered_incorrect_phone_number() {
+        Mockito.when(validationService.isNotValidPhone(Mockito.any())).thenReturn(true);
+        UserEntity user = generateTestUser(SubState.ENTER_PHONE_NUMBER);
+
+        SendMessage sendMessage = registrationTavernHandler.handle(user, message, null);
+
+        assertEquals(State.REGISTRATION_TAVERN, user.getState());
+        assertEquals(SubState.ENTER_PHONE_NUMBER, user.getSubState());
+
+        assertAll("sendMessage",
+                () -> assertEquals(MessageText.INCORRECT_ENTER_PHONE_NUMBER, sendMessage.getText()),
+                () -> assertEquals(1, ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size()),
+                () -> assertEquals(Button.SHARE_PHONE.getText(),
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard()
+                                .get(0)
+                                .get(0)
+                                .getText()),
+                () -> assertTrue(((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard()
+                        .get(0)
+                        .get(0)
+                        .getRequestContact())
         );
 
-        assertEquals(user.getSubState(), SubState.REGISTRATION_APPROVING);
-        assertEquals(sendMessage.getText(), messageText);
+    }
 
-        assertAll("keyboard",
-                () -> assertEquals(((InlineKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().size(), 1),
-                () -> assertEquals(((InlineKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().get(0).size(), 2));
+    @Test
+    void client_in_ENTER_PHONE_NUMBER_SUB_STATE_and_share_your_phone_number() {
+        Contact contact = new Contact();
+        contact.setPhoneNumber("+79208595867");
+        Mockito.when(message.getContact()).thenReturn(contact);
+        Mockito.when(validationService.isNotValidPhone(Mockito.anyString())).thenReturn(false);
+
+        UserEntity user = generateTestUser(SubState.ENTER_PHONE_NUMBER);
+        user.getContacts().clear();
+
+        SendMessage sendMessage = registrationTavernHandler.handle(user, message, null);
+
+        String expectedMessageText = "<b>Ваши данные</b>" + System.lineSeparator() +
+                "Имя: <i>Иванов Иван Иванович</i>" + System.lineSeparator() +
+                "Заведение: <i>Августин</i>" + System.lineSeparator() +
+                "Описание: <i>отсутствует</i>" + System.lineSeparator() +
+                "Адрес: <i>Почтовая 136, д. 12</i>" + System.lineSeparator() +
+                "Номер телефона: <i>79208595867</i>" + System.lineSeparator();
+
+        assertEquals(State.REGISTRATION_TAVERN, user.getState());
+        assertEquals(SubState.REGISTRATION_APPROVING, user.getSubState());
+
+        assertAll("sendMessage",
+                () -> assertEquals(expectedMessageText, sendMessage.getText()),
+                () -> assertEquals(1,
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size()),
+                () -> assertEquals(2,
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().get(0).size()),
+                () -> assertEquals(Button.EDIT.getText(), ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup())
+                        .getKeyboard().get(0).get(0).getText()),
+                () -> assertEquals(Button.APPROVE.getText(), ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup())
+                        .getKeyboard().get(0).get(1).getText())
+        );
     }
 
     @Test
     void client_In_RegistrationApproving_SubState_And_Entered_Any_Text() {
         UserEntity user = generateTestUser(SubState.REGISTRATION_APPROVING);
 
-        String messageText =  "Ваши данные:" + System.lineSeparator() +
+        String messageText = "Ваши данные:" + System.lineSeparator() +
                 "Имя: " + user.getName() + System.lineSeparator() +
                 "Заведение: " + user.getTavern().getName() + System.lineSeparator() +
                 "Адрес: " + user.getTavern().getAddress().getStreet() + System.lineSeparator() +
@@ -238,8 +409,8 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         assertEquals(sendMessage.getText(), messageText);
 
         assertAll("keyboard",
-                () -> assertEquals(((InlineKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().size(), 1),
-                () -> assertEquals(((InlineKeyboardMarkup)sendMessage.getReplyMarkup()).getKeyboard().get(0).size(), 2));
+                () -> assertEquals(((InlineKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size(), 1),
+                () -> assertEquals(((InlineKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().get(0).size(), 2));
     }
 
     @Test
@@ -414,7 +585,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
         user.getTavern().setAddress(new AddressEntity());
         user.getTavern().getAddress().setStreet("Почтовая 136, д. 12");
-        user.getTavern().getAddress().setCity(City.YOSHKAR_OLA);
+        user.getTavern().getAddress().setCity(YOSHKAR_OLA);
 
         ContactEntity contact = new ContactEntity();
         contact.setUser(user);

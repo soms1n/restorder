@@ -19,12 +19,9 @@ spring:
 
 logging:
   level:
-    ru:
-      privetdruk: DEBUG
-    reactor:
-      netty:
-        http:
-          client: DEBUG
+    org.springframework.orm.jpa.JpaTransactionManager: TRACE
+    ru.privetdruk: DEBUG
+    reactor.netty.http.client: DEBUG
 bot:
   client:
     rest: /client
@@ -53,9 +50,5 @@ spring:
         generate_statistics: false
 logging:
   level:
-    ru:
-      privetdruk: INFO
-    reactor:
-      netty:
-        http:
-          client: INFO
+    ru.privetdruk: INFO
+    reactor.netty.http.client: INFO
