@@ -120,8 +120,8 @@ public class TavernEntity {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TavernEntity tavern = (TavernEntity) o;
+        if (o == null) return false;
+        if (!(o instanceof TavernEntity tavern)) return false;
         return Objects.equals(name, tavern.name) && Objects.equals(address, tavern.address);
     }
 

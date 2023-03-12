@@ -16,7 +16,6 @@ import ru.privetdruk.restorder.model.enums.EventType;
 import ru.privetdruk.restorder.model.enums.JsonbKey;
 import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.service.EventService;
-import ru.privetdruk.restorder.service.MessageService;
 import ru.privetdruk.restorder.service.TavernService;
 import ru.privetdruk.restorder.service.UserService;
 
@@ -32,7 +31,6 @@ public class EventHandler implements MessageHandler {
     private final ObjectMapper objectMapper;
     private final TavernService tavernService;
     private final UserService userService;
-    private final MessageService messageService;
     private final RegistrationEmployeeHandler registrationEmployeeHandler;
 
     @Override

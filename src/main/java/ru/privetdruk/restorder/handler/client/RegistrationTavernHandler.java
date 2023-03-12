@@ -30,6 +30,7 @@ import ru.privetdruk.restorder.service.util.ValidationService;
 import java.util.List;
 import java.util.Optional;
 
+import static ru.privetdruk.restorder.model.consts.MessageText.INCORRECT_ENTER_PHONE_NUMBER;
 import static ru.privetdruk.restorder.model.consts.MessageText.SELECT_ELEMENT_FOR_EDIT;
 import static ru.privetdruk.restorder.model.enums.SubState.EDIT_PERSONAL_DATA;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
@@ -100,6 +101,7 @@ public class RegistrationTavernHandler implements MessageHandler {
             }
             case CHOICE_CITY -> {
                 City city = City.fromDescription(messageText);
+
                 if (city == null) {
                     sendMessage = configureMessage(chatId, subState.getMessage(), KeyboardService.CITIES_KEYBOARD);
                 } else {
@@ -125,6 +127,7 @@ public class RegistrationTavernHandler implements MessageHandler {
             }
             case ENTER_PHONE_NUMBER -> {
                 Contact sendContact = message.getContact();
+
                 if (sendContact != null) {
                     messageText = sendContact.getPhoneNumber().replace("+", "");
                 }
@@ -132,7 +135,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                 if (validationService.isNotValidPhone(messageText)) {
                     return configureMessage(
                             chatId,
-                            "Вы ввели некорректный номер мобильного телефона. Повторите попытку.",
+                            INCORRECT_ENTER_PHONE_NUMBER,
                             KeyboardService.SHARE_PHONE_KEYBOARD
                     );
                 }
