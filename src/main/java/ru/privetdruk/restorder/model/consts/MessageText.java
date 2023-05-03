@@ -8,6 +8,8 @@ public interface MessageText {
     String CHOICE_CITY = "Выберите город:";
     String ENTER_ADDRESS = "Введите адрес без города:";
     String ENTER_PHONE_NUMBER = "Введите номер мобильного телефона в формате 89001112233:";
+    String INCORRECT_ENTER_PHONE_NUMBER = "Вы ввели некорректный номер мобильного телефона. Повторите попытку.";
+    String SHARE_PHONE_NUMBER = "Нажмите поделиться номером телефона";
     String ENTER_EMPTY_VALUE = "Вы ввели пустое значение.";
     String ENTER_EMPTY_VALUE_RETRY = "Вы ввели пустое значение! Повторите попытку:";
     String CITY_IS_EMPTY = "Вы не выбрали город.";
@@ -28,4 +30,7 @@ public interface MessageText {
             """;
     String CHOICE_TAVERN_TYPE = "Выберите тип заведения";
     String CHOICE_TAVERN = "Выберите заведение";
+    String NOTIFY_USER_RESERVE_CANCELLED = "Ваша бронь %s %s в заведение %s завершена.";
+
+    String INCORRECT_PHONE_NUMBER = "Некорректный номер телефона. Повторите попытку.";
 }

@@ -17,6 +17,7 @@ import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.UserService;
 import ru.privetdruk.restorder.service.util.ValidationService;
 
+import static ru.privetdruk.restorder.model.consts.MessageText.INCORRECT_ENTER_PHONE_NUMBER;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
 @Component
@@ -64,7 +65,7 @@ public class RegistrationEmployeeHandler implements MessageHandler {
                 if (validationService.isNotValidPhone(messageText)) {
                     return configureMessage(
                             chatId,
-                            "Вы ввели некорректный номер мобильного телефона. Повторите попытку.",
+                            INCORRECT_ENTER_PHONE_NUMBER,
                             KeyboardService.SHARE_PHONE_KEYBOARD
                     );
                 }

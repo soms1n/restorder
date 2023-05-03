@@ -8,6 +8,7 @@ import ru.privetdruk.restorder.model.entity.*;
 import ru.privetdruk.restorder.model.enums.Category;
 import ru.privetdruk.restorder.model.enums.DayWeek;
 import ru.privetdruk.restorder.model.enums.Role;
+import ru.privetdruk.restorder.service.util.StringService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,6 +19,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class InfoService {
+
+    private final StringService stringService;
+
     public String fillProfile(UserEntity user) {
         return fillUser(user.getName()) + System.lineSeparator() + System.lineSeparator() +
                 fillRoleInfo(user.getRoles()) + System.lineSeparator() + System.lineSeparator() +
@@ -85,7 +89,7 @@ public class InfoService {
         return "<b>Столы:</b>" + System.lineSeparator() +
                 tables.stream()
                         .sorted(Comparator.comparing(TableEntity::getLabel, Comparator.naturalOrder()))
-                        .map(table -> "<b>" + table.getLabel() + "</b> на <i>" + table.getNumberSeats() + "</i> мест")
+                        .map(table -> "<b>" + table.getLabel() + "</b> на <i>" + table.getNumberSeats() + "</i> " + stringService.declensionWords(table.getNumberSeats(), StringService.SEATS_WORDS))
                         .collect(Collectors.joining(System.lineSeparator()));
     }
 

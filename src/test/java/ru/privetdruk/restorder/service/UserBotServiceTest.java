@@ -35,6 +35,8 @@ class UserBotServiceTest {
     UserService userService;
     @Mock
     TelegramApiService telegramApiService;
+    @Mock
+    StringService stringService;
     @InjectMocks
     UserBotService userBotService;
     @InjectMocks
@@ -46,7 +48,7 @@ class UserBotServiceTest {
     @DisplayName("Presets")
     void beforeEach() {
         BookingHandler bookingHandler = new BookingHandler(
-                new InfoService(),
+                new InfoService(stringService),
                 new MessageService(),
                 new ReserveService(reserveRepository),
                 new StringService(),

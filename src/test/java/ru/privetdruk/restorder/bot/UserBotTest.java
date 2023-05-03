@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserBotTest extends AbstractTest {
     @Autowired
     UserBot userBot;
-
     @MockBean
     private UserService userService;
 

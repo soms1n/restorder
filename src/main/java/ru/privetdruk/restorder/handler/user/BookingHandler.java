@@ -18,10 +18,7 @@ import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.consts.Constant;
 import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.dto.BookingDto;
-import ru.privetdruk.restorder.model.entity.ReserveEntity;
-import ru.privetdruk.restorder.model.entity.TableEntity;
-import ru.privetdruk.restorder.model.entity.TavernEntity;
-import ru.privetdruk.restorder.model.entity.UserEntity;
+import ru.privetdruk.restorder.model.entity.*;
 import ru.privetdruk.restorder.model.enums.*;
 import ru.privetdruk.restorder.service.*;
 import ru.privetdruk.restorder.service.util.StringService;
@@ -254,6 +251,14 @@ public class BookingHandler implements MessageHandler {
                 case BOOKING_APPROVE -> {
                     if (button == Button.ACCEPT) {
                         BookingDto booking = bookings.get(user);
+                        booking.setName(user.getName());
+                        booking.setPhoneNumber(
+                                user.getContacts().stream()
+                                        .filter(ContactEntity::getActive)
+                                        .map(ContactEntity::getValue)
+                                        .findFirst()
+                                        .orElse(null)
+                        );
 
                         ReserveEntity reserve = new ReserveEntity();
                         reserve.setUser(user);
@@ -334,7 +339,8 @@ public class BookingHandler implements MessageHandler {
         // отрисовка меню
         return switch (user.getSubState()) {
             case VIEW_MAIN_MENU -> configureMainMenu(chatId, user);
-            case VIEW_RESERVE_LIST -> configureMessage(chatId, fillReserves(user.getReserves()), KeyboardService.USER_RESERVE_LIST_KEYBOARD);
+            case VIEW_RESERVE_LIST ->
+                    configureMessage(chatId, fillReserves(user.getReserves()), KeyboardService.USER_RESERVE_LIST_KEYBOARD);
             case VIEW_TAVERN_LIST -> fillTaverns(user);
 
             default -> new SendMessage();
@@ -507,6 +513,7 @@ public class BookingHandler implements MessageHandler {
     private String fillReserveInfo(BookingDto booking, boolean fillTavernName) {
         return "<b>Информация о бронировании</b>"
                 + System.lineSeparator()
+                + (fillTavernName ? "" : booking.getName() + " " + booking.getPhoneNumber() + System.lineSeparator())
                 + (fillTavernName ? "Заведение: <i>" + booking.getTavern().getName() + "</i>" + System.lineSeparator() : "")
                 + "Дата: <i>" + booking.getDate().format(Constant.DD_MM_YYYY_FORMATTER) + "</i>"
                 + System.lineSeparator()
@@ -619,7 +626,7 @@ public class BookingHandler implements MessageHandler {
                                 \uD83D\uDC65 <b>Кол-во персон:</b> <i>%s</i>""",
                         reserve.getTable().getTavern().getName(),
                         reserve.getDate().format(Constant.DD_MM_YYYY_FORMATTER),
-                        reserve.getTime(),
+                        reserve.getTime().format(Constant.HH_MM_FORMATTER),
                         reserve.getNumberPeople()
                 ))
                 .collect(Collectors.joining("\n\n"));

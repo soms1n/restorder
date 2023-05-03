@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+import reactor.core.scheduler.Schedulers;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.model.consts.Constant;
 import ru.privetdruk.restorder.model.consts.MessageText;
@@ -26,6 +27,7 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ru.privetdruk.restorder.model.consts.MessageText.NOTIFY_USER_RESERVE_CANCELLED;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
 @Component
@@ -36,6 +38,7 @@ public class ReserveHandler implements MessageHandler {
     private final ReserveService reserveService;
     private final StringService stringService;
     private final TavernService tavernService;
+    private final TelegramApiService telegramApiService;
     private final UserService userService;
     private final ValidationService validationService;
 
@@ -183,7 +186,25 @@ public class ReserveHandler implements MessageHandler {
                                     .filter(reserve -> reserve.getStatus() == ReserveStatus.ACTIVE)
                                     .filter(reserve -> reserve.getId().equals(id))
                                     .findFirst()
-                                    .ifPresent(foundReserve -> reserveService.updateStatus(foundReserve, ReserveStatus.COMPLETED));
+                                    .ifPresent(foundReserve -> {
+                                        reserveService.updateStatus(foundReserve, ReserveStatus.COMPLETED);
+
+                                        UserEntity reserveUser = foundReserve.getUser();
+                                        if (reserveUser != null) {
+                                            telegramApiService.sendMessage(
+                                                            reserveUser.getTelegramId(),
+                                                            String.format(
+                                                                    NOTIFY_USER_RESERVE_CANCELLED,
+                                                                    foundReserve.getDate().format(Constant.DD_MM_YYYY_FORMATTER),
+                                                                    foundReserve.getTime().format(Constant.HH_MM_FORMATTER),
+                                                                    foundReserve.getTable().getTavern().getName()
+                                                            ),
+                                                            false
+                                                    )
+                                                    .subscribeOn(Schedulers.boundedElastic())
+                                                    .subscribe();
+                                        }
+                                    });
 
                             return configureMessage(chatId, "Выбранный резерв завершен.", KeyboardService.RESERVE_LIST_KEYBOARD);
                         }
@@ -331,7 +352,8 @@ public class ReserveHandler implements MessageHandler {
 
         // отрисовка меню
         return switch (user.getSubState()) {
-            case VIEW_RESERVE_LIST -> configureMessage(chatId, fillReservesList(tavern.getTables()), KeyboardService.RESERVE_LIST_KEYBOARD);
+            case VIEW_RESERVE_LIST ->
+                    configureMessage(chatId, fillReservesList(tavern.getTables()), KeyboardService.RESERVE_LIST_KEYBOARD);
 
             default -> new SendMessage();
         };
@@ -466,7 +488,7 @@ public class ReserveHandler implements MessageHandler {
 
         List<LocalDate> sortedDate = reserves.keySet().stream()
                 .sorted(LocalDate::compareTo)
-                .collect(Collectors.toList());
+                .toList();
 
         LocalDate tomorrow = LocalDate.now().plusDays(1);
 

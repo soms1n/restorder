@@ -1,24 +1,21 @@
 package ru.privetdruk.restorder.controller;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.privetdruk.restorder.bot.ClientBot;
 import ru.privetdruk.restorder.bot.UserBot;
-import ru.privetdruk.restorder.service.TelegramApiService;
-import ru.privetdruk.restorder.service.user.UserBotService;
 
-@Disabled
 @WebFluxTest(controllers = WebHookController.class)
-@AutoConfigureWebTestClient(timeout = "36000")
 @DisplayName("Test controller")
 @TestPropertySource(
         properties = {
@@ -28,37 +25,48 @@ import ru.privetdruk.restorder.service.user.UserBotService;
 class WebHookControllerTest {
     @MockBean
     private ClientBot clientBot;
-
     @MockBean
     private UserBot userBot;
-
-    @MockBean
-    UserBotService userBotService;
-
-    @MockBean
-    TelegramApiService telegramApiService;
-
     @Autowired
     private WebTestClient webClient;
-
     @Value("${bot.user.rest}")
     private String userEndpoint;
+    @Value("${bot.client.rest}")
+    private String clientEndpoint;
 
     @Test
-    void onUserUpdateReceivedTest() throws Exception {
+    void onUserUpdateReceivedTest() {
         Update update = new Update();
+
+        String testMessage = "test message";
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText(testMessage);
+
+        Mockito.when(userBot.onWebhookUpdateReceived(update)).thenAnswer((Answer<SendMessage>) invocationOnMock -> sendMessage);
 
         webClient.post().uri(userEndpoint)
                 .bodyValue(update)
                 .exchange()
-                .expectStatus().isOk();
-       /* mockMvc.perform(MockMvcRequestBuilders.post("${bot.user.rest}"))
-                .andExpect(status().isOk());*/
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.text").isEqualTo(testMessage);
     }
 
     @Test
-    void onClientUpdateReceivedTest() throws Exception {
-       /* mockMvc.perform(MockMvcRequestBuilders.post("${bot.client.rest}"))
-                .andExpect(status().isOk());*/
+    void onClientUpdateReceivedTest() {
+        Update update = new Update();
+
+        String testMessage = "test message";
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText(testMessage);
+
+        Mockito.when(clientBot.onWebhookUpdateReceived(update)).thenAnswer((Answer<SendMessage>) invocationOnMock -> sendMessage);
+
+        webClient.post().uri(clientEndpoint)
+                .bodyValue(update)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.text").isEqualTo(testMessage);
     }
 }

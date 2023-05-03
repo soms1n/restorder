@@ -52,7 +52,7 @@ public enum Button {
     WEEKENDS("⚫ Выходные"),
     FREE("Бесплатно"),
     RESERVE("✏  Забронировать"),
-    CANCEL_RESERVE("❌ Отменить"),
+    CANCEL_RESERVE("✅ Завершить"),
     RESERVE_LIST("📋 Список бронирований"),
     PICK_ALL("➿ Выбрать все"),
     TODAY("\uD83D\uDDD3 Сегодня"),
@@ -116,15 +116,17 @@ public enum Button {
     }
 
     public Integer getNumber() {
-        if (this == ONE) return 1;
-        if (this == TWO) return 2;
-        if (this == THREE) return 3;
-        if (this == FOUR) return 4;
-        if (this == FIVE) return 5;
-        if (this == SIX) return 6;
-        if (this == SEVEN) return 7;
-        if (this == EIGHT) return 8;
-        if (this == NINE) return 9;
-        return null;
+        return switch (this) {
+            case ONE -> 1;
+            case TWO -> 2;
+            case THREE -> 3;
+            case FOUR -> 4;
+            case FIVE -> 5;
+            case SIX -> 6;
+            case SEVEN -> 7;
+            case EIGHT -> 8;
+            case NINE -> 9;
+            default -> null;
+        };
     }
 }

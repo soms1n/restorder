@@ -4,9 +4,9 @@ spring:
   jpa:
     properties:
       hibernate:
-#        show_sql: true
-#        format_sql: true
-#        generate_statistics: true
+        show_sql: true
+        format_sql: true
+        generate_statistics: true
         types:
           print:
             banner: false
@@ -19,12 +19,9 @@ spring:
 
 logging:
   level:
-    ru:
-      privetdruk: INFO
-    reactor:
-      netty:
-        http:
-          client: INFO
+    org.springframework.orm.jpa.JpaTransactionManager: TRACE
+    ru.privetdruk: DEBUG
+    reactor.netty.http.client: DEBUG
 bot:
   client:
     rest: /client
@@ -39,11 +36,19 @@ bot:
 
 server:
   port: ${SERVER_PORT}
-  ssl:
-    enabled: false
-    key-store-type: PKCS12
-    key-store: classpath:keystore.p12
-    key-store-password: ${SERVER_SSL_KEY_STORE_PASSWORD}
-    protocol: TLS
-    enabled-protocols:
-      - TLSv1.2
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+        generate_statistics: false
+logging:
+  level:
+    ru.privetdruk: INFO
+    reactor.netty.http.client: INFO

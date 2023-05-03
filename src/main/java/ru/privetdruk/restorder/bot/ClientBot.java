@@ -1,5 +1,6 @@
 package ru.privetdruk.restorder.bot;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import ru.privetdruk.restorder.service.client.ClientBotService;
 
 import javax.annotation.PostConstruct;
 
+@RequiredArgsConstructor
 @Slf4j
 @Component
 public class ClientBot extends TelegramWebhookBot {
@@ -25,11 +27,6 @@ public class ClientBot extends TelegramWebhookBot {
 
     @Value("${bot.client.web-hook-path}")
     private String webHookPath;
-
-    public ClientBot(ClientBotService clientBotService, TelegramApiService telegramApiService) {
-        this.clientBotService = clientBotService;
-        this.telegramApiService = telegramApiService;
-    }
 
     @PostConstruct
     private void postConstruct() {
