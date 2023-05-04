@@ -52,6 +52,7 @@ public class RegistrationHandler implements MessageHandler {
             }
             case ENTER_PHONE_NUMBER -> {
                 Contact sendContact = message.getContact();
+
                 if (sendContact == null) {
                     return configureMessage(
                             chatId,

@@ -30,8 +30,7 @@ import ru.privetdruk.restorder.service.util.ValidationService;
 import java.util.List;
 import java.util.Optional;
 
-import static ru.privetdruk.restorder.model.consts.MessageText.INCORRECT_ENTER_PHONE_NUMBER;
-import static ru.privetdruk.restorder.model.consts.MessageText.SELECT_ELEMENT_FOR_EDIT;
+import static ru.privetdruk.restorder.model.consts.MessageText.*;
 import static ru.privetdruk.restorder.model.enums.SubState.EDIT_PERSONAL_DATA;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
@@ -121,16 +120,22 @@ public class RegistrationTavernHandler implements MessageHandler {
                 tavern.getAddress().setStreet(messageText);
                 tavernService.save(tavern);
 
-                nextSubState = changeState(user, subState);
+                changeState(user, subState);
 
-                sendMessage = configureMessage(chatId, nextSubState.getMessage(), KeyboardService.SHARE_PHONE_KEYBOARD);
+                sendMessage = configureMessage(chatId, SHARE_PHONE_NUMBER, KeyboardService.SHARE_PHONE_KEYBOARD);
             }
             case ENTER_PHONE_NUMBER -> {
                 Contact sendContact = message.getContact();
 
-                if (sendContact != null) {
-                    messageText = sendContact.getPhoneNumber().replace("+", "");
+                if (sendContact == null) {
+                    return configureMessage(
+                            chatId,
+                            MessageText.SHARE_PHONE_NUMBER,
+                            KeyboardService.SHARE_PHONE_KEYBOARD
+                    );
                 }
+
+                messageText = sendContact.getPhoneNumber().replace("+", "");
 
                 if (validationService.isNotValidPhone(messageText)) {
                     return configureMessage(
