@@ -30,7 +30,7 @@ public interface MessageText {
             """;
     String CHOICE_TAVERN_TYPE = "Выберите тип заведения";
     String CHOICE_TAVERN = "Выберите заведение";
-    String NOTIFY_USER_RESERVE_CANCELLED = "Ваша бронь %s %s в заведение %s завершена.";
+    String NOTIFY_USER_RESERVE_CANCELLED = "Ваша бронь %s %s в заведение %s завершена (отменена).";
 
     String INCORRECT_PHONE_NUMBER = "Некорректный номер телефона. Повторите попытку.";
 }
