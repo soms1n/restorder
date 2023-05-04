@@ -190,7 +190,7 @@ public class ReserveHandler implements MessageHandler {
                                         reserveService.updateStatus(foundReserve, ReserveStatus.COMPLETED);
 
                                         UserEntity reserveUser = foundReserve.getUser();
-                                        if (reserveUser != null) {
+                                        if (reserveUser != null && !reserveUser.equals(user)) {
                                             telegramApiService.sendMessage(
                                                             reserveUser.getTelegramId(),
                                                             String.format(
