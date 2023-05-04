@@ -12,7 +12,7 @@ public interface MessageText {
     String SHARE_PHONE_NUMBER = "Нажмите поделиться номером телефона";
     String ENTER_EMPTY_VALUE = "Вы ввели пустое значение.";
     String ENTER_EMPTY_VALUE_RETRY = "Вы ввели пустое значение! Повторите попытку:";
-    String CITY_IS_EMPTY = "Вы не выбрали город.";
+    String CITY_IS_EMPTY = "Вы не выбрали город";
     String WAITING_APPROVE_APPLICATION = "Спасибо за регистрацию, ваша заявка на модерации.";
     String REGISTER = "Добро пожаловать в <b>Restorder</b>! Пройдите регистрацию, чтобы получить доступ к функционалу бота.";
     String TAVERN_INVALID = "Добавьте в настройках хотя бы один стол и номер телефона, чтобы было доступно управление бронированием.";
