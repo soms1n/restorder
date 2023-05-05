@@ -9,7 +9,9 @@ import org.springframework.util.StringUtils;
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum Command {
     START("/start"),
-    MAIN_MENU("/menu");
+    MAIN_MENU("/menu"),
+    HELP("/help"),
+    ;
 
     private final String command;
 

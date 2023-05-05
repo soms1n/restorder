@@ -31,7 +31,7 @@ import java.util.Optional;
 @SpringBootTest
 @Disabled
 class UserBotServiceTest {
-    @Mock
+   /* @Mock
     UserService userService;
     @Mock
     TelegramApiService telegramApiService;
@@ -112,5 +112,5 @@ class UserBotServiceTest {
 
         Assertions.assertEquals(sendMessage.getChatId(), String.valueOf(chatId));
         Assertions.assertEquals(sendMessage.getText(), MessageText.GREETING);
-    }
+    }*/
 }

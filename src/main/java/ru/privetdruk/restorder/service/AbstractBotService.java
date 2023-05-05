@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -27,7 +28,7 @@ public abstract class AbstractBotService {
         this.handlers = handlerService.loadHandlers();
     }
 
-    public abstract SendMessage handleUpdate(Update update);
+    public abstract BotApiMethod<Message> handleUpdate(Update update);
 
     protected Optional<SendMessage> prepareUpdate(ShortUpdate shortUpdate) {
         Message message = shortUpdate.getMessage();
@@ -52,7 +53,7 @@ public abstract class AbstractBotService {
         return Optional.empty();
     }
 
-    protected SendMessage getSendMessage(ShortUpdate shortUpdate, UserEntity user, MessageHandler messageHandler) {
+    protected BotApiMethod<Message> getSendMessage(ShortUpdate shortUpdate, UserEntity user, MessageHandler messageHandler) {
         try {
             return messageHandler
                     .handle(user, shortUpdate.getMessage(), shortUpdate.getCallback());

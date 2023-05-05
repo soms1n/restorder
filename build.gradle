@@ -43,6 +43,7 @@ dependencies {
 	testImplementation "org.testcontainers:testcontainers:$testcontainersVersion"
 	testImplementation "org.testcontainers:postgresql:$testcontainersVersion"
 	testImplementation "org.testcontainers:junit-jupiter:$testcontainersVersion"
+	compileOnly("org.springframework.boot:spring-boot-devtools")
 }
 
 test {
