@@ -22,6 +22,7 @@ import ru.privetdruk.restorder.service.UserService;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static ru.privetdruk.restorder.model.consts.MessageText.SUPPORT_MESSAGE;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
 @Component
@@ -39,6 +40,11 @@ public class EventHandler implements MessageHandler {
 
         String[] messageSplit = message.getText().split(" ");
         Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
+
+        if (command == Command.HELP) {
+            return configureMessage(chatId, SUPPORT_MESSAGE);
+        }
+
         if (command != Command.START || messageSplit.length != 2) {
             return configureMessage(chatId, "Что-то пошло не так...");
         }
@@ -62,7 +68,7 @@ public class EventHandler implements MessageHandler {
             if (tavern == null) {
                 eventService.complete(event);
 
-                return configureMessage(chatId, "Некорректная ссылка.");
+                return configureMessage(chatId, "Некорректная ссылка");
             }
 
             if (user.getTavern() != null && user.getTavern() != tavern) {

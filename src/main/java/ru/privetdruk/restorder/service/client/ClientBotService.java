@@ -4,7 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.*;
@@ -24,7 +26,7 @@ public class ClientBotService extends AbstractBotService {
     }
 
     @Override
-    public SendMessage handleUpdate(Update update) {
+    public BotApiMethod<Message> handleUpdate(Update update) {
         ShortUpdate shortUpdate = ShortUpdate.builder()
                 .callback(update.getCallbackQuery())
                 .message(update.getMessage())
@@ -55,7 +57,8 @@ public class ClientBotService extends AbstractBotService {
 
         String[] messageSplit = shortUpdate.getMessage().getText().split(" ");
         Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
-        if (command == Command.START && messageSplit.length == 2) {
+        if (command == Command.HELP
+                || (command == Command.START && messageSplit.length == 2)) {
             return State.EVENT;
         } else if (user.isRegistered() && command == Command.MAIN_MENU) {
             userService.updateState(user, State.MAIN_MENU);

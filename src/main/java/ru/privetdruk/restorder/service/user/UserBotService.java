@@ -3,6 +3,7 @@ package ru.privetdruk.restorder.service.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -26,7 +27,7 @@ public class UserBotService extends AbstractBotService {
         super(userService, handlerService);
     }
 
-    public SendMessage handleUpdate(Update update) {
+    public BotApiMethod<Message> handleUpdate(Update update) {
         ShortUpdate shortUpdate = ShortUpdate.builder()
                 .callback(update.getCallbackQuery())
                 .message(update.getMessage())
@@ -60,8 +61,11 @@ public class UserBotService extends AbstractBotService {
         if (user.isRegistered()) {
             String[] messageSplit = message.getText().split(" ");
             Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
+
             if (command == Command.MAIN_MENU) {
                 userService.updateState(user, State.BOOKING);
+            } else if (command == Command.HELP) {
+                userService.updateState(user, State.EVENT);
             }
         }
     }
