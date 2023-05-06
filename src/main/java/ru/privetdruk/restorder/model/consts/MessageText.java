@@ -12,13 +12,9 @@ public interface MessageText {
     String SHARE_PHONE_NUMBER = "Нажмите поделиться номером телефона";
     String ENTER_EMPTY_VALUE = "Вы ввели пустое значение.";
     String ENTER_EMPTY_VALUE_RETRY = "Вы ввели пустое значение! Повторите попытку:";
-    String CITY_IS_EMPTY = "Вы не выбрали город";
     String WAITING_APPROVE_APPLICATION = "Спасибо за регистрацию, ваша заявка на модерации.";
     String REGISTER = "Добро пожаловать в <b>Restorder</b>! Пройдите регистрацию, чтобы получить доступ к функционалу бота.";
-    String TAVERN_INVALID = "Добавьте в настройках хотя бы один стол и номер телефона, чтобы было доступно управление бронированием.";
     String SELECT_ELEMENT_FOR_EDIT = "Выберите, что хотите отредактировать.";
-    String YOUR_CLAIM_WAS_APPROVED = "Ваша заявка подтверждена.";
-    String ADMIN_APPROVED_CLAIM = "Заявка подтверждена, спасибо.";
     String INCORRECT_VALUE_TRY_AGAIN = "Выбрано некорректное значение. Повторите попытку.";
     String INCORRECT_VALUE_CANCELLED = "Вы ввели некорректное значение. Операция отменяется.";
     String GREETING = """
@@ -29,7 +25,6 @@ public interface MessageText {
             А теперь выберите или введите ваш город, чтобы продолжить.
             """;
     String CHOICE_TAVERN_TYPE = "Выберите тип заведения";
-    String CHOICE_TAVERN = "Выберите заведение";
     String NOTIFY_USER_RESERVE_CANCELLED = "Ваша бронь %s %s в заведение %s завершена (отменена).";
     String INCORRECT_PHONE_NUMBER = "Некорректный номер телефона. Повторите попытку.";
     String SUPPORT_MESSAGE = "Если у Вас возникли какие-то проблемы, можете задать вопрос в нашу поддержку https://t.me/restorder_support";

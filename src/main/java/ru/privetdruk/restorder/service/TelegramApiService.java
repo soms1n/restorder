@@ -2,6 +2,7 @@ package ru.privetdruk.restorder.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -14,6 +15,7 @@ import reactor.core.publisher.Mono;
 import ru.privetdruk.restorder.model.dto.telegram.SendMessageResponse;
 import ru.privetdruk.restorder.model.dto.telegram.UpdateWebhookResponse;
 
+@RequiredArgsConstructor
 @Slf4j
 @Service
 public class TelegramApiService {
@@ -23,16 +25,13 @@ public class TelegramApiService {
     public static final String SEND_MESSAGE_PATH = "/sendMessage";
 
     private final WebClient webClient;
+    private final ObjectMapper objectMapper;
 
     @Value("${bot.client.token}")
     private String botClientToken;
 
     @Value("${bot.user.token}")
     private String botUserToken;
-
-    public TelegramApiService(WebClient webClient) {
-        this.webClient = webClient;
-    }
 
     /**
      * Обновить webhook
@@ -83,7 +82,7 @@ public class TelegramApiService {
             sendMessage.setReplyMarkup(replyKeyboard);
 
             try {
-                String payload = new ObjectMapper().writeValueAsString(sendMessage);
+                String payload = objectMapper.writeValueAsString(sendMessage);
                 requestBodySpec.bodyValue(payload);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();

@@ -1,29 +1,18 @@
 package ru.privetdruk.restorder.handler.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.http.MediaType;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Contact;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import ru.privetdruk.restorder.AbstractTest;
 import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.entity.AddressEntity;
@@ -37,8 +26,6 @@ import ru.privetdruk.restorder.service.UserService;
 import ru.privetdruk.restorder.service.util.ValidationService;
 
 import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.privetdruk.restorder.model.consts.MessageText.SELECT_ELEMENT_FOR_EDIT;
@@ -276,7 +263,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         assertEquals(SubState.ENTER_PHONE_NUMBER, user.getSubState());
 
         assertAll("sendMessage",
-                () -> assertEquals(MessageText.ENTER_PHONE_NUMBER, sendMessage.getText()),
+                () -> assertEquals(MessageText.SHARE_PHONE_NUMBER, sendMessage.getText()),
                 () -> assertEquals(1, ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size()),
                 () -> assertEquals(Button.SHARE_PHONE.getText(),
                         ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard()
@@ -291,40 +278,38 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     }
 
     @Test
-    void client_in_ENTER_PHONE_NUMBER_SUB_STATE_and_entered_correct_phone_number() {
-        Mockito.when(message.getText()).thenReturn("89208595867");
-        Mockito.when(validationService.isNotValidPhone(Mockito.anyString())).thenReturn(false);
+    void client_in_ENTER_PHONE_NUMBER_SUB_STATE_and_entered_any_text() {
+        Mockito.when(message.getText()).thenReturn("lkjljl");
 
         UserEntity user = generateTestUser(SubState.ENTER_PHONE_NUMBER);
         user.getContacts().clear();
 
         SendMessage sendMessage = registrationTavernHandler.handle(user, message, null);
 
-        String expectedMessageText = "<b>Ваши данные</b>" + System.lineSeparator() +
-                "Имя: <i>Иванов Иван Иванович</i>" + System.lineSeparator() +
-                "Заведение: <i>Августин</i>" + System.lineSeparator() +
-                "Описание: <i>отсутствует</i>" + System.lineSeparator() +
-                "Адрес: <i>Почтовая 136, д. 12</i>" + System.lineSeparator() +
-                "Номер телефона: <i>89208595867</i>" + System.lineSeparator();
-
         assertEquals(State.REGISTRATION_TAVERN, user.getState());
-        assertEquals(SubState.REGISTRATION_APPROVING, user.getSubState());
+        assertEquals(SubState.ENTER_PHONE_NUMBER, user.getSubState());
 
         assertAll("sendMessage",
-                () -> assertEquals(expectedMessageText, sendMessage.getText()),
-                () -> assertEquals(1, ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup())
-                        .getKeyboard().size()),
-                () -> assertEquals(2, ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup())
-                        .getKeyboard().get(0).size()),
-                () -> assertEquals(Button.EDIT.getText(), ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup())
-                        .getKeyboard().get(0).get(0).getText()),
-                () -> assertEquals(Button.APPROVE.getText(), ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup())
-                        .getKeyboard().get(0).get(1).getText())
+                () -> assertEquals(MessageText.SHARE_PHONE_NUMBER, sendMessage.getText()),
+                () -> assertEquals(1, ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size()),
+                () -> assertEquals(Button.SHARE_PHONE.getText(),
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard()
+                                .get(0)
+                                .get(0)
+                                .getText()),
+                () -> assertTrue(((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard()
+                        .get(0)
+                        .get(0)
+                        .getRequestContact())
         );
     }
 
     @Test
-    void client_in_ENTER_PHONE_NUMBER_SUB_STATE_and_entered_incorrect_phone_number() {
+    void client_in_ENTER_PHONE_NUMBER_SUB_STATE_and_shared_incorrect_phone_number() {
+        Contact contact = new Contact();
+        contact.setPhoneNumber("+792085958678");
+        Mockito.when(message.getContact()).thenReturn(contact);
+
         Mockito.when(validationService.isNotValidPhone(Mockito.any())).thenReturn(true);
         UserEntity user = generateTestUser(SubState.ENTER_PHONE_NUMBER);
 
@@ -346,11 +331,10 @@ class RegistrationTavernHandlerTest extends AbstractTest {
                         .get(0)
                         .getRequestContact())
         );
-
     }
 
     @Test
-    void client_in_ENTER_PHONE_NUMBER_SUB_STATE_and_share_your_phone_number() {
+    void client_in_ENTER_PHONE_NUMBER_SUB_STATE_and_share_correct_phone_number() {
         Contact contact = new Contact();
         contact.setPhoneNumber("+79208595867");
         Mockito.when(message.getContact()).thenReturn(contact);
@@ -385,19 +369,15 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     }
 
     @Test
-    void client_In_RegistrationApproving_SubState_And_Entered_Any_Text() {
+    void client_in_REGISTRATION_APPROVING_SUB_STATE_and_entered_any_text() {
         UserEntity user = generateTestUser(SubState.REGISTRATION_APPROVING);
 
-        String messageText = "Ваши данные:" + System.lineSeparator() +
-                "Имя: " + user.getName() + System.lineSeparator() +
-                "Заведение: " + user.getTavern().getName() + System.lineSeparator() +
-                "Адрес: " + user.getTavern().getAddress().getStreet() + System.lineSeparator() +
-                "Номер телефона: " + user.getContacts()
-                .stream()
-                .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
-                .map(ContactEntity::getValue)
-                .findFirst()
-                .orElse("") + System.lineSeparator();
+        String expectedMessageText = "<b>Ваши данные</b>" + System.lineSeparator() +
+                "Имя: <i>Иванов Иван Иванович</i>" + System.lineSeparator() +
+                "Заведение: <i>Августин</i>" + System.lineSeparator() +
+                "Описание: <i>отсутствует</i>" + System.lineSeparator() +
+                "Адрес: <i>Почтовая 136, д. 12</i>" + System.lineSeparator() +
+                "Номер телефона: <i>+79208586754</i>" + System.lineSeparator();
 
         SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
@@ -406,20 +386,25 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         );
 
         assertEquals(user.getSubState(), SubState.REGISTRATION_APPROVING);
-        assertEquals(sendMessage.getText(), messageText);
+        assertEquals(sendMessage.getText(), expectedMessageText);
 
         assertAll("keyboard",
-                () -> assertEquals(((InlineKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size(), 1),
-                () -> assertEquals(((InlineKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().get(0).size(), 2));
+                () -> assertEquals(1,
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size()),
+                () -> assertEquals(2,
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().get(0).size()),
+                () -> assertEquals(Button.EDIT.getText(), ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup())
+                        .getKeyboard().get(0).get(0).getText()),
+                () -> assertEquals(Button.APPROVE.getText(), ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup())
+                        .getKeyboard().get(0).get(1).getText()));
     }
 
     @Test
-    void client_In_RegistrationApproving_SubState_And_Click_Approve_Button() {
+    void client_in_REGISTRATION_APPROVING_SUB_STATE_and_click_approve_button() {
         UserEntity user = generateTestUser(SubState.REGISTRATION_APPROVING);
-        Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
-        Mockito.when(telegramApiService.sendMessage(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.never());
+        Mockito.when(telegramApiService.sendMessage(Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any())).thenReturn(Mono.never());
         Mockito.when(userService.findUsersByRole(Mockito.any(Role.class))).thenReturn(Collections.singletonList(user));
-        Mockito.when(callback.getData()).thenReturn(Button.APPROVE.getName());
+        Mockito.when(message.getText()).thenReturn(Button.APPROVE.getText());
 
         SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
@@ -428,14 +413,13 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         );
 
         assertEquals(user.getSubState(), SubState.WAITING_APPROVE_APPLICATION);
-        assertEquals(sendMessage.getText(), SubState.WAITING_APPROVE_APPLICATION.getMessage());
+        assertEquals(sendMessage.getText(), MessageText.WAITING_APPROVE_APPLICATION);
     }
 
     @Test
-    void client_In_RegistrationApproving_SubState_And_Click_Edit_Button() {
+    void client_in_REGISTRATION_APPROVING_SUB_STATE_And_click_edit_button() {
         UserEntity user = generateTestUser(SubState.REGISTRATION_APPROVING);
-        Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
-        Mockito.when(callback.getData()).thenReturn(Button.EDIT.getName());
+        Mockito.when(message.getText()).thenReturn(Button.EDIT.getText());
 
         SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
@@ -450,7 +434,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     }
 
     @Test
-    void client_In_EditPersonalData_SubState_And_Entered_Any_Text() {
+    void client_in_EDIT_PERSONAL_DATA_SUB_STATE_and_entered_any_text() {
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
 
         SendMessage sendMessage = registrationTavernHandler.handle(
@@ -465,7 +449,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_In_EditPersonalData_SubState_And_Click_Edit_Name() {
-        Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
+        Mockito.doNothing().when(userService).updateSubState(Mockito.any(), Mockito.any());
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.NAME.getText());
 
@@ -596,83 +580,5 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         user.getContacts().add(contact);
 
         return user;
-    }
-
-    @Disabled
-    @Transactional()
-    @Test
-    void testRepo() {
-        Optional<UserEntity> byTelegramIdWithLock = userService.findByTelegramIdWithLock(239_635_087L);
-        byTelegramIdWithLock.get().setState(State.MAIN_MENU);
-        userService.save(byTelegramIdWithLock.get());
-    }
-
-    @Disabled
-    @Test
-    void ttt() throws InterruptedException, JsonProcessingException {
-        WebClient client = WebClient.create();
-
-        ReplyKeyboardMarkup keyboardMarkup = ReplyKeyboardMarkup
-                .builder()
-                .keyboard(List.of(
-                        new KeyboardRow(List.of(
-                                new KeyboardButton(Button.ACCEPT.getText())))))
-                .build();
-
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setReplyMarkup(keyboardMarkup);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String payload = objectMapper.writeValueAsString(sendMessage);
-        // String payload = objectMapper.writeValueAsString(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
-        client.post()
-                .uri(uriBuilder -> UriComponentsBuilder
-                        .newInstance()
-                        .scheme("https")
-                        .host("api.telegram.org")
-                        .path("/bot" + "5126027313:AAEM4Jqymy_uwI8qooAyRkhgNJ45peLqK4U")
-                        .path("/sendMessage")
-                        .query("chat_id={chatId}")
-                        .query("text={text}")
-                        .buildAndExpand("239635087", MessageText.YOUR_CLAIM_WAS_APPROVED)
-                        /*.buildAndExpand("239635087",
-                                "Пользователь с telegramId " + 9879797 + " запросил подтверждение регистрации. " + System.lineSeparator() + System.lineSeparator()
-                                + "Данные пользователя " + System.lineSeparator() + System.lineSeparator()
-                                        + "Имя пользователя: " + "Сергей" + System.lineSeparator()
-                                        + "Город: " + "Брянск" + System.lineSeparator()
-                                        + "Название заведения: " + "Августин" + System.lineSeparator()
-                                        + "Адрес: " + "ул. Почтовая, д. 136" + System.lineSeparator() + System.lineSeparator()
-                                + "Необходимо проверить адрес на валидность и подтвердить регистрацию"
-                        )*/
-                        .encode()
-                        .toUri()
-                )
-                .contentType(MediaType.APPLICATION_JSON)
-                // .bodyValue(payload)
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(String.class)
-                .subscribeOn(Schedulers.boundedElastic())
-                .subscribe();
-        Thread.sleep(10000);
-
-/*
-        UserEntity user = UserEntity.builder()
-                .telegramId(1L)
-                .state(State.REGISTRATION_TAVERN)
-                .subState(SubState.SHOW_REGISTER_BUTTON)
-                .build();
-
-        SendMessage sendMessage = new SendMessage("1", "Пройдите регистрацию, чтобы получить доступ к функционалу бота.");
-
-        when(registrationHandler.handle(eq(user), any(), any())).thenReturn(sendMessage);
-        registrationHandler.handle(user, new Message(), new CallbackQuery());
-
-
-        switch (user.getSubState()) {
-            case SHOW_REGISTER_BUTTON: {
-
-            }
-        }*/
     }
 }

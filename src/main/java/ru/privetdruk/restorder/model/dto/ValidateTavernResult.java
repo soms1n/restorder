@@ -34,7 +34,6 @@ public class ValidateTavernResult {
             return "";
         }
 
-        return messages.stream()
-                .collect(Collectors.joining(System.lineSeparator()));
+        return messages.stream().collect(Collectors.joining(System.lineSeparator()));
     }
 }
