@@ -50,11 +50,9 @@ public class RegistrationTavernHandler implements MessageHandler {
         String messageText = message.getText();
         Long chatId = message.getChatId();
         SubState subState = user.getSubState();
-        SubState nextSubState;
         SendMessage sendMessage = new SendMessage();
 
-        Button button = Button.fromText(messageText)
-                .orElse(Button.NOTHING);
+        Button button = Button.fromText(messageText).orElse(Button.NOTHING);
 
         TavernEntity tavern = user.getTavern();
 
@@ -268,8 +266,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                     tavernService.save(tavern);
                 }
             }
-            case WAITING_APPROVE_APPLICATION ->
-                sendMessage = configureMessage(chatId, CLAIM_APPROVE_WAIT);
+            case WAITING_APPROVE_APPLICATION -> sendMessage = configureMessage(chatId, CLAIM_APPROVE_WAIT);
         }
 
         return sendMessage;

@@ -40,8 +40,7 @@ public class UserBot extends TelegramWebhookBot {
 
     @PostConstruct
     private void postConstruct() {
-        telegramApiService.updateWebhook(token, webHookPath)
-                .subscribe(response -> log.info(response.toString()));
+        telegramApiService.updateWebhook(token, webHookPath).subscribe(response -> log.info(response.toString()));
     }
 
     @Override
