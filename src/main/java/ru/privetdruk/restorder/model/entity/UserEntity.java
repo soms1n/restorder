@@ -22,7 +22,6 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
-@Cacheable
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
