@@ -4,16 +4,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import ru.privetdruk.restorder.model.enums.Category;
 
 import javax.persistence.*;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Заведение
@@ -32,25 +30,22 @@ public class TavernEntity {
     /**
      * Сотрудники
      */
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true)
     @JoinTable(
             name = "tavern_to_employee",
             joinColumns = @JoinColumn(name = "tavern_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<UserEntity> employees = new HashSet<>();
+    private List<UserEntity> employees = new ArrayList<>();
 
     /**
      * Название
      */
-    @Column
     private String name;
 
     /**
      * Описание
      */
-    @Column
     private String description;
 
     /**
@@ -61,45 +56,47 @@ public class TavernEntity {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    @JoinColumn
     private AddressEntity address;
 
     /**
      * График работы
      */
     @OneToMany(mappedBy = "tavern", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ScheduleEntity> schedules = new HashSet<>();
+    private List<ScheduleEntity> schedules = new ArrayList<>();
 
     /**
      * Контакты
      */
     @OneToMany(mappedBy = "tavern", cascade = CascadeType.ALL, orphanRemoval = true)
     @NotFound(action = NotFoundAction.IGNORE)
-    private Set<ContactEntity> contacts = new HashSet<>();
+    private List<ContactEntity> contacts = new ArrayList<>();
 
     /**
      * Столы
      */
     @OneToMany(mappedBy = "tavern", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<TableEntity> tables = new HashSet<>();
+    private List<TableEntity> tables = new ArrayList<>();
+
+    /**
+     * Черный список
+     */
+    @OneToMany(mappedBy = "tavern", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TableEntity> blacklist = new ArrayList<>();
 
     /**
      * Категория заведения
      */
-    @Column
     @Enumerated(EnumType.STRING)
     private Category category;
 
     /**
      * Признак валидного заведения
      */
-    @Column
     private Boolean valid = false;
 
     /**
      * Ссылка на схему столов
      */
-    @Column
     private String linkTableLayout;
 
     @Builder
@@ -119,20 +116,29 @@ public class TavernEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null) return false;
-        if (!(o instanceof TavernEntity tavern)) return false;
-        return Objects.equals(name, tavern.name) && Objects.equals(address, tavern.address);
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null) {
+            return false;
+        }
+
+        if (!(o instanceof TavernEntity tavern)) {
+            return false;
+        }
+
+        return Objects.equals(name, tavern.name); // TODO нужно чекнуть в разрезе города
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, address);
+        return Objects.hash(name);
     }
 
     @Override
     public String toString() {
-        return "Tavern{" +
+        return "{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 '}';

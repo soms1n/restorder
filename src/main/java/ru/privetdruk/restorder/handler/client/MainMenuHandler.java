@@ -11,19 +11,23 @@ import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Button;
 import ru.privetdruk.restorder.service.InfoService;
 import ru.privetdruk.restorder.service.KeyboardService;
+import ru.privetdruk.restorder.service.TavernService;
 
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
 @Component
 public class MainMenuHandler implements MessageHandler {
     private final InfoService infoService;
+    private final TavernService tavernService;
     private final SettingsHandler settingsHandler;
     private final ReserveHandler reserveHandler;
 
     public MainMenuHandler(InfoService infoService,
+                           TavernService tavernService,
                            @Lazy SettingsHandler settingsHandler,
                            @Lazy ReserveHandler reserveHandler) {
         this.infoService = infoService;
+        this.tavernService = tavernService;
         this.settingsHandler = settingsHandler;
         this.reserveHandler = reserveHandler;
     }
@@ -41,7 +45,8 @@ public class MainMenuHandler implements MessageHandler {
                     return settingsHandler.handle(user, message, callback);
                 }
                 case INFORMATION -> {
-                    TavernEntity tavern = user.getTavern();
+                    TavernEntity tavern = tavernService.findWithAllData(user.getTavern());
+
                     String description = "<b>Информация о вашем заведении</b>"
                             + System.lineSeparator()
                             + infoService.fillGeneral(tavern)

@@ -1,8 +1,9 @@
 package ru.privetdruk.restorder.model.entity;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.privetdruk.restorder.model.enums.City;
 
 import javax.persistence.*;
@@ -10,7 +11,8 @@ import javax.persistence.*;
 /**
  * Адрес заведения
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "address")
@@ -22,14 +24,12 @@ public class AddressEntity {
     /**
      * Город
      */
-    @Column(name = "city")
     @Enumerated(EnumType.STRING)
     private City city;
 
     /**
      * Улица
      */
-    @Column(name = "street")
     private String street;
 
     @Builder

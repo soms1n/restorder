@@ -1,29 +1,12 @@
 package ru.privetdruk.restorder.service;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.*;
-import ru.privetdruk.restorder.handler.user.BookingHandler;
-import ru.privetdruk.restorder.handler.user.RegistrationHandler;
-import ru.privetdruk.restorder.model.consts.MessageText;
-import ru.privetdruk.restorder.model.entity.UserEntity;
-import ru.privetdruk.restorder.model.enums.Role;
-import ru.privetdruk.restorder.model.enums.State;
-import ru.privetdruk.restorder.model.enums.UserType;
-import ru.privetdruk.restorder.repository.ReserveRepository;
-import ru.privetdruk.restorder.repository.TavernRepository;
-import ru.privetdruk.restorder.service.user.UserBotService;
-import ru.privetdruk.restorder.service.user.UserHandlerService;
-import ru.privetdruk.restorder.service.util.StringService;
-import ru.privetdruk.restorder.service.util.ValidationService;
-
-import java.util.Optional;
 
 @DisplayName("Checking the update processing logic")
 @ExtendWith(MockitoExtension.class)
@@ -37,6 +20,12 @@ class UserBotServiceTest {
     TelegramApiService telegramApiService;
     @Mock
     StringService stringService;
+    @Mock
+    ContactService contactService;
+    @Mock
+    TavernService tavernService;
+    @Mock
+    BlacklistService blacklistService;
     @InjectMocks
     UserBotService userBotService;
     @InjectMocks
@@ -48,7 +37,8 @@ class UserBotServiceTest {
     @DisplayName("Presets")
     void beforeEach() {
         BookingHandler bookingHandler = new BookingHandler(
-                new InfoService(stringService),
+                contactService,
+                new InfoService(blacklistService, contactService, stringService, tavernService),
                 new MessageService(),
                 new ReserveService(reserveRepository),
                 new StringService(),
@@ -62,6 +52,7 @@ class UserBotServiceTest {
                 new UserHandlerService(
                         new RegistrationHandler(
                                 bookingHandler,
+                                contactService,
                                 userService,
                                 new ValidationService()
                         ),

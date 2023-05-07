@@ -18,6 +18,7 @@ public enum Button {
     INFORMATION("\uD83D\uDCAC Информация"),
     GENERAL("\uD83D\uDEE0 Основное"),
     PROFILE("\uD83D\uDC64 Профиль"),
+    BLACKLIST("\uD83D\uDCD3 Блокировки"),
     EMPLOYEES("\uD83D\uDD74 Сотрудники"),
     CATEGORIES("\uD83C\uDFA8 Категории"),
     SCHEDULE("\uD83D\uDCC5 Расписание"),
@@ -77,7 +78,9 @@ public enum Button {
     DESCRIPTION("\uD83D\uDCC3 Описание"),
     WITHOUT_DESCRIPTION("\uD83D\uDDEF Без описания"),
     MANUALLY("\uD83D\uDC46 Выберу сам(а)"),
-    AUTOMATIC("🎲 Подобрать автоматически");
+    AUTOMATIC("🎲 Подобрать автоматически"),
+    BLOCK("\uD83D\uDCD5 Заблокировать"),
+    UNBLOCK("\uD83D\uDCD7 Разблокировать");
 
     private final String text;
 

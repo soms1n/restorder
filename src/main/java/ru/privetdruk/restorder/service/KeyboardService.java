@@ -12,6 +12,7 @@ import ru.privetdruk.restorder.model.enums.Category;
 import ru.privetdruk.restorder.model.enums.City;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,6 +35,7 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup TAVERN_ADDRESS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup PROFILE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup PROFILE_NAME_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup BLACKLIST_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup USER_CONTACTS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup EMPLOYEE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup CATEGORIES_KEYBOARD = new ReplyKeyboardMarkup();
@@ -188,7 +190,8 @@ public class KeyboardService {
 
         SETTINGS_KEYBOARD.setKeyboard(List.of(
                 new KeyboardRow(List.of(
-                        new KeyboardButton(Button.PROFILE.getText())
+                        new KeyboardButton(Button.PROFILE.getText()),
+                        new KeyboardButton(Button.BLACKLIST.getText())
                 )),
                 new KeyboardRow(List.of(
                         new KeyboardButton(Button.GENERAL.getText()),
@@ -471,6 +474,25 @@ public class KeyboardService {
                 BACK_AND_MAIN_MENU_ROW
         ));
         TAVERN_INFO_KEYBOARD.setResizeKeyboard(true);
+
+        BLACKLIST_KEYBOARD.setKeyboard(List.of(
+                newKeyboardRow(Button.UNBLOCK, Button.BLOCK),
+                newKeyboardRow(Button.SETTINGS),
+                BACK_AND_MAIN_MENU_ROW
+        ));
+        BLACKLIST_KEYBOARD.setResizeKeyboard(true);
+    }
+
+    private static KeyboardRow newKeyboardRow(Button... buttons) {
+        return new KeyboardRow(
+                Arrays.stream(buttons)
+                        .map(KeyboardService::toKeyboardButton)
+                        .toList()
+        );
+    }
+
+    private static KeyboardButton toKeyboardButton(Button button) {
+        return new KeyboardButton(button.getText());
     }
 
     public InlineKeyboardButton createInlineButton(Button button) {

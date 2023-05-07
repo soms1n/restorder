@@ -25,12 +25,10 @@ public class UserService {
      * @param type       Тип пользователя
      * @return Найденного пользователя
      */
-    @Transactional(readOnly = true)
     public Optional<UserEntity> findByTelegramId(Long telegramId, UserType type) {
         return userRepository.findByTelegramIdAndType(telegramId, type);
     }
 
-    @Transactional
     public Optional<UserEntity> findByTelegramIdWithLock(Long telegramId) {
         return Optional.ofNullable(userRepository.getByTelegramId(telegramId));
     }
@@ -40,7 +38,6 @@ public class UserService {
      *
      * @param user Пользователь
      */
-    @Transactional
     public UserEntity save(UserEntity user) {
         return userRepository.save(user);
     }
@@ -52,7 +49,6 @@ public class UserService {
      * @param role       Роль
      * @return Созданного пользователя
      */
-    @Transactional
     public UserEntity create(Long telegramId, State state, Role role, UserType type) {
         UserEntity user = createUserWithState(telegramId, state, type);
 
@@ -67,7 +63,6 @@ public class UserService {
      * @param telegramId Идентификатор в телеграм
      * @return Созданного пользователя
      */
-    @Transactional
     public UserEntity create(Long telegramId, State state, UserType type) {
         UserEntity user = createUserWithState(telegramId, state, type);
 
@@ -98,7 +93,6 @@ public class UserService {
      *
      * @param user Пользователь
      */
-    @Transactional
     public void delete(UserEntity user) {
         userRepository.delete(user);
     }
@@ -109,6 +103,7 @@ public class UserService {
      * @param user     Пользователь
      * @param subState Подсостояние
      */
+    @Transactional
     public void updateSubState(UserEntity user, SubState subState) {
         user.setSubState(subState);
         save(user);

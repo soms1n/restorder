@@ -2,7 +2,6 @@ package ru.privetdruk.restorder.handler.client;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Contact;
@@ -21,10 +20,7 @@ import ru.privetdruk.restorder.model.entity.ContactEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.*;
-import ru.privetdruk.restorder.service.KeyboardService;
-import ru.privetdruk.restorder.service.TavernService;
-import ru.privetdruk.restorder.service.TelegramApiService;
-import ru.privetdruk.restorder.service.UserService;
+import ru.privetdruk.restorder.service.*;
 import ru.privetdruk.restorder.service.util.ValidationService;
 
 import java.util.List;
@@ -37,6 +33,7 @@ import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 @RequiredArgsConstructor
 @Component
 public class RegistrationTavernHandler implements MessageHandler {
+    private final ContactService contactService;
     private final UserService userService;
     private final TelegramApiService telegramApiService;
     private final TavernService tavernService;
@@ -45,7 +42,6 @@ public class RegistrationTavernHandler implements MessageHandler {
     final String CLAIM_APPROVE_WAIT = "Ваша заявка на модерации, ожидайте.";
 
     @Override
-    @Transactional
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
         String messageText = message.getText();
         Long chatId = message.getChatId();
@@ -149,7 +145,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                         .value(messageText)
                         .build();
 
-                user.addContact(contact);
+                contactService.save(contact);
 
                 changeState(user, subState);
 

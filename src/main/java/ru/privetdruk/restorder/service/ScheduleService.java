@@ -2,15 +2,14 @@ package ru.privetdruk.restorder.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import ru.privetdruk.restorder.model.entity.ScheduleEntity;
 import ru.privetdruk.restorder.model.enums.DayWeek;
 import ru.privetdruk.restorder.repository.ScheduleRepository;
 
 import java.time.LocalTime;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +21,6 @@ public class ScheduleService {
      *
      * @param schedule График
      */
-    @Transactional
     public void save(ScheduleEntity schedule) {
         repository.save(schedule);
     }
@@ -32,8 +30,7 @@ public class ScheduleService {
      *
      * @param schedules Графики
      */
-    @Transactional
-    public void save(Set<ScheduleEntity> schedules) {
+    public void save(Collection<ScheduleEntity> schedules) {
         repository.saveAll(schedules);
     }
 
@@ -46,10 +43,10 @@ public class ScheduleService {
      * @param endPeriod   Конец периода
      * @return Признак доступности
      */
-    public boolean checkTimePeriodAvailability(Set<ScheduleEntity> schedules, DayWeek dayWeek, LocalTime startPeriod, LocalTime endPeriod) {
-        Set<ScheduleEntity> foundSchedules = schedules.stream()
+    public boolean checkTimePeriodAvailability(Collection<ScheduleEntity> schedules, DayWeek dayWeek, LocalTime startPeriod, LocalTime endPeriod) {
+        List<ScheduleEntity> foundSchedules = schedules.stream()
                 .filter(schedule -> schedule.getDayWeek() == dayWeek)
-                .collect(Collectors.toSet());
+                .toList();
 
         if (CollectionUtils.isEmpty(foundSchedules)) {
             return true;

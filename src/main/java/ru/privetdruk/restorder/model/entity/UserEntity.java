@@ -4,15 +4,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import ru.privetdruk.restorder.model.enums.*;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Пользователь системы
@@ -22,7 +17,6 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
-@Cacheable
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,19 +26,16 @@ public class UserEntity {
     private String name;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<ContactEntity> contacts = new HashSet<>();
+    private List<ContactEntity> contacts = new ArrayList<>();
 
     /**
      * Идентификатор в telegram
      */
-    @Column(name = "telegram_id")
     private Long telegramId;
 
     /**
      * Признак блокировки
      */
-    @Column(name = "blocked")
     private Boolean blocked = false;
 
     /**
@@ -54,13 +45,12 @@ public class UserEntity {
     @CollectionTable(name = "user_to_role", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
-    @Fetch(FetchMode.SUBSELECT)
     private Set<Role> roles = new HashSet<>();
 
     /**
      * Заведение
      */
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinTable(
             name = "tavern_to_employee",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -71,38 +61,32 @@ public class UserEntity {
     /**
      * Состояние
      */
-    @Column(name = "state")
     @Enumerated(EnumType.STRING)
     private State state;
 
     /**
      * Подсостояние
      */
-    @Column(name = "sub_state")
     @Enumerated(EnumType.STRING)
     private SubState subState;
 
-    @Column(name = "city")
     @Enumerated(EnumType.STRING)
     private City city;
 
     /**
      * Контакты
      */
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<ReserveEntity> reserves = new HashSet<>();
+    @OneToMany(mappedBy = "user")
+    private List<ReserveEntity> reserves = new ArrayList<>();
 
     /**
      * Признак зарегистрированного пользователя
      */
-    @Column(name = "registered")
     private boolean registered;
 
     /**
      * Тип
      */
-    @Column(name = "type")
     @Enumerated(EnumType.STRING)
     private UserType type;
 
@@ -130,7 +114,7 @@ public class UserEntity {
 
     @Override
     public String toString() {
-        return "User{" +
+        return "{" +
                 "id=" + id +
                 ", telegramId=" + telegramId +
                 ", state=" + state +
@@ -140,9 +124,16 @@ public class UserEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
         UserEntity that = (UserEntity) o;
+
         return Objects.equals(telegramId, that.telegramId) && type == that.type;
     }
 

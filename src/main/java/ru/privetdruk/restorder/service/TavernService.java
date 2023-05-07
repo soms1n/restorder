@@ -21,7 +21,6 @@ public class TavernService {
      *
      * @param tavern Заведение
      */
-    @Transactional
     public TavernEntity save(TavernEntity tavern) {
         return tavernRepository.save(tavern);
     }
@@ -31,7 +30,6 @@ public class TavernService {
      *
      * @param tavern Заведение
      */
-    @Transactional
     public void delete(TavernEntity tavern) {
         tavernRepository.delete(tavern);
     }
@@ -42,7 +40,6 @@ public class TavernService {
      * @param id Идентификатор заведения
      * @return Найденное заведение
      */
-    @Transactional(readOnly = true)
     public Optional<TavernEntity> find(Long id) {
         return tavernRepository.findById(id);
     }
@@ -54,31 +51,69 @@ public class TavernService {
      * @param category Категория
      * @return Список заведений
      */
-    @Transactional(readOnly = true)
     public List<TavernEntity> find(City city, Category category) {
         return tavernRepository.findAllByValidAndAddressCityAndCategoryOrderByName(true, city, category);
     }
 
-    /**
-     * Найти
-     *
-     * @param id   Идентификатор
-     * @param city Город
-     * @return Найденное заведение
-     */
-    @Transactional(readOnly = true)
-    public TavernEntity find(Long id, City city) {
-        return tavernRepository.findByIdAndAddressCity(id, city);
+    @Transactional
+    public TavernEntity findWithDataWithoutEmployees(TavernEntity tavern) {
+        Long tavernId = tavern.getId();
+
+        TavernEntity foundedTavern = tavernRepository.findByIdWithContacts(tavernId);
+
+        tavernRepository.findByIdWithAddress(tavernId);
+        tavernRepository.findByIdWithTables(tavernId);
+        tavernRepository.findByIdWithSchedules(tavernId);
+
+        return foundedTavern;
     }
 
-    /**
-     * Найди заведение
-     *
-     * @param id Идентификатор заведения
-     * @return Найденное заведение
-     */
-    @Transactional(readOnly = true)
-    public TavernEntity findByIdWithSchedulesAndReserves(Long id) {
-        return tavernRepository.findByIdWithSchedulesAndReserves(id);
+    @Transactional
+    public TavernEntity findWithContactsAddressSchedules(TavernEntity tavern) {
+        Long tavernId = tavern.getId();
+
+        TavernEntity foundedTavern = tavernRepository.findByIdWithContacts(tavernId);
+
+        tavernRepository.findByIdWithAddress(tavernId);
+        tavernRepository.findByIdWithSchedules(tavernId);
+
+        return foundedTavern;
+    }
+
+    @Transactional
+    public TavernEntity findWithAllData(Long tavernId) {
+        TavernEntity foundedTavern = tavernRepository.findByIdWithContacts(tavernId);
+
+        tavernRepository.findByIdWithAddress(tavernId);
+        tavernRepository.findByIdWithTables(tavernId);
+        tavernRepository.findByIdWithSchedules(tavernId);
+        tavernRepository.findByIdWithEmployees(tavernId);
+
+        return foundedTavern;
+    }
+
+    @Transactional
+    public TavernEntity findWithAllData(TavernEntity tavern) {
+        return findWithAllData(tavern.getId());
+    }
+
+    public TavernEntity findWithEmployeesTables(TavernEntity tavern) {
+        Long tavernId = tavern.getId();
+
+        TavernEntity foundedTavern = tavernRepository.findByIdWithEmployees(tavernId);
+        tavernRepository.findByIdWithTables(tavernId);
+        return foundedTavern;
+    }
+
+    public TavernEntity findWithEmployees(TavernEntity tavern) {
+        return tavernRepository.findByIdWithEmployees(tavern.getId());
+    }
+
+    public TavernEntity findWithTables(TavernEntity tavern) {
+        return tavernRepository.findByIdWithTables(tavern.getId());
+    }
+
+    public TavernEntity findWithSchedules(TavernEntity tavern) {
+        return tavernRepository.findByIdWithSchedules(tavern.getId());
     }
 }

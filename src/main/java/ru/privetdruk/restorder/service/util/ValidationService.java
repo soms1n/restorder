@@ -1,5 +1,6 @@
 package ru.privetdruk.restorder.service.util;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -12,9 +13,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
+@RequiredArgsConstructor
 public class ValidationService {
     private final Pattern MOBILE_PHONE_PATTERN = Pattern.compile("^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}$");
-    private final Pattern NAME_PATTERN = Pattern.compile("^[а-яА-ЯёЁ]+$");
+    private final Pattern NAME_PATTERN = Pattern.compile("^(?=.{1,40}$)[а-яёА-ЯЁ]+(?:[-' ][а-яёА-ЯЁ]+)*$");
 
     public boolean isNotValidPhone(String phone) {
         Matcher matcher = MOBILE_PHONE_PATTERN.matcher(phone);

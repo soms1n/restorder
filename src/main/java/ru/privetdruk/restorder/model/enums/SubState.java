@@ -83,7 +83,7 @@ public enum SubState {
             return ENTER_PHONE_NUMBER;
         }
     },
-    ENTER_PHONE_NUMBER(MessageText.ENTER_PHONE_NUMBER) {
+    ENTER_PHONE_NUMBER(MessageText.SHARE_PHONE_NUMBER) {
         @Override
         public State getState() {
             return State.REGISTRATION_TAVERN;
@@ -330,6 +330,17 @@ public enum SubState {
             return VIEW_SETTINGS;
         }
     },
+    VIEW_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SETTINGS;
+        }
+    },
     VIEW_PROFILE_SETTINGS_USER_NAME() {
         @Override
         public State getState() {
@@ -440,7 +451,7 @@ public enum SubState {
             return ENTER_EMPLOYEE_PHONE_NUMBER;
         }
     },
-    ENTER_EMPLOYEE_PHONE_NUMBER(MessageText.ENTER_PHONE_NUMBER) {
+    ENTER_EMPLOYEE_PHONE_NUMBER(MessageText.SHARE_PHONE_NUMBER) {
         @Override
         public State getState() {
             return State.REGISTRATION_EMPLOYEE;

@@ -13,6 +13,7 @@ import ru.privetdruk.restorder.model.entity.ContactEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.ContractType;
 import ru.privetdruk.restorder.model.enums.SubState;
+import ru.privetdruk.restorder.service.ContactService;
 import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.UserService;
 import ru.privetdruk.restorder.service.util.ValidationService;
@@ -23,6 +24,7 @@ import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 @Component
 @RequiredArgsConstructor
 public class RegistrationEmployeeHandler implements MessageHandler {
+    private final ContactService contactService;
     private final UserService userService;
     private final MainMenuHandler mainMenuHandler;
     private final ValidationService validationService;
@@ -54,13 +56,15 @@ public class RegistrationEmployeeHandler implements MessageHandler {
             }
             case ENTER_EMPLOYEE_PHONE_NUMBER -> {
                 Contact sendContact = message.getContact();
-                if (sendContact != null) {
-                    messageText = sendContact.getPhoneNumber().replace("+", "");
+                if (sendContact == null) {
+                    return configureMessage(
+                            chatId,
+                            MessageText.SHARE_PHONE_NUMBER,
+                            KeyboardService.SHARE_PHONE_KEYBOARD
+                    );
                 }
 
-                if (!StringUtils.hasText(messageText)) {
-                    return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
-                }
+                messageText = sendContact.getPhoneNumber().replace("+", "");
 
                 if (validationService.isNotValidPhone(messageText)) {
                     return configureMessage(
@@ -76,7 +80,7 @@ public class RegistrationEmployeeHandler implements MessageHandler {
                         .value(messageText)
                         .build();
 
-                user.addContact(contact);
+                contactService.save(contact);
 
                 changeState(user, subState);
 

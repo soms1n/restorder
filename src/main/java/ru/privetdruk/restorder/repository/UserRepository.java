@@ -16,7 +16,7 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends CrudRepository<UserEntity, Long> {
-    @EntityGraph(attributePaths = {"contacts", "reserves.table.tavern", "roles", "tavern.address", "tavern.employees.roles", "tavern.schedules", "tavern.contacts", "tavern.tables.reserves"})
+    @EntityGraph(attributePaths = {"roles", "tavern.address"})
     Optional<UserEntity> findByTelegramIdAndType(Long telegramId, UserType type);
 
     List<UserEntity> findByRolesIsAndBlockedFalse(Role role);
