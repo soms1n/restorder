@@ -461,7 +461,15 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         assertEquals(user.getSubState(), SubState.EDIT_NAME);
         assertEquals(sendMessage.getText(), SubState.ENTER_FULL_NAME.getMessage());
 
-        assertNotNull(sendMessage.getReplyMarkup());
+        assertAll("keyboard",
+                () -> assertEquals(1,
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().size()),
+                () -> assertEquals(2,
+                        ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup()).getKeyboard().get(0).size()),
+                () -> assertEquals(Button.EDIT_MENU.getText(), ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup())
+                        .getKeyboard().get(0).get(0).getText()),
+                () -> assertEquals(Button.COMPLETE_REGISTRATION.getText(), ((ReplyKeyboardMarkup) sendMessage.getReplyMarkup())
+                        .getKeyboard().get(0).get(1).getText()));
     }
 
     @Test
