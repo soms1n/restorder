@@ -22,6 +22,7 @@ logging:
     org.springframework.orm.jpa.JpaTransactionManager: TRACE
     ru.privetdruk: DEBUG
     reactor.netty.http.client: DEBUG
+    org.springframework.cache: TRACE
 bot:
   client:
     rest: /client

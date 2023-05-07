@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Contact;
@@ -27,6 +29,7 @@ import ru.privetdruk.restorder.service.util.ValidationService;
 
 import java.util.Collections;
 
+import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.privetdruk.restorder.model.consts.MessageText.SELECT_ELEMENT_FOR_EDIT;
 import static ru.privetdruk.restorder.model.enums.City.YOSHKAR_OLA;
@@ -417,7 +420,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     }
 
     @Test
-    void client_in_REGISTRATION_APPROVING_SUB_STATE_And_click_edit_button() {
+    void client_in_REGISTRATION_APPROVING_SUB_STATE_and_click_edit_button() {
         UserEntity user = generateTestUser(SubState.REGISTRATION_APPROVING);
         Mockito.when(message.getText()).thenReturn(Button.EDIT.getText());
 
@@ -448,16 +451,12 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     }
 
     @Test
-    void client_In_EditPersonalData_SubState_And_Click_Edit_Name() {
-        Mockito.doNothing().when(userService).updateSubState(Mockito.any(), Mockito.any());
+    void client_in_EDIT_PERSONAL_DATA_SUB_STATE_and_click_edit_name() {
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.NAME.getText());
+        doAnswer(invocation -> user.setSubState(SubState.EDIT_NAME)).when(userService).updateSubState(any(), any());
 
-        SendMessage sendMessage = registrationTavernHandler.handle(
-                user,
-                message,
-                null
-        );
+        SendMessage sendMessage = registrationTavernHandler.handle(user, message, null);
 
         assertEquals(user.getSubState(), SubState.EDIT_NAME);
         assertEquals(sendMessage.getText(), SubState.ENTER_FULL_NAME.getMessage());
@@ -466,7 +465,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     }
 
     @Test
-    void client_In_EditPersonalData_SubState_And_Click_Edit_Tavern() {
+    void client_in_EDIT_PERSONAL_DATA_SUB_STATE_And_Click_Edit_Tavern() {
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.TAVERN_NAME.getText());
@@ -482,7 +481,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     }
 
     @Test
-    void client_In_EditPersonalData_SubState_And_Click_Edit_Phone_Number() {
+    void client_in_EDIT_PERSONAL_DATA_SUB_STATE_And_Click_Edit_Phone_Number() {
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.PHONE_NUMBER.getText());
@@ -498,7 +497,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     }
 
     @Test
-    void client_In_EditPersonalData_SubState_And_Click_Edit_Address() {
+    void client_in_EDIT_PERSONAL_DATA_SUB_STATE_And_Click_Edit_Address() {
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.TAVERN_ADDRESS.getText());
@@ -514,7 +513,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     }
 
     @Test
-    void client_In_EditPersonalData_SubState_And_Click_Edit_City() {
+    void client_in_EDIT_PERSONAL_DATA_SUB_STATE_And_Click_Edit_City() {
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.CITY.getText());
@@ -531,7 +530,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     }
 
     @Test
-    void client_In_EditPersonalData_SubState_And_Click_Complete_Registration() {
+    void client_in_EDIT_PERSONAL_DATA_SUB_STATE_And_Click_Complete_Registration() {
         Mockito.doNothing().when(userService).save(Mockito.any(UserEntity.class));
         UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.COMPLETE_REGISTRATION.getText());
