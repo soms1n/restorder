@@ -330,17 +330,6 @@ public enum SubState {
             return VIEW_SETTINGS;
         }
     },
-    VIEW_BLACKLIST_SETTINGS() {
-        @Override
-        public State getState() {
-            return State.SETTINGS;
-        }
-
-        @Override
-        public SubState getParentSubState() {
-            return VIEW_SETTINGS;
-        }
-    },
     VIEW_PROFILE_SETTINGS_USER_NAME() {
         @Override
         public State getState() {
@@ -405,6 +394,105 @@ public enum SubState {
         @Override
         public SubState getParentSubState() {
             return VIEW_PROFILE_SETTINGS;
+        }
+    },
+    VIEW_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SETTINGS;
+        }
+    },
+    ENTER_PHONE_NUMBER_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_BLACKLIST_SETTINGS;
+        }
+    },
+    ENTER_NUMBER_TIMES_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SETTINGS_BLACKLIST_SETTINGS;
+        }
+    },
+    ENTER_NUMBER_DAYS_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SETTINGS_BLACKLIST_SETTINGS;
+        }
+    },
+    ENTER_REASON_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_BLACKLIST_SETTINGS;
+        }
+    },
+    UNBLOCK_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_BLACKLIST_SETTINGS;
+        }
+    },
+    VIEW_SETTINGS_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_BLACKLIST_SETTINGS;
+        }
+    },
+    VIEW_MANAGE_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_BLACKLIST_SETTINGS;
+        }
+    },
+    VIEW_MANAGE_USER_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MANAGE_BLACKLIST_SETTINGS;
         }
     },
     VIEW_EMPLOYEE_SETTINGS() {

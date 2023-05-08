@@ -18,6 +18,9 @@ public interface TavernRepository extends CrudRepository<TavernEntity, Long> {
     @EntityGraph(attributePaths = {"employees.roles"})
     Optional<TavernEntity> findById(Long id);
 
+    @Query("SELECT tavern FROM TavernEntity tavern WHERE tavern.id = :id")
+    TavernEntity findByIdWithoutAllData(Long id);
+
     @EntityGraph(attributePaths = {"address"})
     @Query("SELECT t FROM TavernEntity t WHERE t.id = :id")
     TavernEntity findByIdWithAddress(Long id);

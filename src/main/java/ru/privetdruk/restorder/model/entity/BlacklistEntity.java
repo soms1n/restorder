@@ -1,21 +1,21 @@
 package ru.privetdruk.restorder.model.entity;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 /**
- * Резервы столов
+ * Блокировка
  */
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "blacklist")
-@NoArgsConstructor
 public class BlacklistEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,7 +46,8 @@ public class BlacklistEntity {
     /**
      * Признак активной блокировки
      */
-    private String active;
+    @Builder.Default
+    private boolean active = true;
 
     /**
      * Дата блокировки

@@ -2,6 +2,7 @@ package ru.privetdruk.restorder.repository;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -24,4 +25,12 @@ public interface UserRepository extends CrudRepository<UserEntity, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "0")})
     UserEntity getByTelegramId(Long telegramId);
+
+    @Query("""
+            SELECT user
+             FROM UserEntity user
+             JOIN ContactEntity contact ON contact.user = user
+            WHERE contact.value = :phoneNumber
+            """)
+    UserEntity findByPhoneNumber(String phoneNumber);
 }

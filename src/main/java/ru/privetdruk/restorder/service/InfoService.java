@@ -20,34 +20,46 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class InfoService {
-    private final BlacklistService blacklistService;
+    private final BlacklistSettingService blacklistSettingService;
     private final ContactService contactService;
     private final StringService stringService;
     private final TavernService tavernService;
 
-    public String fillBlacklist(TavernEntity tavern) {
-        List<BlacklistEntity> blacklist = blacklistService.findActiveByTavern(tavern);
+    public String fillBlacklistSettings(TavernEntity tavern) {
+        return blacklistSettingService.findByTavern(tavern)
+                .map(setting -> {
+                    if (setting.getTimes() <= 0) {
+                        return "Автоматическая блокировка выключена. Для включения, как минимум настройте параметр \"Кол-во раз\", когда человек не пришел в заведение (0 отключить).";
+                    }
 
-        if (CollectionUtils.isEmpty(blacklist)) {
-            return "Нет заблокированных пользователей.";
-        }
+                    return String.format("""
+                                    Настройки автоматической блокировки
+                                    <b>Кол-во раз до блокировки (когда человек не пришел в заведение):</b> %s
+                                    <b>Кол-во дней блокировки:</b> %s
+                                    """,
+                            setting.getTimes(),
+                            setting.getDays() <= 0 ? "навсегда" : setting.getDays()
+                    );
+                })
+                .orElse("Автоматическая блокировка выключена. Для включения, как минимум настройте параметр \"Кол-во раз\", когда человек не пришел в заведение (0 отключить).");
+    }
 
-        return blacklist.stream()
-                .map(block -> String.format(
-                        """
-                                <b>Номер:</b> %s
-                                <b>Имя:</b> %s
-                                <b>Причина:</b> %s
-                                <b>Дата блокировки:</b> %s
-                                <b>Заблокирован до:</b> %s
-                                """,
-                        block.getPhoneNumber(),
-                        block.getUser().getName(),
-                        block.getReason(),
-                        block.getLockDate().format(Constant.DD_MM_YYYY_FORMATTER),
-                        block.getUnlockDate().format(Constant.DD_MM_YYYY_FORMATTER)
-                ))
-                .collect(Collectors.joining(System.lineSeparator()));
+    public String fillBlacklist(BlacklistEntity blacklist) {
+        return String.format(
+                """
+                        Информация о блокировке
+                        <b>Номер:</b> %s
+                        <b>Имя:</b> %s
+                        <b>Причина:</b> %s
+                        <b>Дата блокировки:</b> %s
+                        <b>Заблокирован до:</b> %s
+                        """,
+                blacklist.getPhoneNumber(),
+                blacklist.getUser() == null ? "не указано" : blacklist.getUser().getName(),
+                blacklist.getReason(),
+                blacklist.getLockDate().format(Constant.DD_MM_YYYY_FORMATTER),
+                blacklist.getUnlockDate().format(Constant.DD_MM_YYYY_FORMATTER)
+        );
     }
 
     public String fillProfile(UserEntity user) {

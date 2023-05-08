@@ -34,4 +34,12 @@ public class ContactService {
     public void delete(ContactEntity contact) {
         contactRepository.delete(contact);
     }
+
+    public String preparePhoneNumber(String phoneNumber) {
+        String convertedPhone = phoneNumber.replace("+", "");
+        if (convertedPhone.charAt(0) == '7') {
+            convertedPhone = convertedPhone.replaceFirst("7", "8");
+        }
+        return convertedPhone;
+    }
 }

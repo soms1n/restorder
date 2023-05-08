@@ -42,8 +42,8 @@ public class ReserveHandler implements MessageHandler {
     private final UserService userService;
     private final ValidationService validationService;
 
-    private final Map<UserEntity, LocalDate> deleteReservesTemporary = new HashMap<>();
-    private final Map<UserEntity, ReserveEntity> addReservesTemporary = new HashMap<>();
+    private final Map<UserEntity, LocalDate> deleteReservesCache = new HashMap<>();
+    private final Map<UserEntity, ReserveEntity> addReservesCache = new HashMap<>();
 
     @Override
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
@@ -133,7 +133,7 @@ public class ReserveHandler implements MessageHandler {
 
                     userService.updateSubState(user, SubState.DELETE_RESERVE_CHOICE_TABLE);
 
-                    deleteReservesTemporary.put(user, date);
+                    deleteReservesCache.put(user, date);
 
                     ReplyKeyboardMarkup reservesDatesKeyboard = new ReplyKeyboardMarkup();
                     List<KeyboardRow> rows = new ArrayList<>();
@@ -161,7 +161,7 @@ public class ReserveHandler implements MessageHandler {
                     userService.updateSubState(user, user.getSubState().getParentSubState());
 
                     if (button == Button.PICK_ALL) {
-                        LocalDate date = deleteReservesTemporary.get(user);
+                        LocalDate date = deleteReservesCache.get(user);
                         if (date != null) {
                             List<ReserveEntity> reserves = reserveService.findActiveByTavern(user.getTavern(), date);
 
@@ -242,7 +242,7 @@ public class ReserveHandler implements MessageHandler {
                     newReserve.setManualMode(true);
                     newReserve.setUser(user);
 
-                    addReservesTemporary.put(user, newReserve);
+                    addReservesCache.put(user, newReserve);
 
                     userService.updateSubState(user, SubState.ADD_RESERVE_CHOICE_TABLE);
 
@@ -261,7 +261,7 @@ public class ReserveHandler implements MessageHandler {
                         return configureChoiceTable(user, chatId);
                     }
 
-                    addReservesTemporary.get(user)
+                    addReservesCache.get(user)
                             .setTable(reserveTable);
 
                     userService.updateSubState(user, SubState.ADD_RESERVE_CHOICE_TIME);
@@ -279,7 +279,7 @@ public class ReserveHandler implements MessageHandler {
 
                         LocalTime time = button == Button.NOW ? now : LocalTime.parse(messageText, Constant.HH_MM_WITHOUT_DOT_FORMATTER);
 
-                        ReserveEntity reserve = addReservesTemporary.get(user);
+                        ReserveEntity reserve = addReservesCache.get(user);
 
                         if (reserve.getDate().isEqual(LocalDate.now()) && time.isBefore(now)) {
                             return configureMessage(
@@ -311,7 +311,7 @@ public class ReserveHandler implements MessageHandler {
                         }
                     }
 
-                    addReservesTemporary.get(user)
+                    addReservesCache.get(user)
                             .setNumberPeople(numberPeople);
 
                     userService.updateSubState(user, SubState.ADD_RESERVE_CHOICE_NAME);
@@ -319,7 +319,7 @@ public class ReserveHandler implements MessageHandler {
                     return configureMessage(chatId, "Введите имя:", KeyboardService.CANCEL_KEYBOARD);
                 }
                 case ADD_RESERVE_CHOICE_NAME -> {
-                    addReservesTemporary.get(user)
+                    addReservesCache.get(user)
                             .setName(messageText);
 
                     userService.updateSubState(user, SubState.ADD_RESERVE_CHOICE_PHONE);
@@ -328,22 +328,22 @@ public class ReserveHandler implements MessageHandler {
                 }
                 case ADD_RESERVE_CHOICE_PHONE -> {
                     if (button != Button.WITHOUT_PHONE) {
-                        addReservesTemporary.get(user)
+                        addReservesCache.get(user)
                                 .setPhoneNumber(messageText);
                     }
 
                     userService.updateSubState(user, SubState.ADD_RESERVE_INFO);
 
-                    return configureMessage(chatId, fillReserveInfo(addReservesTemporary.get(user)), KeyboardService.APPROVE_KEYBOARD);
+                    return configureMessage(chatId, fillReserveInfo(addReservesCache.get(user)), KeyboardService.APPROVE_KEYBOARD);
                 }
                 case ADD_RESERVE_INFO -> {
                     user.setState(State.MAIN_MENU);
                     userService.updateSubState(user, SubState.VIEW_MAIN_MENU);
 
                     if (button == Button.ACCEPT) {
-                        ReserveEntity reserve = addReservesTemporary.get(user);
+                        ReserveEntity reserve = addReservesCache.get(user);
                         reserveService.save(reserve);
-                        addReservesTemporary.remove(user);
+                        addReservesCache.remove(user);
 
                         return configureMessage(chatId, "Столик забронирован.", KeyboardService.CLIENT_MAIN_MENU);
                     }
@@ -404,7 +404,7 @@ public class ReserveHandler implements MessageHandler {
     }
 
     private SendMessage configureChoiceTable(UserEntity user, Long chatId) {
-        LocalDate date = addReservesTemporary.get(user)
+        LocalDate date = addReservesCache.get(user)
                 .getDate();
 
         TavernEntity tavern = tavernService.findWithTables(user.getTavern());
@@ -421,15 +421,15 @@ public class ReserveHandler implements MessageHandler {
                             .map(time -> time.format(Constant.HH_MM_FORMATTER))
                             .collect(Collectors.joining(","));
 
-                            String foundReserve = "занято с " + reserveTimes;
+                    String foundReserve = "занято с " + reserveTimes;
 
-                            rows.add(new KeyboardRow(List.of(new KeyboardButton(String.format(
-                                    "%s на %s %s %s",
-                                    table.getLabel(),
-                                    table.getNumberSeats(),
-                                    stringService.declensionWords(table.getNumberSeats(), StringService.SEATS_WORDS),
-                                    StringUtils.hasLength(reserveTimes) ? foundReserve : ""
-                            )))));
+                    rows.add(new KeyboardRow(List.of(new KeyboardButton(String.format(
+                            "%s на %s %s %s",
+                            table.getLabel(),
+                            table.getNumberSeats(),
+                            stringService.declensionWords(table.getNumberSeats(), StringService.SEATS_WORDS),
+                            StringUtils.hasLength(reserveTimes) ? foundReserve : ""
+                    )))));
                         }
                 );
 

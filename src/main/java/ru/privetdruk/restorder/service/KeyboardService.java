@@ -36,6 +36,9 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup PROFILE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup PROFILE_NAME_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup BLACKLIST_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup MANAGE_USER_BLACKLIST_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup SETTINGS_BLACKLIST_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup REASON_BLACKLIST_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup USER_CONTACTS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup EMPLOYEE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup CATEGORIES_KEYBOARD = new ReplyKeyboardMarkup();
@@ -64,6 +67,7 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup REGISTRATION_TAVERN = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup REGISTRATION_APPROVING = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final KeyboardRow BACK_AND_MAIN_MENU_ROW = new KeyboardRow(newKeyboardRow(Button.BACK, Button.RETURN_MAIN_MENU));
 
     {
         init();
@@ -71,11 +75,6 @@ public class KeyboardService {
 
     private static void init() {
         KeyboardRow CANCEL_ROW = new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText())));
-
-        KeyboardRow BACK_AND_MAIN_MENU_ROW = new KeyboardRow(List.of(
-                new KeyboardButton(Button.BACK.getText()),
-                new KeyboardButton(Button.RETURN_MAIN_MENU.getText())
-        ));
 
         BOOKING_CHOICE_TIME_KEYBOARD.setKeyboard(List.of(
                 BACK_AND_MAIN_MENU_ROW
@@ -477,18 +476,49 @@ public class KeyboardService {
 
         BLACKLIST_KEYBOARD.setKeyboard(List.of(
                 newKeyboardRow(Button.UNBLOCK, Button.BLOCK),
-                newKeyboardRow(Button.SETTINGS),
+                newKeyboardRow(Button.BLACKLIST_LIST, Button.SETTINGS),
                 BACK_AND_MAIN_MENU_ROW
         ));
         BLACKLIST_KEYBOARD.setResizeKeyboard(true);
+
+        MANAGE_USER_BLACKLIST_KEYBOARD.setKeyboard(List.of(
+                newKeyboardRow(Button.UNBLOCK),
+                BACK_AND_MAIN_MENU_ROW
+        ));
+        MANAGE_USER_BLACKLIST_KEYBOARD.setResizeKeyboard(true);
+
+        REASON_BLACKLIST_KEYBOARD.setKeyboard(List.of(
+                newKeyboardRow(Button.DOESNT_COME),
+                newKeyboardRow(Button.INAPPROPRIATE_BEHAVIOUR),
+                CANCEL_ROW
+        ));
+        REASON_BLACKLIST_KEYBOARD.setResizeKeyboard(true);
+
+        SETTINGS_BLACKLIST_KEYBOARD.setKeyboard(List.of(
+                newKeyboardRow(Button.NUMBER_TIMES, Button.NUMBER_DAYS),
+                BACK_AND_MAIN_MENU_ROW
+        ));
+        SETTINGS_BLACKLIST_KEYBOARD.setResizeKeyboard(true);
     }
 
-    private static KeyboardRow newKeyboardRow(Button... buttons) {
+    public static KeyboardRow newKeyboardRow(Button... buttons) {
         return new KeyboardRow(
                 Arrays.stream(buttons)
                         .map(KeyboardService::toKeyboardButton)
                         .toList()
         );
+    }
+
+    public static KeyboardRow newKeyboardRow(String... buttons) {
+        return new KeyboardRow(
+                Arrays.stream(buttons)
+                        .map(KeyboardService::toKeyboardButton)
+                        .toList()
+        );
+    }
+
+    private static KeyboardButton toKeyboardButton(String button) {
+        return new KeyboardButton(button);
     }
 
     private static KeyboardButton toKeyboardButton(Button button) {

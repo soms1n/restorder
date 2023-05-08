@@ -129,9 +129,9 @@ public class RegistrationTavernHandler implements MessageHandler {
                     );
                 }
 
-                messageText = sendContact.getPhoneNumber().replace("+", "");
+                String phoneNumber = contactService.preparePhoneNumber(sendContact.getPhoneNumber());
 
-                if (validationService.isNotValidPhone(messageText)) {
+                if (validationService.isNotValidPhone(phoneNumber)) {
                     return configureMessage(
                             chatId,
                             INCORRECT_ENTER_PHONE_NUMBER,
@@ -142,7 +142,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                 ContactEntity contact = ContactEntity.builder()
                         .user(user)
                         .type(ContractType.MOBILE)
-                        .value(messageText)
+                        .value(phoneNumber)
                         .build();
 
                 contactService.save(contact);

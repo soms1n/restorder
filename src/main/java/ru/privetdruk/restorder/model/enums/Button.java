@@ -18,7 +18,6 @@ public enum Button {
     INFORMATION("\uD83D\uDCAC Информация"),
     GENERAL("\uD83D\uDEE0 Основное"),
     PROFILE("\uD83D\uDC64 Профиль"),
-    BLACKLIST("\uD83D\uDCD3 Блокировки"),
     EMPLOYEES("\uD83D\uDD74 Сотрудники"),
     CATEGORIES("\uD83C\uDFA8 Категории"),
     SCHEDULE("\uD83D\uDCC5 Расписание"),
@@ -79,8 +78,15 @@ public enum Button {
     WITHOUT_DESCRIPTION("\uD83D\uDDEF Без описания"),
     MANUALLY("\uD83D\uDC46 Выберу сам(а)"),
     AUTOMATIC("🎲 Подобрать автоматически"),
+    BLACKLIST("\uD83D\uDCD3 Блокировки"),
     BLOCK("\uD83D\uDCD5 Заблокировать"),
-    UNBLOCK("\uD83D\uDCD7 Разблокировать");
+    UNBLOCK("\uD83D\uDCD7 Разблокировать"),
+    BLACKLIST_LIST("\uD83D\uDCD3 Чёрный список"),
+    DOESNT_COME("Не приходит"),
+    INAPPROPRIATE_BEHAVIOUR("Неприемлемое поведение"),
+    NUMBER_TIMES("Кол-во раз"),
+    NUMBER_DAYS("Кол-во дней");
+
 
     private final String text;
 

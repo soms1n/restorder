@@ -2,7 +2,6 @@ package ru.privetdruk.restorder.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
@@ -103,7 +102,6 @@ public class UserService {
      * @param user     Пользователь
      * @param subState Подсостояние
      */
-    @Transactional
     public void updateSubState(UserEntity user, SubState subState) {
         user.setSubState(subState);
         save(user);
@@ -132,5 +130,9 @@ public class UserService {
         user.setState(state);
         user.setSubState(subState);
         save(user);
+    }
+
+    public UserEntity findByPhoneNumber(String phoneNumber) {
+        return userRepository.findByPhoneNumber(phoneNumber);
     }
 }

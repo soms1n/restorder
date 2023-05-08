@@ -35,13 +35,23 @@ public class TavernService {
     }
 
     /**
-     * Найди заведение
+     * Найди заведение (с загрузкой сотрудников и ролей)
      *
      * @param id Идентификатор заведения
      * @return Найденное заведение
      */
-    public Optional<TavernEntity> find(Long id) {
+    public Optional<TavernEntity> findByIdWithEmployee(Long id) {
         return tavernRepository.findById(id);
+    }
+
+    /**
+     * Найди заведение (без загрузки связей)
+     *
+     * @param id Идентификатор заведения
+     * @return Найденное заведение
+     */
+    public TavernEntity findByIdWithoutAllData(Long id) {
+        return tavernRepository.findByIdWithoutAllData(id);
     }
 
     /**
