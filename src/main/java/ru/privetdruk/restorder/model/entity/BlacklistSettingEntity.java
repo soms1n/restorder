@@ -16,13 +16,13 @@ import javax.persistence.*;
 @Table(name = "blacklist_setting")
 public class BlacklistSettingEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
      * Заведение
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId
+    @OneToOne(fetch = FetchType.LAZY)
     private TavernEntity tavern;
 
     /**

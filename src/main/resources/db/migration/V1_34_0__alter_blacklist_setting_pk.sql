@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS blacklist_setting
+    DROP COLUMN IF EXISTS id;

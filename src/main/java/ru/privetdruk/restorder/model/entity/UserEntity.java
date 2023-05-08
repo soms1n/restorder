@@ -47,6 +47,9 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private Set<Role> roles = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<BlacklistEntity> blacklist = new ArrayList<>();
+
     /**
      * Заведение
      */
@@ -76,7 +79,7 @@ public class UserEntity {
     /**
      * Контакты
      */
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<ReserveEntity> reserves = new ArrayList<>();
 
     /**

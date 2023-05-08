@@ -30,7 +30,7 @@ public class TavernEntity {
     /**
      * Сотрудники
      */
-    @OneToMany(cascade = CascadeType.MERGE, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinTable(
             name = "tavern_to_employee",
             joinColumns = @JoinColumn(name = "tavern_id"),
@@ -78,10 +78,16 @@ public class TavernEntity {
     private List<TableEntity> tables = new ArrayList<>();
 
     /**
-     * Черный список
+     * Чёрный список
      */
-    @OneToMany(mappedBy = "tavern", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TableEntity> blacklist = new ArrayList<>();
+    @OneToMany(mappedBy = "tavern", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<BlacklistEntity> blacklist = new ArrayList<>();
+
+    /**
+     * Настройка чёрного списка
+     */
+    @OneToOne(mappedBy = "tavern", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private BlacklistSettingEntity blacklistSetting;
 
     /**
      * Категория заведения

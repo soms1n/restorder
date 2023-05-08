@@ -10,7 +10,7 @@ public interface MessageText {
     String ENTER_PHONE_NUMBER = "Введите номер мобильного телефона в формате 89991110011:";
     String INCORRECT_ENTER_PHONE_NUMBER = "Вы ввели некорректный номер мобильного телефона. Повторите попытку.";
     String PHONE_NUMBER_DUPLICATE = "Указанный номер телефона уже добавлен. Повторите попытку.";
-    String SHARE_PHONE_NUMBER = "Нажмите поделиться номером телефона";
+    String SHARE_PHONE_NUMBER = "Нажмите поделиться номером телефона.";
     String ENTER_EMPTY_VALUE = "Вы ввели пустое значение.";
     String ENTER_EMPTY_VALUE_RETRY = "Вы ввели пустое значение! Повторите попытку:";
     String WAITING_APPROVE_APPLICATION = "Спасибо за регистрацию, ваша заявка на модерации.";

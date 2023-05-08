@@ -67,12 +67,8 @@ public class RegistrationTavernHandler implements MessageHandler {
                 sendMessage = configureMessage(chatId, changeState(user, subState).getMessage());
             }
             case ENTER_TAVERN_NAME -> {
-                tavern = TavernEntity.builder()
-                        .name(messageText)
-                        .owner(user)
-                        .build();
-
-                tavernService.save(tavern);
+                tavern = tavernService.create(messageText, user.getId());
+                user.setTavern(tavern);
 
                 changeState(user, subState);
 
@@ -384,12 +380,14 @@ public class RegistrationTavernHandler implements MessageHandler {
     private SendMessage showPersonalData(UserEntity user, Long chatId) {
         TavernEntity tavern = user.getTavern();
 
+        List<ContactEntity> contacts = contactService.findByUser(user);
+
         String yourPersonalData = "<b>Ваши данные</b>" + System.lineSeparator() +
                 "Имя: <i>" + user.getName() + "</i>" + System.lineSeparator() +
                 "Заведение: <i>" + tavern.getName() + "</i>" + System.lineSeparator() +
                 "Описание: <i>" + Optional.ofNullable(tavern.getDescription()).orElse("отсутствует") + "</i>" + System.lineSeparator() +
                 "Адрес: <i>" + tavern.getAddress().getStreet() + "</i>" + System.lineSeparator() +
-                "Номер телефона: <i>" + user.getContacts().stream()
+                "Номер телефона: <i>" + contacts.stream()
                 .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
                 .map(ContactEntity::getValue)
                 .findFirst()

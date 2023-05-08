@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
+import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Category;
 import ru.privetdruk.restorder.model.enums.City;
 import ru.privetdruk.restorder.repository.TavernRepository;
@@ -15,6 +16,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TavernService {
     private final TavernRepository tavernRepository;
+    private final UserService userService;
 
     /**
      * Сохранить заведение
@@ -23,6 +25,18 @@ public class TavernService {
      */
     public TavernEntity save(TavernEntity tavern) {
         return tavernRepository.save(tavern);
+    }
+
+    @Transactional
+    public TavernEntity create(String name, Long userId) {
+        UserEntity user = userService.findById(userId);
+
+        TavernEntity tavern = TavernEntity.builder()
+                .name(name)
+                .owner(user)
+                .build();
+
+        return save(tavern);
     }
 
     /**

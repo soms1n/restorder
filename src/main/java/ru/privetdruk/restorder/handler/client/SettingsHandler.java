@@ -490,7 +490,7 @@ public class SettingsHandler implements MessageHandler {
 
                             return configureMessage(
                                     chatId,
-                                    "Введите кол-во раз, когда человек не пришел в заведение (0 отключить), чтобы автоматически его заблокировать.",
+                                    "Введите кол-во раз, когда человек не пришел в заведение (0 отключить), чтобы автоматически его заблокировать:",
                                     KeyboardService.CANCEL_KEYBOARD
                             );
                         }
@@ -523,9 +523,10 @@ public class SettingsHandler implements MessageHandler {
                                     return foundSetting;
                                 })
                                 .orElseGet(() -> BlacklistSettingEntity.builder()
+                                        .id(user.getTavern().getId())
+                                        .tavern(user.getTavern())
                                         .days(0)
                                         .times(times)
-                                        .tavern(user.getTavern())
                                         .build());
 
                         blacklistSettingService.save(setting);
