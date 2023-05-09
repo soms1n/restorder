@@ -83,6 +83,12 @@ public class UserEntity {
     private List<ReserveEntity> reserves = new ArrayList<>();
 
     /**
+     * Учёт посещений
+     */
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<VisitingEntity> visiting = new ArrayList<>();
+
+    /**
      * Признак зарегистрированного пользователя
      */
     private boolean registered;

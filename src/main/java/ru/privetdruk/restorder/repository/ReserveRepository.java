@@ -3,7 +3,6 @@ package ru.privetdruk.restorder.repository;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
 import ru.privetdruk.restorder.model.entity.ReserveEntity;
 import ru.privetdruk.restorder.model.entity.TableEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
@@ -13,7 +12,6 @@ import ru.privetdruk.restorder.model.enums.ReserveStatus;
 import java.time.LocalDate;
 import java.util.List;
 
-@Repository
 public interface ReserveRepository extends CrudRepository<ReserveEntity, Long> {
     @Query("""
             SELECT reserve
@@ -63,6 +61,16 @@ public interface ReserveRepository extends CrudRepository<ReserveEntity, Long> {
              WHERE tavern = :tavern AND reserve.status = :status
             """)
     List<ReserveEntity> findByTavernAndStatusWithTableUserTavern(TavernEntity tavern, ReserveStatus status);
+
+    @EntityGraph(attributePaths = {"table", "user"})
+    @Query("""
+            SELECT reserve
+             FROM ReserveEntity reserve
+                JOIN TableEntity table ON table = reserve.table
+                JOIN TavernEntity tavern ON tavern = table.tavern
+             WHERE tavern = :tavern AND reserve.id = :id AND reserve.status = :status
+            """)
+    ReserveEntity findByIdAndTavernAndStatusWithTableUserTavern(Long id, TavernEntity tavern, ReserveStatus status);
 
     @EntityGraph(attributePaths = {"table", "user.contacts"})
     @Query("""

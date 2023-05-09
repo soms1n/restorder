@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class StringService {
     public static final String[] SEATS_WORDS = new String[]{"мест", "места", "место"};
+    public static final String[] TIMES_WORDS = new String[]{"раз", "раза"};
 
     /**
      * Склонение слов
@@ -34,6 +35,14 @@ public class StringService {
             return declinations[2];
         } else {
             return declinations[0];
+        }
+    }
+
+    public String declensionTimes(long value) {
+        if (value == 1 || value >= 5 && value <= 20 || value % 10 >= 5 || value % 10 == 0 || value % 10 == 1) {
+            return TIMES_WORDS[0];
+        } else {
+            return TIMES_WORDS[1];
         }
     }
 }

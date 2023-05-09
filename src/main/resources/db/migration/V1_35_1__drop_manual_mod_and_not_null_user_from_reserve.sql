@@ -1,0 +1,5 @@
+ALTER TABLE IF EXISTS reserve
+    DROP COLUMN IF EXISTS manual_mode;
+
+ALTER TABLE IF EXISTS reserve
+    ALTER COLUMN user_id DROP NOT NULL;

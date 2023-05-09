@@ -263,6 +263,8 @@ public class BookingHandler implements MessageHandler {
 
                         ReserveEntity reserve = new ReserveEntity();
                         reserve.setUser(user);
+                        reserve.setName(user.getName());
+                        reserve.setPhoneNumber(booking.getPhoneNumber());
                         reserve.setDate(booking.getDate());
                         reserve.setTime(booking.getTime());
                         reserve.setTable(booking.getTable());

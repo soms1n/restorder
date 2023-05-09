@@ -59,7 +59,6 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup REGISTRATION_TAVERN_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup REGISTRATION_APPROVING = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup RESERVE_CHECK_BLOCK_KEYBOARD = new ReplyKeyboardMarkup();
     public static final KeyboardRow BACK_AND_MAIN_MENU_ROW = new KeyboardRow(newKeyboardRow(Button.BACK, Button.RETURN_MAIN_MENU));
 
     {
@@ -108,8 +107,7 @@ public class KeyboardService {
                 CLIENT_MAIN_MENU,
                 newKeyboardRow(Button.RESERVE),
                 newKeyboardRow(Button.RESERVE_LIST),
-                newKeyboardRow(Button.SETTINGS, Button.INFORMATION),
-                BACK_AND_MAIN_MENU_ROW
+                newKeyboardRow(Button.SETTINGS, Button.INFORMATION)
         );
 
         fillKeyboard(

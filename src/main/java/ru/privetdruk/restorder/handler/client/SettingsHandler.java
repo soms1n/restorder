@@ -632,7 +632,7 @@ public class SettingsHandler implements MessageHandler {
 
                     blacklistService.save(blacklist);
 
-                    sendMessageAboutLockUser(blockUser, tavern, "Вы добавлены в чёрный список в заведении ");
+                    sendMessageAboutLockUser(blockUser, tavern, MessageText.NOTIFY_USER_BLOCK);
 
                     userService.updateSubState(user, SubState.VIEW_BLACKLIST_SETTINGS);
 

@@ -27,6 +27,7 @@ public interface MessageText {
             """;
     String CHOICE_TAVERN_TYPE = "Выберите тип заведения";
     String NOTIFY_USER_RESERVE_CANCELLED = "Ваша бронь %s %s в заведение %s завершена (отменена).";
+    String NOTIFY_USER_BLOCK = "Вы добавлены в чёрный список в заведении ";
     String INCORRECT_PHONE_NUMBER = "Некорректный номер телефона. Повторите попытку.";
     String SUPPORT_MESSAGE = "Если у Вас возникли какие-то проблемы, можете задать вопрос в нашу поддержку https://t.me/restorder_support";
 }

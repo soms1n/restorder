@@ -57,11 +57,6 @@ public class ReserveEntity {
     private LocalTime time;
 
     /**
-     * Забронировано в ручном режиме (оператором)
-     */
-    private Boolean manualMode = false;
-
-    /**
      * Имя (для ручной брони)
      */
     private String name;
