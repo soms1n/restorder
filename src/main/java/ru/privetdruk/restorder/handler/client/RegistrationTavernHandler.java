@@ -58,7 +58,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                     subState = subState.getNextSubState();
                     sendMessage = configureMessage(chatId, changeState(user, subState).getMessage(), KeyboardService.REMOVE_KEYBOARD);
                 } else {
-                    sendMessage = configureMessage(chatId, subState.getMessage(), KeyboardService.REGISTRATION_TAVERN);
+                    sendMessage = configureMessage(chatId, subState.getMessage(), KeyboardService.REGISTRATION_TAVERN_KEYBOARD);
                 }
             }
             case ENTER_FULL_NAME -> {
