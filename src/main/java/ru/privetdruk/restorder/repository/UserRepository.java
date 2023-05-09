@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.UserType;
@@ -15,7 +14,6 @@ import javax.persistence.QueryHint;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface UserRepository extends CrudRepository<UserEntity, Long> {
     @EntityGraph(attributePaths = {"roles", "tavern.address"})
     Optional<UserEntity> findByTelegramIdAndType(Long telegramId, UserType type);

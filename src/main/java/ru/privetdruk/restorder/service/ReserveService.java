@@ -78,6 +78,10 @@ public class ReserveService {
         return repository.findByTavernAndStatusWithTableUserTavern(tavern, ACTIVE);
     }
 
+    public ReserveEntity findActiveByIdWithTableUserTavern(Long reserveId, TavernEntity tavern) {
+        return repository.findByIdAndTavernAndStatusWithTableUserTavern(reserveId, tavern, ACTIVE);
+    }
+
     public List<ReserveEntity> findActiveByTavernWithTableUser(TavernEntity tavern, LocalDate date) {
         return repository.findByTavernAndStatusWithTableUser(tavern, date, ACTIVE);
     }

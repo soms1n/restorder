@@ -90,6 +90,12 @@ public class TavernEntity {
     private BlacklistSettingEntity blacklistSetting;
 
     /**
+     * Учёт посещений
+     */
+    @OneToMany(mappedBy = "tavern", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<VisitingEntity> visits = new ArrayList<>();
+
+    /**
      * Категория заведения
      */
     @Enumerated(EnumType.STRING)

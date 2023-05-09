@@ -754,6 +754,28 @@ public enum SubState {
             return VIEW_RESERVE_LIST;
         }
     },
+    CONFIRM_CLIENT_RESERVE() {
+        @Override
+        public State getState() {
+            return State.RESERVE;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_RESERVE_LIST;
+        }
+    },
+    BLOCK_CLIENT_RESERVE() {
+        @Override
+        public State getState() {
+            return State.RESERVE;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_RESERVE_LIST;
+        }
+    },
     ADD_RESERVE_CHOICE_DATE() {
         @Override
         public State getState() {

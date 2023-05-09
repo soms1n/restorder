@@ -34,4 +34,8 @@ public class BlacklistSettingEntity {
      * Кол-во дней блокировки (0 навсегда)
      */
     private Integer days;
+
+    public boolean enabled() {
+        return times != null && times > 0;
+    }
 }

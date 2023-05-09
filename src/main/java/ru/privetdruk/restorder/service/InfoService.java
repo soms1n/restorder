@@ -28,7 +28,7 @@ public class InfoService {
     public String fillBlacklistSettings(TavernEntity tavern) {
         return blacklistSettingService.findByTavern(tavern)
                 .map(setting -> {
-                    if (setting.getTimes() <= 0) {
+                    if (!setting.enabled()) {
                         return "Автоматическая блокировка выключена. Для включения, как минимум настройте параметр \"Кол-во раз\", когда человек не пришел в заведение (0 отключить).";
                     }
 
