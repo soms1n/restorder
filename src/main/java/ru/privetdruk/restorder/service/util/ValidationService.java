@@ -1,7 +1,7 @@
 package ru.privetdruk.restorder.service.util;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import ru.privetdruk.restorder.model.dto.ValidateTavernResult;
@@ -12,9 +12,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
+@RequiredArgsConstructor
 public class ValidationService {
-    private final Pattern MOBILE_PHONE_PATTERN = Pattern.compile("^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}$");
-    private final Pattern NAME_PATTERN = Pattern.compile("^[а-яА-ЯёЁ]+$");
+    private final Pattern MOBILE_PHONE_PATTERN = Pattern.compile("^8\\d{10}$");
+    private final Pattern NAME_PATTERN = Pattern.compile("^(?=.{1,40}$)[а-яёА-ЯЁ]+(?:[-' ][а-яёА-ЯЁ]+)*$");
 
     public boolean isNotValidPhone(String phone) {
         Matcher matcher = MOBILE_PHONE_PATTERN.matcher(phone);
@@ -28,13 +29,13 @@ public class ValidationService {
         return !matcher.matches();
     }
 
+
     /**
      * Валидация параметров заведения
      *
      * @param tavern Заведение
      * @return true - прошел валидацию
      */
-    @Transactional(readOnly = true)
     public ValidateTavernResult validate(TavernEntity tavern) {
         ValidateTavernResult result = new ValidateTavernResult();
         if (tavern == null) {

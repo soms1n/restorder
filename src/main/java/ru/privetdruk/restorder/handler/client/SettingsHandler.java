@@ -10,8 +10,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+import reactor.core.scheduler.Schedulers;
 import ru.privetdruk.restorder.handler.MessageHandler;
 import ru.privetdruk.restorder.mapper.ScheduleMapper;
 import ru.privetdruk.restorder.model.consts.MessageText;
@@ -28,7 +28,11 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.springframework.util.CollectionUtils.isEmpty;
+import static org.springframework.util.StringUtils.hasText;
 import static ru.privetdruk.restorder.model.consts.MessageText.INCORRECT_ENTER_PHONE_NUMBER;
+import static ru.privetdruk.restorder.model.consts.MessageText.PHONE_NUMBER_DUPLICATE;
+import static ru.privetdruk.restorder.service.KeyboardService.*;
 import static ru.privetdruk.restorder.service.MessageService.configureMarkdownMessage;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
@@ -36,6 +40,8 @@ import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 @Component
 @RequiredArgsConstructor
 public class SettingsHandler implements MessageHandler {
+    private final BlacklistService blacklistService;
+    private final BlacklistSettingService blacklistSettingService;
     private final ContactService contactService;
     private final EventService eventService;
     private final InfoService infoService;
@@ -45,11 +51,14 @@ public class SettingsHandler implements MessageHandler {
     private final ScheduleMapper scheduleMapper;
     private final ScheduleService scheduleService;
     private final TavernService tavernService;
+    private final TelegramApiService telegramApiService;
     private final TypeService typeService;
     private final ValidationService validationService;
 
-    private final Map<UserEntity, ScheduleDto> scheduleTemporary = new HashMap<>();
-    private final Map<UserEntity, TableEntity> tableTemporary = new HashMap<>();
+    private final Map<UserEntity, ScheduleDto> scheduleCache = new HashMap<>();
+    private final Map<UserEntity, TableEntity> tableCache = new HashMap<>();
+    private final Map<UserEntity, BlacklistEntity> blacklistCache = new HashMap<>();
+    private final Map<UserEntity, String> blacklistPhoneNumberCache = new HashMap<>();
 
     @Value("${bot.client.username}")
     private String botName;
@@ -157,31 +166,24 @@ public class SettingsHandler implements MessageHandler {
             }
             case DELETE -> {
                 switch (subState) {
-                    case VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS:
-                        return configureDeleteContacts(
-                                user,
-                                tavern.getContacts(),
-                                SubState.DELETE_GENERAL_SETTINGS_TAVERN_CONTACTS,
-                                chatId,
-                                KeyboardService.TAVERN_CONTACTS_KEYBOARD
-                        );
-                    case VIEW_PROFILE_SETTINGS_USER_CONTACTS:
-                        return configureDeleteContacts(
-                                user,
-                                user.getContacts(),
-                                SubState.DELETE_PROFILE_SETTINGS_USER_CONTACTS,
-                                chatId,
-                                KeyboardService.USER_CONTACTS_KEYBOARD
-                        );
-                    case VIEW_EMPLOYEE_SETTINGS:
-                        return configureDeleteEmployees(user, chatId);
-                    case VIEW_SCHEDULE_SETTINGS:
-                        return configureDeleteSchedule(user, chatId);
-                    case VIEW_TABLE_SETTINGS:
-                        return configureDeleteTables(user, chatId);
-                    case VIEW_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT: {
-                        if (!StringUtils.hasText(tavern.getLinkTableLayout())) {
-                            return configureMessage(chatId, "Нечего удалять.", KeyboardService.TAVERN_DESCRIPTION_LINK_TABLE_LAYOUT);
+                    case VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS -> {
+                        return configureDeleteContacts(user, tavern, chatId);
+                    }
+                    case VIEW_PROFILE_SETTINGS_USER_CONTACTS -> {
+                        return configureDeleteContacts(user, chatId);
+                    }
+                    case VIEW_EMPLOYEE_SETTINGS -> {
+                        return configureDeleteEmployees(user, tavern, chatId);
+                    }
+                    case VIEW_SCHEDULE_SETTINGS -> {
+                        return configureDeleteSchedule(user, tavern, chatId);
+                    }
+                    case VIEW_TABLE_SETTINGS -> {
+                        return configureDeleteTables(user, tavern, chatId);
+                    }
+                    case VIEW_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT -> {
+                        if (!hasText(tavern.getLinkTableLayout())) {
+                            return configureMessage(chatId, "Нечего удалять.", CHANGE_DELETE_KEYBOARD);
                         }
 
                         userService.updateSubState(user, SubState.DELETE_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT);
@@ -209,11 +211,12 @@ public class SettingsHandler implements MessageHandler {
                                 return configureMessage(
                                         chatId,
                                         "Выбранный пункт меню недоступен вашей роли.",
-                                        KeyboardService.SETTINGS_KEYBOARD
+                                        SETTINGS_KEYBOARD
                                 );
                             }
                         }
                         case PROFILE -> userService.updateSubState(user, SubState.VIEW_PROFILE_SETTINGS);
+                        case BLACKLIST -> userService.updateSubState(user, SubState.VIEW_BLACKLIST_SETTINGS);
                         case EMPLOYEES -> {
                             if (user.getRoles().contains(Role.CLIENT_ADMIN)) {
                                 userService.updateSubState(user, SubState.VIEW_EMPLOYEE_SETTINGS);
@@ -221,7 +224,7 @@ public class SettingsHandler implements MessageHandler {
                                 return configureMessage(
                                         chatId,
                                         "Выбранный пункт меню недоступен вашей роли.",
-                                        KeyboardService.SETTINGS_KEYBOARD
+                                        SETTINGS_KEYBOARD
                                 );
                             }
                         }
@@ -240,9 +243,11 @@ public class SettingsHandler implements MessageHandler {
                     }
                 }
                 case CHANGE_GENERAL_SETTINGS_TAVERN_NAME -> {
-                    if (!StringUtils.hasText(messageText)) {
+                    if (!hasText(messageText)) {
                         return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE_RETRY);
                     }
+
+                    tavern = tavernService.findWithDataWithoutEmployees(tavern);
 
                     tavern.setName(messageText);
 
@@ -254,7 +259,7 @@ public class SettingsHandler implements MessageHandler {
                     userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case CHANGE_GENERAL_SETTINGS_TAVERN_DESCRIPTION -> {
-                    if (!StringUtils.hasText(messageText)) {
+                    if (!hasText(messageText)) {
                         return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE_RETRY);
                     }
 
@@ -264,7 +269,7 @@ public class SettingsHandler implements MessageHandler {
                     userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case CHANGE_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT -> {
-                    if (!StringUtils.hasText(messageText)) {
+                    if (!hasText(messageText)) {
                         return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE_RETRY);
                     }
 
@@ -274,13 +279,15 @@ public class SettingsHandler implements MessageHandler {
                     userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case ADD_GENERAL_SETTINGS_TAVERN_CONTACTS -> {
-                    if (!StringUtils.hasText(messageText)) {
+                    if (!hasText(messageText)) {
                         return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE_RETRY);
                     }
 
                     if (validationService.isNotValidPhone(messageText)) {
                         return configureMessage(chatId, "Вы ввели некорректный номер. Повторите попытку:");
                     }
+
+                    tavern = tavernService.findWithDataWithoutEmployees(tavern);
 
                     ContactEntity contact = ContactEntity.builder()
                             .tavern(tavern)
@@ -300,13 +307,14 @@ public class SettingsHandler implements MessageHandler {
                 case DELETE_GENERAL_SETTINGS_TAVERN_CONTACTS -> {
                     userService.updateSubState(user, user.getSubState().getParentSubState());
 
-                    if (!StringUtils.hasText(messageText)) {
+                    if (!hasText(messageText)) {
                         return configureMessage(chatId, "Вы не выбрали номер! Операция отменяется.");
                     }
 
+                    tavern = tavernService.findWithDataWithoutEmployees(tavern);
+
                     tavern.getContacts()
                             .removeIf(contact -> contact.getValue().equals(messageText));
-
 
                     ValidateTavernResult validate = validationService.validate(tavern);
                     tavern.setValid(validate.isValid());
@@ -314,9 +322,11 @@ public class SettingsHandler implements MessageHandler {
                     tavernService.save(tavern);
                 }
                 case CHANGE_GENERAL_SETTINGS_TAVERN_ADDRESS -> {
-                    if (!StringUtils.hasText(messageText)) {
+                    if (!hasText(messageText)) {
                         return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE_RETRY);
                     }
+
+                    tavern = tavernService.findWithDataWithoutEmployees(tavern);
 
                     tavern.getAddress().setStreet(messageText);
 
@@ -332,6 +342,8 @@ public class SettingsHandler implements MessageHandler {
                     if (category == null) {
                         return configureMessage(chatId, "Выбрано некорректное значение.");
                     }
+
+                    tavern = tavernService.findWithDataWithoutEmployees(tavern);
 
                     tavern.setCategory(category);
 
@@ -362,7 +374,7 @@ public class SettingsHandler implements MessageHandler {
                     }
                 }
                 case CHANGE_PROFILE_SETTINGS_USER_NAME -> {
-                    if (!StringUtils.hasText(messageText)) {
+                    if (!hasText(messageText)) {
                         return configureMessage(chatId, "Вы ввели пустое значение! Повторите попытку.");
                     }
 
@@ -378,7 +390,7 @@ public class SettingsHandler implements MessageHandler {
                     userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case ADD_PROFILE_SETTINGS_USER_CONTACTS -> {
-                    if (!StringUtils.hasText(messageText)) {
+                    if (!hasText(messageText)) {
                         return configureMessage(chatId, "Вы ввели пустое значение! Повторите попытку.");
                     }
 
@@ -390,69 +402,310 @@ public class SettingsHandler implements MessageHandler {
                         );
                     }
 
+                    List<ContactEntity> contacts = contactService.findByUser(user);
+
                     ContactEntity contact = ContactEntity.builder()
                             .user(user)
                             .type(ContractType.MOBILE)
                             .value(messageText)
                             .build();
 
-                    user.addContact(contact);
+                    if (contacts.contains(contact)) {
+                        return configureMessage(
+                                chatId,
+                                PHONE_NUMBER_DUPLICATE,
+                                KeyboardService.CANCEL_KEYBOARD
+                        );
+                    }
+
+                    contactService.save(contact);
+
                     userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case DELETE_PROFILE_SETTINGS_USER_CONTACTS -> {
-                    if (!StringUtils.hasText(messageText)) {
-                        userService.updateSubState(user, user.getSubState().getParentSubState());
-
-                        return configureMessage(chatId, "Вы не выбрали номер! Операция отменяется.");
+                    if (!hasText(messageText)) {
+                        return cancelOperation(
+                                user,
+                                chatId,
+                                "Вы не выбрали номер! Операция отменяется.",
+                                ADD_DELETE_KEYBOARD
+                        );
                     }
 
-                    user.getContacts()
-                            .removeIf(contact -> contact.getValue().equals(messageText));
+                    List<ContactEntity> contacts = contactService.findByUser(user);
+                    List<ContactEntity> foundedContacts = contacts.stream()
+                            .filter(contact -> contact.getValue().equals(messageText))
+                            .toList();
+
+                    if (isEmpty(foundedContacts)) {
+                        return cancelOperation(
+                                user,
+                                chatId,
+                                "Нечего удалять! Операция отменяется.",
+                                ADD_DELETE_KEYBOARD
+                        );
+                    }
+
+                    if (foundedContacts.size() > 1) {
+                        return cancelOperation(
+                                user,
+                                chatId,
+                                "Найдено больше одного номера! Операция отменяется. Обратитесь в поддержку.",
+                                ADD_DELETE_KEYBOARD
+                        );
+                    }
+
+                    contactService.delete(contacts.get(0));
 
                     userService.updateSubState(user, user.getSubState().getParentSubState());
+                }
+                case VIEW_BLACKLIST_SETTINGS -> {
+                    switch (button) {
+                        case BLOCK -> {
+                            userService.updateSubState(user, SubState.ENTER_PHONE_NUMBER_BLACKLIST_SETTINGS);
+
+                            return configureMessage(
+                                    chatId,
+                                    MessageText.ENTER_PHONE_NUMBER,
+                                    KeyboardService.CANCEL_KEYBOARD
+                            );
+                        }
+                        case UNBLOCK -> {
+                            userService.updateSubState(user, SubState.UNBLOCK_BLACKLIST_SETTINGS);
+
+                            return configureMessage(
+                                    chatId,
+                                    MessageText.ENTER_PHONE_NUMBER,
+                                    KeyboardService.CANCEL_KEYBOARD
+                            );
+                        }
+                        case BLACKLIST_LIST -> userService.updateSubState(user, SubState.VIEW_MANAGE_BLACKLIST_SETTINGS);
+                        case SETTINGS -> userService.updateSubState(user, SubState.VIEW_SETTINGS_BLACKLIST_SETTINGS);
+                    }
+                }
+                case VIEW_SETTINGS_BLACKLIST_SETTINGS -> {
+                    switch (button) {
+                        case NUMBER_TIMES -> {
+                            userService.updateSubState(user, SubState.ENTER_NUMBER_TIMES_BLACKLIST_SETTINGS);
+
+                            return configureMessage(
+                                    chatId,
+                                    "Введите кол-во раз, когда человек не пришел в заведение (0 отключить), чтобы автоматически его заблокировать:",
+                                    KeyboardService.CANCEL_KEYBOARD
+                            );
+                        }
+                        case NUMBER_DAYS -> {
+                            userService.updateSubState(user, SubState.ENTER_NUMBER_DAYS_BLACKLIST_SETTINGS);
+
+                            return configureMessage(
+                                    chatId,
+                                    "Введите кол-во дней блокировки (0 навсегда). По истечению установленных дней, блокировка будет автоматически снята.",
+                                    KeyboardService.CANCEL_KEYBOARD
+                            );
+                        }
+                    }
+                }
+                case ENTER_NUMBER_TIMES_BLACKLIST_SETTINGS -> {
+                    try {
+                        int times = Integer.parseInt(messageText);
+
+                        if (times < 0) {
+                            return configureMessage(
+                                    chatId,
+                                    MessageText.INCORRECT_VALUE_TRY_AGAIN,
+                                    KeyboardService.CANCEL_KEYBOARD
+                            );
+                        }
+
+                        BlacklistSettingEntity setting = blacklistSettingService.findByTavern(tavern)
+                                .map(foundSetting -> {
+                                    foundSetting.setTimes(times);
+                                    return foundSetting;
+                                })
+                                .orElseGet(() -> BlacklistSettingEntity.builder()
+                                        .id(user.getTavern().getId())
+                                        .tavern(user.getTavern())
+                                        .days(0)
+                                        .times(times)
+                                        .build());
+
+                        blacklistSettingService.save(setting);
+
+                        userService.updateSubState(user, SubState.VIEW_SETTINGS_BLACKLIST_SETTINGS);
+                    } catch (NumberFormatException exception) {
+                        return configureMessage(
+                                chatId,
+                                MessageText.INCORRECT_VALUE_TRY_AGAIN,
+                                KeyboardService.CANCEL_KEYBOARD
+                        );
+                    }
+                }
+                case ENTER_NUMBER_DAYS_BLACKLIST_SETTINGS -> {
+                    try {
+                        int days = Integer.parseInt(messageText);
+
+                        if (days < 0) {
+                            return configureMessage(
+                                    chatId,
+                                    MessageText.INCORRECT_VALUE_TRY_AGAIN,
+                                    KeyboardService.CANCEL_KEYBOARD
+                            );
+                        }
+
+                        BlacklistSettingEntity setting = blacklistSettingService.findByTavern(tavern)
+                                .map(foundSetting -> {
+                                    foundSetting.setDays(days);
+                                    return foundSetting;
+                                })
+                                .orElseGet(() -> BlacklistSettingEntity.builder()
+                                        .times(0)
+                                        .days(days)
+                                        .tavern(user.getTavern())
+                                        .build());
+
+                        blacklistSettingService.save(setting);
+
+                        userService.updateSubState(user, SubState.VIEW_SETTINGS_BLACKLIST_SETTINGS);
+                    } catch (NumberFormatException exception) {
+                        return configureMessage(
+                                chatId,
+                                MessageText.INCORRECT_VALUE_TRY_AGAIN,
+                                KeyboardService.CANCEL_KEYBOARD
+                        );
+                    }
+                }
+                case UNBLOCK_BLACKLIST_SETTINGS -> {
+                    if (validationService.isNotValidPhone(messageText)) {
+                        return configureMessage(chatId, "Вы ввели некорректный номер. Повторите попытку:");
+                    }
+
+                    BlacklistEntity blacklist = blacklistService.findActiveByPhoneNumber(tavern, messageText);
+
+                    if (blacklist == null) {
+                        return configureMessage(chatId, "Блокировка для указанного номера не найдена.");
+                    }
+
+                    blacklistCache.remove(user);
+
+                    return unblockUser(user, chatId, tavern, blacklist);
+                }
+                case ENTER_PHONE_NUMBER_BLACKLIST_SETTINGS -> {
+                    if (validationService.isNotValidPhone(messageText)) {
+                        return configureMessage(chatId, "Вы ввели некорректный номер. Повторите попытку:");
+                    }
+
+                    BlacklistEntity blacklist = blacklistService.findActiveByPhoneNumber(tavern, messageText);
+                    if (blacklist != null) {
+                        userService.updateSubState(user, SubState.VIEW_BLACKLIST_SETTINGS);
+                        return configureMessage(chatId, "Указанный номер уже есть в чёрном списке вашего заведения." + System.lineSeparator()
+                                + infoService.fillBlacklist(blacklist), BLACKLIST_KEYBOARD);
+                    }
+
+                    blacklistPhoneNumberCache.put(user, messageText);
+                    userService.updateSubState(user, SubState.ENTER_REASON_BLACKLIST_SETTINGS);
+
+                    return configureMessage(chatId, "Введите причину блокировки или выберите в меню.", REASON_BLACKLIST_KEYBOARD);
+                }
+                case ENTER_REASON_BLACKLIST_SETTINGS -> {
+                    String phoneNumber = blacklistPhoneNumberCache.get(user);
+
+                    if (!StringUtils.hasText(phoneNumber)) {
+                        userService.updateSubState(user, SubState.VIEW_BLACKLIST_SETTINGS);
+                        return configureMessage(chatId, "Произошла внутренняя ошибка, повторите попытку.", BLACKLIST_KEYBOARD);
+                    }
+
+                    UserEntity blockUser = userService.findByPhoneNumber(phoneNumber);
+
+                    int days = blacklistSettingService.findByTavern(tavern)
+                            .map(BlacklistSettingEntity::getDays)
+                            .orElse(0);
+
+                    LocalDateTime unlockDate = days > 0 ? LocalDateTime.now().plusDays(days) : LocalDateTime.of(9999, 12, 12, 0, 0, 0, 0);
+
+                    BlacklistEntity blacklist = BlacklistEntity.builder()
+                            .phoneNumber(phoneNumber)
+                            .reason(messageText)
+                            .user(blockUser)
+                            .tavern(tavern)
+                            .unlockDate(unlockDate)
+                            .build();
+
+                    blacklistService.save(blacklist);
+
+                    sendMessageAboutLockUser(blockUser, tavern, MessageText.NOTIFY_USER_BLOCK);
+
+                    userService.updateSubState(user, SubState.VIEW_BLACKLIST_SETTINGS);
+
+                    return configureMessage(chatId, "Номер заблокирован.", BLACKLIST_KEYBOARD);
+                }
+                case VIEW_MANAGE_BLACKLIST_SETTINGS -> {
+                    BlacklistEntity blacklist = blacklistService.findActiveByPhoneNumber(tavern, messageText);
+
+                    if (blacklist == null) {
+                        return configureMessage(chatId, "Блокировка для указанного номера не найдена.");
+                    }
+
+                    blacklistCache.put(user, blacklist);
+                    userService.updateSubState(user, SubState.VIEW_MANAGE_USER_BLACKLIST_SETTINGS);
+                }
+                case VIEW_MANAGE_USER_BLACKLIST_SETTINGS -> {
+                    BlacklistEntity blacklist = blacklistCache.get(user);
+
+                    if (blacklist == null) {
+                        userService.updateSubState(user, SubState.VIEW_BLACKLIST_SETTINGS);
+                        return configureMessage(chatId, "Произошла внутренняя ошибка, повторите попытку.", BLACKLIST_KEYBOARD);
+                    }
+
+                    if (button == Button.UNBLOCK) {
+                        return unblockUser(user, chatId, tavern, blacklist);
+                    }
                 }
                 case DELETE_EMPLOYEE_SETTINGS -> {
                     if (user.getRoles().stream()
                             .noneMatch(role -> role == Role.CLIENT_ADMIN)) {
                         userService.updateSubState(user, user.getSubState().getParentSubState());
 
-                        return configureMessage(chatId, "Данный функционал доступен только владельцу заведения.", KeyboardService.EMPLOYEE_KEYBOARD);
+                        return configureMessage(chatId, "Данный функционал доступен только владельцу заведения.", ADD_DELETE_KEYBOARD);
                     }
 
                     Long employeeId = messageService.parseId(messageText);
-                    if (!StringUtils.hasText(messageText) || employeeId == null) {
+                    if (!hasText(messageText) || employeeId == null) {
                         userService.updateSubState(user, user.getSubState().getParentSubState());
 
-                        return configureMessage(chatId, "Вы ни кого не выбрали! Операция отменяется.", KeyboardService.EMPLOYEE_KEYBOARD);
+                        return configureMessage(chatId, "Вы ни кого не выбрали! Операция отменяется.", ADD_DELETE_KEYBOARD);
                     }
 
                     if (user.getId().equals(employeeId)) {
                         userService.updateSubState(user, user.getSubState().getParentSubState());
 
-                        return configureMessage(chatId, "Себя нельзя удалить.", KeyboardService.EMPLOYEE_KEYBOARD);
+                        return configureMessage(chatId, "Себя нельзя удалить.", ADD_DELETE_KEYBOARD);
                     }
 
                     final Long finalEmployeeId = employeeId;
-                    tavern.getEmployees()
-                            .removeIf(employee -> employee.getId().equals(finalEmployeeId));
+                    tavern = tavernService.findWithEmployees(tavern);
+
+                    UserEntity deleteUser = tavern.getEmployees().stream()
+                            .filter(employee -> employee.getId().equals(finalEmployeeId))
+                            .findFirst()
+                            .orElseThrow();
 
                     tavernService.save(tavern);
+
+                    userService.delete(deleteUser);
 
                     userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case DELETE_SCHEDULE_SETTINGS -> {
                     final Long scheduleId = messageService.parseId(messageText);
-                    if (!StringUtils.hasText(messageText) || scheduleId == null) {
+                    if (!hasText(messageText) || scheduleId == null) {
                         userService.updateSubState(user, user.getSubState().getParentSubState());
 
-                        return configureMessage(chatId, "Вы ничего не выбрали! Операция отменяется.", KeyboardService.SCHEDULE_KEYBOARD);
+                        return configureMessage(chatId, "Вы ничего не выбрали! Операция отменяется.", ADD_DELETE_KEYBOARD);
                     }
 
-                    Set<ScheduleEntity> schedules = tavern.getSchedules();
+                    tavern = tavernService.findWithDataWithoutEmployees(tavern);
 
-                    schedules.removeIf(schedule -> schedule.getId().equals(scheduleId));
-
-                    tavern.setSchedules(schedules);
+                    tavern.getSchedules().removeIf(schedule -> schedule.getId().equals(scheduleId));
 
                     ValidateTavernResult validate = validationService.validate(tavern);
                     tavern.setValid(validate.isValid());
@@ -462,7 +715,7 @@ public class SettingsHandler implements MessageHandler {
                     userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case ADD_DAY_WEEK_SCHEDULE_SETTINGS -> {
-                    scheduleTemporary.remove(user);
+                    scheduleCache.remove(user);
 
                     DayWeek dayWeek = DayWeek.fromFullName(messageText);
                     if (dayWeek == null && (button != Button.WEEKDAYS && button != Button.WEEKENDS)) {
@@ -479,7 +732,7 @@ public class SettingsHandler implements MessageHandler {
                         schedule.setWeekends(true);
                     }
 
-                    scheduleTemporary.put(user, schedule);
+                    scheduleCache.put(user, schedule);
 
                     return configureMessageWithCancel(
                             user,
@@ -490,12 +743,12 @@ public class SettingsHandler implements MessageHandler {
                     );
                 }
                 case ADD_START_HOUR_SCHEDULE_SETTINGS -> {
-                    if (!StringUtils.hasText(messageText) || !typeService.isInteger(messageText)) {
+                    if (!hasText(messageText) || !typeService.isInteger(messageText)) {
                         return configureMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.HOURS_WITH_CANCEL_KEYBOARD);
                     }
 
                     LocalTime startPeriod = LocalTime.of(Integer.parseInt(messageText), 0);
-                    scheduleTemporary.get(user).setStartPeriod(startPeriod);
+                    scheduleCache.get(user).setStartPeriod(startPeriod);
 
                     return configureMessageWithCancel(
                             user,
@@ -506,14 +759,14 @@ public class SettingsHandler implements MessageHandler {
                     );
                 }
                 case ADD_START_MINUTE_SCHEDULE_SETTINGS -> {
-                    if (!StringUtils.hasText(messageText) || !typeService.isInteger(messageText)) {
+                    if (!hasText(messageText) || !typeService.isInteger(messageText)) {
                         return configureMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.MINUTES_WITH_CANCEL_KEYBOARD);
                     }
 
-                    LocalTime startPeriod = scheduleTemporary.get(user)
+                    LocalTime startPeriod = scheduleCache.get(user)
                             .getStartPeriod()
                             .plusMinutes(Long.parseLong(messageText));
-                    scheduleTemporary.get(user).setStartPeriod(startPeriod);
+                    scheduleCache.get(user).setStartPeriod(startPeriod);
 
                     return configureMessageWithCancel(
                             user,
@@ -524,12 +777,12 @@ public class SettingsHandler implements MessageHandler {
                     );
                 }
                 case ADD_END_HOUR_SCHEDULE_SETTINGS -> {
-                    if (!StringUtils.hasText(messageText) || !typeService.isInteger(messageText)) {
+                    if (!hasText(messageText) || !typeService.isInteger(messageText)) {
                         return configureMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.HOURS_WITH_CANCEL_KEYBOARD);
                     }
 
                     LocalTime endPeriod = LocalTime.of(Integer.parseInt(messageText), 0);
-                    scheduleTemporary.get(user).setEndPeriod(endPeriod);
+                    scheduleCache.get(user).setEndPeriod(endPeriod);
 
                     return configureMessageWithCancel(
                             user,
@@ -540,14 +793,14 @@ public class SettingsHandler implements MessageHandler {
                     );
                 }
                 case ADD_END_MINUTE_SCHEDULE_SETTINGS -> {
-                    if (!StringUtils.hasText(messageText) || !typeService.isInteger(messageText)) {
+                    if (!hasText(messageText) || !typeService.isInteger(messageText)) {
                         return configureMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.MINUTES_WITH_CANCEL_KEYBOARD);
                     }
 
-                    LocalTime endPeriod = scheduleTemporary.get(user)
+                    LocalTime endPeriod = scheduleCache.get(user)
                             .getEndPeriod()
                             .plusMinutes(Long.parseLong(messageText));
-                    scheduleTemporary.get(user).setEndPeriod(endPeriod);
+                    scheduleCache.get(user).setEndPeriod(endPeriod);
 
                     return configureMessageWithCancel(
                             user,
@@ -558,54 +811,56 @@ public class SettingsHandler implements MessageHandler {
                     );
                 }
                 case ADD_PRICE_SCHEDULE_SETTINGS -> {
-                    if (!StringUtils.hasText(messageText) || (button != Button.FREE && !typeService.isInteger(messageText))) {
+                    if (!hasText(messageText) || (button != Button.FREE && !typeService.isInteger(messageText))) {
                         return configureMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.MINUTES_WITH_CANCEL_KEYBOARD);
                     }
 
-                    ScheduleDto schedule = scheduleTemporary.get(user);
+                    ScheduleDto schedule = scheduleCache.get(user);
                     Integer price = button == Button.FREE ? 0 : Integer.parseInt(messageText);
                     schedule.setPrice(price);
 
-                    Set<ScheduleDto> schedules;
+                    List<ScheduleDto> schedules;
                     if (schedule.isWeekdays()) {
                         schedules = DayWeek.WEEKDAYS_LIST.stream()
                                 .map(dayWeek -> new ScheduleDto(dayWeek, schedule))
-                                .collect(Collectors.toSet());
+                                .toList();
                     } else if (schedule.isWeekends()) {
                         schedules = DayWeek.WEEKENDS_LIST.stream()
                                 .map(dayWeek -> new ScheduleDto(dayWeek, schedule))
-                                .collect(Collectors.toSet());
+                                .toList();
                     } else {
-                        schedules = Set.of(schedule);
+                        schedules = List.of(schedule);
                     }
+
+                    TavernEntity finalTavern = tavernService.findWithDataWithoutEmployees(tavern);
 
                     schedules = schedules.stream()
                             .filter(scheduleDto -> scheduleService.checkTimePeriodAvailability(
-                                    tavern.getSchedules(),
+                                    finalTavern.getSchedules(),
                                     scheduleDto.getDayWeek(),
                                     scheduleDto.getStartPeriod(),
                                     scheduleDto.getEndPeriod())
                             )
-                            .collect(Collectors.toSet());
+                            .toList();
 
-                    Set<ScheduleEntity> scheduleEntities = schedules.stream()
+                    List<ScheduleEntity> scheduleEntities = schedules.stream()
                             .map(scheduleMapper::toEntity)
-                            .peek(scheduleEntity -> scheduleEntity.setTavern(tavern))
-                            .collect(Collectors.toSet());
+                            .peek(scheduleEntity -> scheduleEntity.setTavern(finalTavern))
+                            .toList();
 
-                    tavern.getSchedules().addAll(scheduleEntities);
+                    finalTavern.getSchedules().addAll(scheduleEntities);
 
-                    ValidateTavernResult validate = validationService.validate(tavern);
-                    tavern.setValid(validate.isValid());
+                    ValidateTavernResult validate = validationService.validate(finalTavern);
+                    finalTavern.setValid(validate.isValid());
 
-                    tavernService.save(tavern);
+                    tavernService.save(finalTavern);
 
                     userService.updateSubState(user, subState.getParentSubState());
                 }
                 case ADD_LABEL_TABLE_SETTINGS -> {
-                    tableTemporary.remove(user);
+                    tableCache.remove(user);
 
-                    if (!StringUtils.hasText(messageText)) {
+                    if (!hasText(messageText)) {
                         return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE, KeyboardService.DAY_WEEK_WITH_PERIOD_KEYBOARD);
                     }
 
@@ -613,19 +868,21 @@ public class SettingsHandler implements MessageHandler {
                     table.setTavern(user.getTavern());
                     table.setLabel(messageText);
 
-                    tableTemporary.put(user, table);
+                    tableCache.put(user, table);
 
                     return configureMessageWithCancel(user, chatId, SubState.ADD_NUMBER_SEATS_TABLE_SETTINGS, "Введите кол-во мест:");
                 }
                 case ADD_NUMBER_SEATS_TABLE_SETTINGS -> {
-                    if (!StringUtils.hasText(messageText) || !typeService.isInteger(messageText) || Integer.parseInt(messageText) < 1) {
+                    if (!hasText(messageText) || !typeService.isInteger(messageText) || Integer.parseInt(messageText) < 1) {
                         return configureMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.MINUTES_WITH_CANCEL_KEYBOARD);
                     }
 
                     userService.updateSubState(user, subState.getParentSubState());
 
-                    TableEntity table = tableTemporary.get(user);
+                    TableEntity table = tableCache.get(user);
                     table.setNumberSeats(Integer.parseInt(messageText));
+
+                    tavern = tavernService.findWithDataWithoutEmployees(tavern);
 
                     final String label = table.getLabel();
                     boolean isExists = tavern.getTables().stream()
@@ -635,7 +892,8 @@ public class SettingsHandler implements MessageHandler {
                         return configureMessage(
                                 chatId,
                                 "Стол с указанным маркером уже существует.\n\n" + infoService.fillTables(tavern.getTables()),
-                                KeyboardService.TABLE_KEYBOARD);
+                                ADD_DELETE_KEYBOARD
+                        );
                     }
 
                     tavern.getTables().add(table);
@@ -647,13 +905,15 @@ public class SettingsHandler implements MessageHandler {
                 }
                 case DELETE_TABLE_SETTINGS -> {
                     final Long tableId = messageService.parseId(messageText);
-                    if (!StringUtils.hasText(messageText) || tableId == null) {
+                    if (!hasText(messageText) || tableId == null) {
                         userService.updateSubState(user, user.getSubState().getParentSubState());
 
-                        return configureMessage(chatId, "Вы ничего не выбрали! Операция отменяется.", KeyboardService.TABLE_KEYBOARD);
+                        return configureMessage(chatId, "Вы ничего не выбрали! Операция отменяется.", ADD_DELETE_KEYBOARD);
                     }
 
-                    Set<TableEntity> tables = tavern.getTables();
+                    tavern = tavernService.findWithDataWithoutEmployees(tavern);
+
+                    List<TableEntity> tables = tavern.getTables();
 
                     tables.removeIf(table -> table.getId().equals(tableId));
                     tavern.setTables(tables);
@@ -670,29 +930,67 @@ public class SettingsHandler implements MessageHandler {
 
         // отрисовка меню
         return switch (user.getSubState()) {
-            case VIEW_SETTINGS -> configureMessage(chatId, "Открываю все настройки.", KeyboardService.SETTINGS_KEYBOARD);
-
-            case VIEW_GENERAL_SETTINGS -> configureMessage(chatId, infoService.fillGeneral(tavern), KeyboardService.GENERAL_KEYBOARD);
-            case VIEW_GENERAL_SETTINGS_TAVERN_NAME -> configureMessage(chatId, infoService.fillTavernName(tavern.getName()), KeyboardService.TAVERN_NAME_KEYBOARD);
-            case VIEW_GENERAL_SETTINGS_TAVERN_DESCRIPTION -> configureMessage(chatId, infoService.fillTavernDescription(tavern.getDescription()), KeyboardService.TAVERN_DESCRIPTION_KEYBOARD);
-            case VIEW_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT -> configureMarkdownMessage(chatId, infoService.fillTavernLinkTableLayout(tavern.getLinkTableLayout()), KeyboardService.TAVERN_DESCRIPTION_LINK_TABLE_LAYOUT);
-            case VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS -> configureMessage(chatId, infoService.fillContact(tavern.getContacts()), KeyboardService.TAVERN_CONTACTS_KEYBOARD);
-            case VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS -> configureMessage(chatId, infoService.fillAddress(tavern.getAddress()), KeyboardService.TAVERN_ADDRESS_KEYBOARD);
-            case VIEW_GENERAL_SETTINGS_CATEGORIES -> configureMessage(chatId, infoService.fillCategory(tavern.getCategory()), KeyboardService.CATEGORIES_KEYBOARD);
-
-            case VIEW_PROFILE_SETTINGS -> configureMessage(chatId, infoService.fillProfile(user), KeyboardService.PROFILE_KEYBOARD);
-            case VIEW_PROFILE_SETTINGS_USER_NAME -> configureMessage(chatId, infoService.fillUser(user.getName()), KeyboardService.PROFILE_NAME_KEYBOARD);
-            case VIEW_PROFILE_SETTINGS_USER_CONTACTS -> configureMessage(chatId, infoService.fillContact(user.getContacts()), KeyboardService.USER_CONTACTS_KEYBOARD);
-
-            case VIEW_EMPLOYEE_SETTINGS -> configureMessage(chatId, infoService.fillEmployee(tavern.getEmployees()), KeyboardService.EMPLOYEE_KEYBOARD);
-
-            case VIEW_SCHEDULE_SETTINGS -> configureMessage(chatId, infoService.fillSchedules(tavern.getSchedules()), KeyboardService.SCHEDULE_KEYBOARD);
-
-            case VIEW_TABLE_SETTINGS -> configureMessage(chatId, infoService.fillTables(tavern.getTables()), KeyboardService.TABLE_KEYBOARD);
+            case VIEW_SETTINGS -> configureMessage(chatId, "Открываю все настройки.", SETTINGS_KEYBOARD);
+            case VIEW_GENERAL_SETTINGS -> configureMessage(chatId, infoService.fillGeneralWithLoadData(tavern), GENERAL_KEYBOARD);
+            case VIEW_GENERAL_SETTINGS_TAVERN_NAME -> configureMessage(chatId, infoService.fillTavernName(tavern.getName()), CHANGE_KEYBOARD);
+            case VIEW_GENERAL_SETTINGS_TAVERN_DESCRIPTION ->
+                    configureMessage(chatId, infoService.fillTavernDescription(tavern.getDescription()), CHANGE_KEYBOARD);
+            case VIEW_GENERAL_SETTINGS_TAVERN_LINK_TABLE_LAYOUT ->
+                    configureMarkdownMessage(chatId, infoService.fillTavernLinkTableLayout(tavern.getLinkTableLayout()), CHANGE_DELETE_KEYBOARD);
+            case VIEW_GENERAL_SETTINGS_TAVERN_CONTACTS -> configureMessage(chatId, infoService.fillContact(tavern), ADD_DELETE_KEYBOARD);
+            case VIEW_GENERAL_SETTINGS_TAVERN_ADDRESS ->
+                    configureMessage(chatId, infoService.fillAddress(tavern.getAddress()), CHANGE_KEYBOARD);
+            case VIEW_GENERAL_SETTINGS_CATEGORIES -> configureMessage(chatId, infoService.fillCategory(tavern.getCategory()), CHANGE_KEYBOARD);
+            case VIEW_PROFILE_SETTINGS -> configureMessage(chatId, infoService.fillProfile(user), PROFILE_KEYBOARD);
+            case VIEW_PROFILE_SETTINGS_USER_NAME -> configureMessage(chatId, infoService.fillUser(user.getName()), CHANGE_KEYBOARD);
+            case VIEW_PROFILE_SETTINGS_USER_CONTACTS -> configureMessage(chatId, infoService.fillContact(user), ADD_DELETE_KEYBOARD);
+            case VIEW_BLACKLIST_SETTINGS -> configureMessage(chatId, "Открываю управление блокировками.", BLACKLIST_KEYBOARD);
+            case VIEW_MANAGE_BLACKLIST_SETTINGS -> configureBlacklistManage(user, chatId);
+            case VIEW_MANAGE_USER_BLACKLIST_SETTINGS ->
+                    configureMessage(chatId, infoService.fillBlacklist(blacklistCache.get(user)), MANAGE_USER_BLACKLIST_KEYBOARD);
+            case VIEW_SETTINGS_BLACKLIST_SETTINGS ->
+                    configureMessage(chatId, infoService.fillBlacklistSettings(tavern), SETTINGS_BLACKLIST_KEYBOARD);
+            case VIEW_EMPLOYEE_SETTINGS -> configureMessage(chatId, infoService.fillEmployee(tavern), ADD_DELETE_KEYBOARD);
+            case VIEW_SCHEDULE_SETTINGS -> configureMessage(chatId, infoService.fillSchedules(tavern), ADD_DELETE_KEYBOARD);
+            case VIEW_TABLE_SETTINGS -> configureMessage(chatId, infoService.fillTables(tavern), ADD_DELETE_KEYBOARD);
 
 
             default -> new SendMessage();
         };
+    }
+
+    private SendMessage unblockUser(UserEntity user, Long chatId, TavernEntity tavern, BlacklistEntity blacklist) {
+        blacklistService.unlock(blacklist);
+
+        sendMessageAboutLockUser(
+                userService.findByPhoneNumber(blacklist.getPhoneNumber()),
+                tavern,
+                "Вы удалены из чёрного списка в заведении "
+        );
+
+        userService.updateSubState(user, SubState.VIEW_BLACKLIST_SETTINGS);
+
+        return configureMessage(chatId, "Номер разблокирован.", BLACKLIST_KEYBOARD);
+    }
+
+    private void sendMessageAboutLockUser(UserEntity user, TavernEntity tavern, String message) {
+        if (user == null) {
+            return;
+        }
+
+        telegramApiService.sendMessage(
+                        user.getTelegramId(),
+                        message + tavern.getName(),
+                        false
+                )
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe();
+    }
+
+    private SendMessage cancelOperation(UserEntity user, Long chatId, String message, ReplyKeyboardMarkup keyboardMarkup) {
+        userService.updateSubState(user, user.getSubState().getParentSubState());
+
+        return configureMessage(chatId, message, keyboardMarkup);
     }
 
     private SendMessage configureDeleteLinkTableLayout(UserEntity user, Long chatId) {
@@ -703,7 +1001,7 @@ public class SettingsHandler implements MessageHandler {
 
         userService.updateSubState(user, user.getSubState().getParentSubState());
 
-        return configureMessage(chatId, "Ссылка успешно удалена.", KeyboardService.TAVERN_DESCRIPTION_LINK_TABLE_LAYOUT);
+        return configureMessage(chatId, "Ссылка успешно удалена.", CHANGE_DELETE_KEYBOARD);
     }
 
     private SendMessage configureMessageWithCancel(UserEntity user, Long chatId, SubState subState, String text) {
@@ -717,12 +1015,34 @@ public class SettingsHandler implements MessageHandler {
         return sendMessage;
     }
 
+    private SendMessage configureDeleteContacts(UserEntity user, Long chatId) {
+        return configureDeleteContacts(
+                user,
+                contactService.findByUser(user),
+                SubState.DELETE_PROFILE_SETTINGS_USER_CONTACTS,
+                chatId,
+                ADD_DELETE_KEYBOARD
+        );
+    }
+
     private SendMessage configureDeleteContacts(UserEntity user,
-                                                Set<ContactEntity> contacts,
+                                                TavernEntity tavern,
+                                                Long chatId) {
+        return configureDeleteContacts(
+                user,
+                contactService.findByTavern(tavern),
+                SubState.DELETE_GENERAL_SETTINGS_TAVERN_CONTACTS,
+                chatId,
+                ADD_DELETE_KEYBOARD
+        );
+    }
+
+    private SendMessage configureDeleteContacts(UserEntity user,
+                                                Collection<ContactEntity> contacts,
                                                 SubState subState,
                                                 Long chatId,
                                                 ReplyKeyboardMarkup keyboard) {
-        if (CollectionUtils.isEmpty(contacts)) {
+        if (isEmpty(contacts)) {
             return configureMessage(chatId, "Нечего удалять.", keyboard);
         }
 
@@ -731,11 +1051,9 @@ public class SettingsHandler implements MessageHandler {
         ReplyKeyboardMarkup contactKeyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> rows = new ArrayList<>();
 
-        contacts.forEach(contact ->
-                rows.add(new KeyboardRow(List.of(new KeyboardButton(contact.getValue()))))
-        );
+        contacts.forEach(contact -> rows.add(newKeyboardRow(contact.getValue())));
 
-        rows.add(new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()))));
+        rows.add(newKeyboardRow(Button.CANCEL));
 
         contactKeyboard.setKeyboard(rows);
         contactKeyboard.setResizeKeyboard(true);
@@ -743,10 +1061,33 @@ public class SettingsHandler implements MessageHandler {
         return configureMessage(chatId, "Выберите номер телефона, который хотите удалить.", contactKeyboard);
     }
 
-    private SendMessage configureDeleteEmployees(UserEntity user, Long chatId) {
-        Set<UserEntity> employees = user.getTavern().getEmployees();
-        if (CollectionUtils.isEmpty(employees)) {
-            return configureMessage(chatId, "Некого удалять.", KeyboardService.EMPLOYEE_KEYBOARD);
+    private SendMessage configureBlacklistManage(UserEntity user, Long chatId) {
+        List<BlacklistEntity> blacklist = blacklistService.findActiveByTavern(user.getTavern());
+
+        if (CollectionUtils.isEmpty(blacklist)) {
+            userService.updateSubState(user, SubState.VIEW_BLACKLIST_SETTINGS);
+            return configureMessage(chatId, "Нет заблокированных номеров.", BLACKLIST_KEYBOARD);
+        }
+
+        ReplyKeyboardMarkup blacklistKeyboard = new ReplyKeyboardMarkup();
+        List<KeyboardRow> rows = new ArrayList<>();
+
+        if (blacklist.size() > 10) {
+            rows.add(KeyboardService.BACK_AND_MAIN_MENU_ROW);
+        }
+        blacklist.forEach(block -> rows.add(newKeyboardRow(block.getPhoneNumber())));
+        rows.add(KeyboardService.BACK_AND_MAIN_MENU_ROW);
+
+        blacklistKeyboard.setKeyboard(rows);
+        blacklistKeyboard.setResizeKeyboard(true);
+
+        return configureMessage(chatId, "Выберите или введите номер телефона для получения дополнительной информации.", blacklistKeyboard);
+    }
+
+    private SendMessage configureDeleteEmployees(UserEntity user, TavernEntity tavern, Long chatId) {
+        List<UserEntity> employees = tavernService.findWithEmployees(tavern).getEmployees();
+        if (isEmpty(employees)) {
+            return configureMessage(chatId, "Некого удалять.", ADD_DELETE_KEYBOARD);
         }
 
         userService.updateSubState(user, SubState.DELETE_EMPLOYEE_SETTINGS);
@@ -754,10 +1095,10 @@ public class SettingsHandler implements MessageHandler {
         ReplyKeyboardMarkup employeesKeyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> rows = new ArrayList<>();
         employees.forEach(employee ->
-                rows.add(new KeyboardRow(List.of(new KeyboardButton(employee.getName() + " [" + employee.getId() + "]"))))
+                rows.add(newKeyboardRow(employee.getName() + " [" + employee.getId() + "]"))
         );
 
-        rows.add(new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()))));
+        rows.add(newKeyboardRow(Button.CANCEL));
 
         employeesKeyboard.setKeyboard(rows);
         employeesKeyboard.setResizeKeyboard(true);
@@ -766,21 +1107,19 @@ public class SettingsHandler implements MessageHandler {
     }
 
     private SendMessage configureDeleteTables(UserEntity user,
+                                              TavernEntity tavern,
                                               Long chatId) {
-        Set<TableEntity> tables = user.getTavern().getTables();
-        if (CollectionUtils.isEmpty(tables)) {
-            return configureMessage(chatId, "Нечего удалять.", KeyboardService.TABLE_KEYBOARD);
+        Collection<TableEntity> tables = tavernService.findWithTables(tavern).getTables();
+        if (isEmpty(tables)) {
+            return configureMessage(chatId, "Нечего удалять.", ADD_DELETE_KEYBOARD);
         }
 
         userService.updateSubState(user, SubState.DELETE_TABLE_SETTINGS);
 
         ReplyKeyboardMarkup tablesKeyboard = new ReplyKeyboardMarkup();
         List<KeyboardRow> rows = new ArrayList<>();
-        tables.forEach(table ->
-                rows.add(new KeyboardRow(List.of(new KeyboardButton(table.getLabel() + " [" + table.getId() + "]"))))
-        );
-
-        rows.add(new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()))));
+        tables.forEach(table -> rows.add(newKeyboardRow(table.getLabel() + " [" + table.getId() + "]")));
+        rows.add(newKeyboardRow(Button.CANCEL));
 
         tablesKeyboard.setKeyboard(rows);
         tablesKeyboard.setResizeKeyboard(true);
@@ -789,10 +1128,11 @@ public class SettingsHandler implements MessageHandler {
     }
 
     private SendMessage configureDeleteSchedule(UserEntity user,
+                                                TavernEntity tavern,
                                                 Long chatId) {
-        Set<ScheduleEntity> schedules = user.getTavern().getSchedules();
-        if (CollectionUtils.isEmpty(schedules)) {
-            return configureMessage(chatId, "Нечего удалять.", KeyboardService.SCHEDULE_KEYBOARD);
+        Collection<ScheduleEntity> schedules = tavernService.findWithSchedules(tavern).getSchedules();
+        if (isEmpty(schedules)) {
+            return configureMessage(chatId, "Нечего удалять.", ADD_DELETE_KEYBOARD);
         }
 
         userService.updateSubState(user, SubState.DELETE_SCHEDULE_SETTINGS);
@@ -804,14 +1144,14 @@ public class SettingsHandler implements MessageHandler {
 
         for (DayWeek dayWeek : DayWeek.SORTED_DAY_WEEK_LIST) {
             List<ScheduleEntity> schedulesByDayWeek = groupingSchedules.get(dayWeek);
-            if (CollectionUtils.isEmpty(schedulesByDayWeek)) {
+            if (isEmpty(schedulesByDayWeek)) {
                 continue;
             }
 
             schedulesByDayWeek.stream()
                     .sorted(Comparator.comparing(ScheduleEntity::getStartPeriod))
                     .forEach(schedule ->
-                            rows.add(new KeyboardRow(List.of(new KeyboardButton(
+                            rows.add(newKeyboardRow(
                                     String.format(
                                             "%s %s - %s %sр. [%s]",
                                             schedule.getDayWeek().getFullName(),
@@ -820,11 +1160,11 @@ public class SettingsHandler implements MessageHandler {
                                             schedule.getPrice(),
                                             schedule.getId()
                                     )
-                            ))))
+                            ))
                     );
         }
 
-        rows.add(new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()))));
+        rows.add(newKeyboardRow(Button.CANCEL));
 
         employeesKeyboard.setKeyboard(rows);
         employeesKeyboard.setResizeKeyboard(true);

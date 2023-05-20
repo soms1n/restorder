@@ -2,7 +2,6 @@ package ru.privetdruk.restorder.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.privetdruk.restorder.model.entity.EventEntity;
 import ru.privetdruk.restorder.repository.EventRepository;
 
@@ -19,7 +18,6 @@ public class EventService {
      * @param uuid Идентификатор события
      * @return Найденное событие
      */
-    @Transactional(readOnly = true)
     public EventEntity find(UUID uuid) {
         return eventRepository.findByUuid(uuid);
     }
@@ -29,7 +27,6 @@ public class EventService {
      *
      * @param event Событие
      */
-    @Transactional
     public EventEntity save(EventEntity event) {
         return eventRepository.save(event);
     }
@@ -39,7 +36,6 @@ public class EventService {
      *
      * @param event Событие
      */
-    @Transactional
     public EventEntity complete(EventEntity event) {
         event.setAvailable(false);
 

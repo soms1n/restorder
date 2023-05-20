@@ -14,6 +14,7 @@ import ru.privetdruk.restorder.model.enums.City;
 import ru.privetdruk.restorder.model.enums.ContractType;
 import ru.privetdruk.restorder.model.enums.State;
 import ru.privetdruk.restorder.model.enums.SubState;
+import ru.privetdruk.restorder.service.ContactService;
 import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.UserService;
 import ru.privetdruk.restorder.service.util.ValidationService;
@@ -24,6 +25,7 @@ import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 @RequiredArgsConstructor
 public class RegistrationHandler implements MessageHandler {
     private final BookingHandler bookingHandler;
+    private final ContactService contactService;
     private final UserService userService;
     private final ValidationService validationService;
 
@@ -61,9 +63,9 @@ public class RegistrationHandler implements MessageHandler {
                     );
                 }
 
-                messageText = sendContact.getPhoneNumber().replace("+", "");
+                String phoneNumber = contactService.preparePhoneNumber(sendContact.getPhoneNumber());
 
-                if (validationService.isNotValidPhone(messageText)) {
+                if (validationService.isNotValidPhone(phoneNumber)) {
                     return configureMessage(
                             chatId,
                             MessageText.INCORRECT_PHONE_NUMBER,
@@ -74,10 +76,10 @@ public class RegistrationHandler implements MessageHandler {
                 ContactEntity contact = ContactEntity.builder()
                         .user(user)
                         .type(ContractType.MOBILE)
-                        .value(messageText)
+                        .value(phoneNumber)
                         .build();
 
-                user.addContact(contact);
+                contactService.save(contact);
 
                 userService.updateSubState(user, SubState.ENTER_FULL_NAME);
 

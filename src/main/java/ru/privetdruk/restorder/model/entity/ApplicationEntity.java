@@ -1,6 +1,8 @@
 package ru.privetdruk.restorder.model.entity;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -8,7 +10,8 @@ import java.time.LocalDateTime;
 /**
  * Заявка на подключение заведения
  */
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "application")
 public class ApplicationEntity {
@@ -20,25 +23,22 @@ public class ApplicationEntity {
      * Владелец заявки
      */
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
     private UserEntity user;
 
     /**
      * Заведение
      */
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tavern_id")
     private TavernEntity tavern;
 
     /**
      * Признак одобренной заявки
      */
-    @Column(name = "approved")
     private Boolean approved;
 
     /**
      * Дата и время создания
      */
-    @Column(name = "create_date")
-    private LocalDateTime createDate = LocalDateTime.now();
+    @CreationTimestamp
+    private LocalDateTime createDate;
 }

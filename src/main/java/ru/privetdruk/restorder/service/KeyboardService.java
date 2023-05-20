@@ -12,6 +12,7 @@ import ru.privetdruk.restorder.model.enums.Category;
 import ru.privetdruk.restorder.model.enums.City;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,28 +28,24 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup SETTINGS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup GENERAL_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup TAVERN_NAME_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup TAVERN_DESCRIPTION_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup TAVERN_DESCRIPTION_LINK_TABLE_LAYOUT = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup TAVERN_CONTACTS_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup TAVERN_ADDRESS_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup CHANGE_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup CHANGE_DELETE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup PROFILE_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup PROFILE_NAME_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup USER_CONTACTS_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup EMPLOYEE_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup CATEGORIES_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup BLACKLIST_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup MANAGE_USER_BLACKLIST_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup SETTINGS_BLACKLIST_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup REASON_BLACKLIST_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup ADD_DELETE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup CATEGORIES_LIST_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup CATEGORIES_LIST_WITH_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup SCHEDULE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup DAY_WEEK_WITH_PERIOD_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup HOURS_WITH_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup MINUTES_WITH_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup FREE_WITH_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup TABLE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup RESERVE_LIST_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup USER_RESERVE_LIST_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup TODAY_TOMORROW_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup NUMBERS_KEYBOARD_WITH_CANCEL = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup NUMBERS_CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup NUMBERS_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup WITHOUT_PHONE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup APPROVE_KEYBOARD = new ReplyKeyboardMarkup();
@@ -59,253 +56,118 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup BOOKING_CHOICE_TIME_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup RESERVE_CHOICE_TIME_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup WITHOUT_DESCRIPTION_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup REGISTRATION_TAVERN = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup REGISTRATION_TAVERN_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup REGISTRATION_APPROVING = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final KeyboardRow BACK_AND_MAIN_MENU_ROW = new KeyboardRow(newKeyboardRow(Button.BACK, Button.RETURN_MAIN_MENU));
 
     {
         init();
     }
 
+    public static void fillKeyboard(ReplyKeyboardMarkup keyboard, KeyboardRow... rows) {
+        keyboard.setKeyboard(List.of(rows));
+        keyboard.setResizeKeyboard(true);
+    }
+
     private static void init() {
         KeyboardRow CANCEL_ROW = new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText())));
 
-        KeyboardRow BACK_AND_MAIN_MENU_ROW = new KeyboardRow(List.of(
-                new KeyboardButton(Button.BACK.getText()),
-                new KeyboardButton(Button.RETURN_MAIN_MENU.getText())
-        ));
+        fillKeyboard(BOOKING_CHOICE_TIME_KEYBOARD, BACK_AND_MAIN_MENU_ROW);
 
-        BOOKING_CHOICE_TIME_KEYBOARD.setKeyboard(List.of(
+        fillKeyboard(CITIES_KEYBOARD, newKeyboardRow(City.YOSHKAR_OLA.getDescription()));
+        fillKeyboard(REGISTRATION_TAVERN_KEYBOARD, newKeyboardRow(Button.REGISTRATION));
+        fillKeyboard(CITIES_KEYBOARD, newKeyboardRow(City.YOSHKAR_OLA.getDescription()));
+        fillKeyboard(WITHOUT_DESCRIPTION_KEYBOARD, newKeyboardRow(Button.WITHOUT_DESCRIPTION));
+
+        fillKeyboard(YES_NO_KEYBOARD, newKeyboardRow(Button.YES, Button.NO));
+        fillKeyboard(APPROVE_KEYBOARD, newKeyboardRow(Button.CANCEL, Button.ACCEPT));
+        fillKeyboard(REGISTRATION_APPROVING, newKeyboardRow(Button.EDIT, Button.APPROVE));
+        fillKeyboard(APPROVE_BEFORE_KEYBOARD, newKeyboardRow(Button.CANCEL, Button.ACCEPT));
+
+        fillKeyboard(
+                BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD,
+                newKeyboardRow(Button.MANUALLY, Button.AUTOMATIC),
                 BACK_AND_MAIN_MENU_ROW
-        ));
-        BOOKING_CHOICE_TIME_KEYBOARD.setResizeKeyboard(true);
+        );
 
-        WITHOUT_DESCRIPTION_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.WITHOUT_DESCRIPTION.getText())))
-        ));
-        WITHOUT_DESCRIPTION_KEYBOARD.setResizeKeyboard(true);
-
-        BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.MANUALLY.getText()), new KeyboardButton(Button.AUTOMATIC.getText())
-                )),
+        fillKeyboard(
+                RESERVE_CHOICE_TIME_KEYBOARD,
+                newKeyboardRow(Button.NOW),
                 BACK_AND_MAIN_MENU_ROW
-        ));
-        BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD.setResizeKeyboard(true);
+        );
 
-        REGISTRATION_TAVERN.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.REGISTRATION.getText())))
-        ));
-        REGISTRATION_TAVERN.setResizeKeyboard(true);
-
-        REGISTRATION_APPROVING.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.EDIT.getText()), new KeyboardButton(Button.APPROVE.getText())
-                ))
-        ));
-        REGISTRATION_APPROVING.setResizeKeyboard(true);
-
-        RESERVE_CHOICE_TIME_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.NOW.getText()))),
+        fillKeyboard(
+                BOOKING_CHOICE_DATE_KEYBOARD,
+                newKeyboardRow(Button.TODAY, Button.TOMORROW),
                 BACK_AND_MAIN_MENU_ROW
-        ));
-        RESERVE_CHOICE_TIME_KEYBOARD.setResizeKeyboard(true);
+        );
 
-        APPROVE_BEFORE_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()), new KeyboardButton(Button.ACCEPT.getText())))
-        ));
-        APPROVE_BEFORE_KEYBOARD.setResizeKeyboard(true);
+        fillKeyboard(
+                CLIENT_MAIN_MENU,
+                newKeyboardRow(Button.RESERVE),
+                newKeyboardRow(Button.RESERVE_LIST),
+                newKeyboardRow(Button.SETTINGS, Button.INFORMATION)
+        );
 
-        BOOKING_CHOICE_DATE_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.TODAY.getText()),
-                        new KeyboardButton(Button.TOMORROW.getText())
-                )),
-                BACK_AND_MAIN_MENU_ROW
-        ));
-        BOOKING_CHOICE_DATE_KEYBOARD.setResizeKeyboard(true);
+        fillKeyboard(
+                USER_MAIN_MENU,
+                newKeyboardRow(Button.CAFE_BAR_RESTAURANT),
+                newKeyboardRow(Button.NIGHT_CLUB, Button.HOOKAH_BAR),
+                newKeyboardRow(Button.BILLIARDS, Button.BOWLING),
+                newKeyboardRow(Button.MY_RESERVE)
+        );
 
-        CITIES_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(City.YOSHKAR_OLA.getDescription())
-                ))
-        ));
-        CITIES_KEYBOARD.setResizeKeyboard(true);
+        final KeyboardButton SHARE_PHONE = KeyboardButton.builder()
+                .text(Button.SHARE_PHONE.getText())
+                .requestContact(true)
+                .build();
 
-        CLIENT_MAIN_MENU.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.RESERVE.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.RESERVE_LIST.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.SETTINGS.getText()),
-                        new KeyboardButton(Button.INFORMATION.getText())
-                ))
-        ));
-        CLIENT_MAIN_MENU.setResizeKeyboard(true);
-
-        USER_MAIN_MENU.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.CAFE_BAR_RESTAURANT.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.NIGHT_CLUB.getText()),
-                        new KeyboardButton(Button.HOOKAH_BAR.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.BILLIARDS.getText()),
-                        new KeyboardButton(Button.BOWLING.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.MY_RESERVE.getText())
-                ))
-        ));
-        USER_MAIN_MENU.setResizeKeyboard(true);
-
-        SHARE_PHONE_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        KeyboardButton.builder()
-                                .text(Button.SHARE_PHONE.getText())
-                                .requestContact(true)
-                                .build()
-                ))
-        ));
+        SHARE_PHONE_KEYBOARD.setKeyboard(List.of(new KeyboardRow(List.of(SHARE_PHONE))));
         SHARE_PHONE_KEYBOARD.setResizeKeyboard(true);
-
-        YES_NO_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.YES.getText()),
-                        new KeyboardButton(Button.NO.getText())
-                ))
-        ));
-        YES_NO_KEYBOARD.setResizeKeyboard(true);
-
 
         CANCEL_KEYBOARD.setKeyboard(List.of(CANCEL_ROW));
         CANCEL_KEYBOARD.setResizeKeyboard(true);
 
-        SETTINGS_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.PROFILE.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.GENERAL.getText()),
-                        new KeyboardButton(Button.EMPLOYEES.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.SCHEDULE.getText()),
-                        new KeyboardButton(Button.TABLES.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.RETURN_MAIN_MENU.getText())
-                ))
-        ));
-        SETTINGS_KEYBOARD.setResizeKeyboard(true);
+        fillKeyboard(
+                SETTINGS_KEYBOARD,
+                newKeyboardRow(Button.PROFILE, Button.BLACKLIST),
+                newKeyboardRow(Button.GENERAL, Button.EMPLOYEES),
+                newKeyboardRow(Button.SCHEDULE, Button.TABLES),
+                newKeyboardRow(Button.RETURN_MAIN_MENU)
+        );
 
-        GENERAL_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.TAVERN_NAME.getText()),
-                        new KeyboardButton(Button.DESCRIPTION.getText()),
-                        new KeyboardButton(Button.CATEGORIES.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.PHONE_NUMBER.getText()),
-                        new KeyboardButton(Button.TAVERN_ADDRESS.getText()),
-                        new KeyboardButton(Button.TAVERN_TABLE_LAYOUT.getText())
-                )),
+        fillKeyboard(
+                GENERAL_KEYBOARD,
+                newKeyboardRow(Button.TAVERN_NAME, Button.DESCRIPTION, Button.CATEGORIES),
+                newKeyboardRow(Button.PHONE_NUMBER, Button.TAVERN_ADDRESS, Button.TAVERN_TABLE_LAYOUT),
                 BACK_AND_MAIN_MENU_ROW
-        ));
-        GENERAL_KEYBOARD.setResizeKeyboard(true);
+        );
 
-        TAVERN_NAME_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.CHANGE.getText())
-                )),
+        fillKeyboard(
+                CHANGE_KEYBOARD,
+                newKeyboardRow(Button.CHANGE),
                 BACK_AND_MAIN_MENU_ROW
-        ));
-        TAVERN_NAME_KEYBOARD.setResizeKeyboard(true);
+        );
 
-        TAVERN_DESCRIPTION_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.CHANGE.getText())
-                )),
+        fillKeyboard(
+                CHANGE_DELETE_KEYBOARD,
+                newKeyboardRow(Button.CHANGE, Button.DELETE),
                 BACK_AND_MAIN_MENU_ROW
-        ));
-        TAVERN_DESCRIPTION_KEYBOARD.setResizeKeyboard(true);
+        );
 
-        TAVERN_DESCRIPTION_LINK_TABLE_LAYOUT.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.CHANGE.getText()),
-                        new KeyboardButton(Button.DELETE.getText())
-                )),
+        fillKeyboard(
+                ADD_DELETE_KEYBOARD,
+                newKeyboardRow(Button.ADD, Button.DELETE),
                 BACK_AND_MAIN_MENU_ROW
-        ));
-        TAVERN_DESCRIPTION_LINK_TABLE_LAYOUT.setResizeKeyboard(true);
+        );
 
-        TAVERN_ADDRESS_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.CHANGE.getText())
-                )),
+        fillKeyboard(
+                PROFILE_KEYBOARD,
+                newKeyboardRow(Button.USER_NAME, Button.PHONE_NUMBER),
+                newKeyboardRow(Button.DELETE_PROFILE),
                 BACK_AND_MAIN_MENU_ROW
-        ));
-        TAVERN_ADDRESS_KEYBOARD.setResizeKeyboard(true);
-
-        TAVERN_CONTACTS_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.ADD.getText()),
-                        new KeyboardButton(Button.DELETE.getText())
-                )),
-                BACK_AND_MAIN_MENU_ROW
-        ));
-        TAVERN_CONTACTS_KEYBOARD.setResizeKeyboard(true);
-
-        PROFILE_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.USER_NAME.getText()),
-                        new KeyboardButton(Button.PHONE_NUMBER.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.DELETE_PROFILE.getText())
-                )),
-                BACK_AND_MAIN_MENU_ROW
-        ));
-        PROFILE_KEYBOARD.setResizeKeyboard(true);
-
-        PROFILE_NAME_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.CHANGE.getText())
-                )),
-                BACK_AND_MAIN_MENU_ROW
-        ));
-        PROFILE_NAME_KEYBOARD.setResizeKeyboard(true);
-
-        USER_CONTACTS_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.ADD.getText()),
-                        new KeyboardButton(Button.DELETE.getText())
-                )),
-                BACK_AND_MAIN_MENU_ROW
-        ));
-        USER_CONTACTS_KEYBOARD.setResizeKeyboard(true);
-
-        EMPLOYEE_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.ADD.getText()),
-                        new KeyboardButton(Button.DELETE.getText())
-                )),
-                BACK_AND_MAIN_MENU_ROW
-        ));
-        EMPLOYEE_KEYBOARD.setResizeKeyboard(true);
-
-        CATEGORIES_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.CHANGE.getText())
-                )),
-                BACK_AND_MAIN_MENU_ROW
-        ));
-        CATEGORIES_KEYBOARD.setResizeKeyboard(true);
+        );
 
         int MAX_COLS_ON_ROW = 2;
         List<KeyboardRow> rows = new ArrayList<>();
@@ -331,146 +193,161 @@ public class KeyboardService {
         CATEGORIES_LIST_WITH_CANCEL_KEYBOARD.setKeyboard(rows);
         CATEGORIES_LIST_WITH_CANCEL_KEYBOARD.setResizeKeyboard(true);
 
-        SCHEDULE_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.ADD.getText()),
-                        new KeyboardButton(Button.DELETE.getText())
-                )),
+        fillKeyboard(
+                DAY_WEEK_WITH_PERIOD_KEYBOARD,
+                newKeyboardRow(Button.MONDAY, Button.TUESDAY, Button.WEDNESDAY),
+                newKeyboardRow(Button.THURSDAY, Button.FRIDAY, Button.SATURDAY),
+                newKeyboardRow(Button.SUNDAY, Button.WEEKDAYS, Button.WEEKENDS),
                 BACK_AND_MAIN_MENU_ROW
-        ));
-        SCHEDULE_KEYBOARD.setResizeKeyboard(true);
-
-        DAY_WEEK_WITH_PERIOD_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.MONDAY.getText()),
-                        new KeyboardButton(Button.TUESDAY.getText()),
-                        new KeyboardButton(Button.WEDNESDAY.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.THURSDAY.getText()),
-                        new KeyboardButton(Button.FRIDAY.getText()),
-                        new KeyboardButton(Button.SATURDAY.getText())
-                )),
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.SUNDAY.getText()),
-                        new KeyboardButton(Button.WEEKDAYS.getText()),
-                        new KeyboardButton(Button.WEEKENDS.getText())
-                )),
-                BACK_AND_MAIN_MENU_ROW
-        ));
-        DAY_WEEK_WITH_PERIOD_KEYBOARD.setResizeKeyboard(true);
+        );
 
         HOURS_WITH_CANCEL_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton("12"))),
-                new KeyboardRow(List.of(new KeyboardButton("13"))),
-                new KeyboardRow(List.of(new KeyboardButton("14"))),
-                new KeyboardRow(List.of(new KeyboardButton("15"))),
-                new KeyboardRow(List.of(new KeyboardButton("16"))),
-                new KeyboardRow(List.of(new KeyboardButton("17"))),
-                new KeyboardRow(List.of(new KeyboardButton("18"))),
-                new KeyboardRow(List.of(new KeyboardButton("19"))),
-                new KeyboardRow(List.of(new KeyboardButton("20"))),
-                new KeyboardRow(List.of(new KeyboardButton("21"))),
-                new KeyboardRow(List.of(new KeyboardButton("22"))),
-                new KeyboardRow(List.of(new KeyboardButton("23"))),
-                new KeyboardRow(List.of(new KeyboardButton("00"))),
-                new KeyboardRow(List.of(new KeyboardButton("1"))),
-                new KeyboardRow(List.of(new KeyboardButton("2"))),
-                new KeyboardRow(List.of(new KeyboardButton("3"))),
-                new KeyboardRow(List.of(new KeyboardButton("4"))),
-                new KeyboardRow(List.of(new KeyboardButton("5"))),
-                new KeyboardRow(List.of(new KeyboardButton("6"))),
-                new KeyboardRow(List.of(new KeyboardButton("7"))),
-                new KeyboardRow(List.of(new KeyboardButton("8"))),
-                new KeyboardRow(List.of(new KeyboardButton("9"))),
-                new KeyboardRow(List.of(new KeyboardButton("10"))),
-                new KeyboardRow(List.of(new KeyboardButton("11"))),
+                newKeyboardRow("12"),
+                newKeyboardRow("13"),
+                newKeyboardRow("14"),
+                newKeyboardRow("15"),
+                newKeyboardRow("16"),
+                newKeyboardRow("17"),
+                newKeyboardRow("18"),
+                newKeyboardRow("19"),
+                newKeyboardRow("20"),
+                newKeyboardRow("21"),
+                newKeyboardRow("22"),
+                newKeyboardRow("23"),
+                newKeyboardRow("00"),
+                newKeyboardRow("1"),
+                newKeyboardRow("2"),
+                newKeyboardRow("3"),
+                newKeyboardRow("4"),
+                newKeyboardRow("5"),
+                newKeyboardRow("6"),
+                newKeyboardRow("7"),
+                newKeyboardRow("8"),
+                newKeyboardRow("9"),
+                newKeyboardRow("10"),
+                newKeyboardRow("11"),
                 CANCEL_ROW
         ));
         HOURS_WITH_CANCEL_KEYBOARD.setResizeKeyboard(true);
 
         MINUTES_WITH_CANCEL_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton("0"))),
-                new KeyboardRow(List.of(new KeyboardButton("5"))),
-                new KeyboardRow(List.of(new KeyboardButton("10"))),
-                new KeyboardRow(List.of(new KeyboardButton("15"))),
-                new KeyboardRow(List.of(new KeyboardButton("20"))),
-                new KeyboardRow(List.of(new KeyboardButton("25"))),
-                new KeyboardRow(List.of(new KeyboardButton("30"))),
-                new KeyboardRow(List.of(new KeyboardButton("35"))),
-                new KeyboardRow(List.of(new KeyboardButton("40"))),
-                new KeyboardRow(List.of(new KeyboardButton("45"))),
-                new KeyboardRow(List.of(new KeyboardButton("50"))),
-                new KeyboardRow(List.of(new KeyboardButton("55"))),
+                newKeyboardRow("0"),
+                newKeyboardRow("5"),
+                newKeyboardRow("10"),
+                newKeyboardRow("15"),
+                newKeyboardRow("20"),
+                newKeyboardRow("25"),
+                newKeyboardRow("30"),
+                newKeyboardRow("35"),
+                newKeyboardRow("40"),
+                newKeyboardRow("45"),
+                newKeyboardRow("50"),
+                newKeyboardRow("55"),
                 CANCEL_ROW
         ));
         MINUTES_WITH_CANCEL_KEYBOARD.setResizeKeyboard(true);
 
-        FREE_WITH_CANCEL_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.FREE.getText()))),
+        fillKeyboard(
+                FREE_WITH_CANCEL_KEYBOARD,
+                newKeyboardRow(Button.FREE),
                 CANCEL_ROW
-        ));
-        FREE_WITH_CANCEL_KEYBOARD.setResizeKeyboard(true);
+        );
 
-        TABLE_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(
-                        new KeyboardButton(Button.ADD.getText()),
-                        new KeyboardButton(Button.DELETE.getText())
-                )),
+        fillKeyboard(
+                RESERVE_LIST_KEYBOARD,
+                newKeyboardRow(Button.CANCEL_RESERVE, Button.RESERVE),
+                newKeyboardRow(Button.RETURN_MAIN_MENU)
+        );
+
+        fillKeyboard(
+                USER_RESERVE_LIST_KEYBOARD,
+                newKeyboardRow(Button.CANCEL_RESERVE),
+                newKeyboardRow(Button.RETURN_MAIN_MENU)
+        );
+
+        fillKeyboard(
+                TODAY_TOMORROW_CANCEL_KEYBOARD,
+                newKeyboardRow(Button.TODAY, Button.TOMORROW),
+                CANCEL_ROW
+        );
+
+        fillKeyboard(
+                NUMBERS_CANCEL_KEYBOARD,
+                newKeyboardRow(Button.ONE, Button.TWO, Button.THREE),
+                newKeyboardRow(Button.FOUR, Button.FIVE, Button.SIX),
+                newKeyboardRow(Button.SEVEN, Button.EIGHT, Button.NINE),
+                CANCEL_ROW
+        );
+
+        fillKeyboard(
+                NUMBERS_KEYBOARD,
+                newKeyboardRow(Button.ONE, Button.TWO, Button.THREE),
+                newKeyboardRow(Button.FOUR, Button.FIVE, Button.SIX),
+                newKeyboardRow(Button.SEVEN, Button.EIGHT, Button.NINE),
                 BACK_AND_MAIN_MENU_ROW
-        ));
-        TABLE_KEYBOARD.setResizeKeyboard(true);
+        );
 
-        RESERVE_LIST_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL_RESERVE.getText()), new KeyboardButton(Button.RESERVE.getText()))),
-                new KeyboardRow(List.of(new KeyboardButton(Button.RETURN_MAIN_MENU.getText())))
-        ));
-        RESERVE_LIST_KEYBOARD.setResizeKeyboard(true);
-
-        USER_RESERVE_LIST_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL_RESERVE.getText()))),
-                new KeyboardRow(List.of(new KeyboardButton(Button.RETURN_MAIN_MENU.getText())))
-        ));
-        USER_RESERVE_LIST_KEYBOARD.setResizeKeyboard(true);
-
-        TODAY_TOMORROW_CANCEL_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.TODAY.getText()), new KeyboardButton(Button.TOMORROW.getText()))),
+        fillKeyboard(
+                WITHOUT_PHONE_KEYBOARD,
+                newKeyboardRow(Button.WITHOUT_PHONE),
                 CANCEL_ROW
-        ));
-        TODAY_TOMORROW_CANCEL_KEYBOARD.setResizeKeyboard(true);
+        );
 
-        NUMBERS_KEYBOARD_WITH_CANCEL.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.ONE.getText()), new KeyboardButton(Button.TWO.getText()), new KeyboardButton(Button.THREE.getText()))),
-                new KeyboardRow(List.of(new KeyboardButton(Button.FOUR.getText()), new KeyboardButton(Button.FIVE.getText()), new KeyboardButton(Button.SIX.getText()))),
-                new KeyboardRow(List.of(new KeyboardButton(Button.SEVEN.getText()), new KeyboardButton(Button.EIGHT.getText()), new KeyboardButton(Button.NINE.getText()))),
-                CANCEL_ROW
-        ));
-        NUMBERS_KEYBOARD_WITH_CANCEL.setResizeKeyboard(true);
-
-        NUMBERS_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.ONE.getText()), new KeyboardButton(Button.TWO.getText()), new KeyboardButton(Button.THREE.getText()))),
-                new KeyboardRow(List.of(new KeyboardButton(Button.FOUR.getText()), new KeyboardButton(Button.FIVE.getText()), new KeyboardButton(Button.SIX.getText()))),
-                new KeyboardRow(List.of(new KeyboardButton(Button.SEVEN.getText()), new KeyboardButton(Button.EIGHT.getText()), new KeyboardButton(Button.NINE.getText()))),
+        fillKeyboard(
+                TAVERN_INFO_KEYBOARD,
+                newKeyboardRow(Button.RESERVE),
                 BACK_AND_MAIN_MENU_ROW
-        ));
-        NUMBERS_KEYBOARD.setResizeKeyboard(true);
+        );
 
-        WITHOUT_PHONE_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.WITHOUT_PHONE.getText()))),
-                CANCEL_ROW
-        ));
-        WITHOUT_PHONE_KEYBOARD.setResizeKeyboard(true);
-
-        APPROVE_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.CANCEL.getText()), new KeyboardButton(Button.ACCEPT.getText())))
-        ));
-        APPROVE_KEYBOARD.setResizeKeyboard(true);
-
-        TAVERN_INFO_KEYBOARD.setKeyboard(List.of(
-                new KeyboardRow(List.of(new KeyboardButton(Button.RESERVE.getText()))),
+        fillKeyboard(
+                BLACKLIST_KEYBOARD,
+                newKeyboardRow(Button.UNBLOCK, Button.BLOCK),
+                newKeyboardRow(Button.BLACKLIST_LIST, Button.SETTINGS),
                 BACK_AND_MAIN_MENU_ROW
-        ));
-        TAVERN_INFO_KEYBOARD.setResizeKeyboard(true);
+        );
+
+        fillKeyboard(
+                MANAGE_USER_BLACKLIST_KEYBOARD,
+                newKeyboardRow(Button.UNBLOCK),
+                BACK_AND_MAIN_MENU_ROW
+        );
+
+        fillKeyboard(
+                REASON_BLACKLIST_KEYBOARD,
+                newKeyboardRow(Button.DOESNT_COME),
+                newKeyboardRow(Button.INAPPROPRIATE_BEHAVIOUR),
+                CANCEL_ROW
+        );
+
+        fillKeyboard(
+                SETTINGS_BLACKLIST_KEYBOARD,
+                newKeyboardRow(Button.NUMBER_TIMES, Button.NUMBER_DAYS),
+                BACK_AND_MAIN_MENU_ROW
+        );
+    }
+
+    public static KeyboardRow newKeyboardRow(Button... buttons) {
+        return new KeyboardRow(
+                Arrays.stream(buttons)
+                        .map(KeyboardService::toKeyboardButton)
+                        .toList()
+        );
+    }
+
+    public static KeyboardRow newKeyboardRow(String... buttons) {
+        return new KeyboardRow(
+                Arrays.stream(buttons)
+                        .map(KeyboardService::toKeyboardButton)
+                        .toList()
+        );
+    }
+
+    private static KeyboardButton toKeyboardButton(String button) {
+        return new KeyboardButton(button);
+    }
+
+    private static KeyboardButton toKeyboardButton(Button button) {
+        return new KeyboardButton(button.getText());
     }
 
     public InlineKeyboardButton createInlineButton(Button button) {

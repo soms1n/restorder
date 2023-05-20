@@ -7,9 +7,10 @@ public interface MessageText {
     String ENTER_TAVERN_DESCRIPTION = "Введите описание заведения:";
     String CHOICE_CITY = "Выберите город:";
     String ENTER_ADDRESS = "Введите адрес без города:";
-    String ENTER_PHONE_NUMBER = "Введите номер мобильного телефона в формате 89001112233:";
+    String ENTER_PHONE_NUMBER = "Введите номер мобильного телефона в формате 89991110011:";
     String INCORRECT_ENTER_PHONE_NUMBER = "Вы ввели некорректный номер мобильного телефона. Повторите попытку.";
-    String SHARE_PHONE_NUMBER = "Нажмите поделиться номером телефона";
+    String PHONE_NUMBER_DUPLICATE = "Указанный номер телефона уже добавлен. Повторите попытку.";
+    String SHARE_PHONE_NUMBER = "Нажмите поделиться номером телефона.";
     String ENTER_EMPTY_VALUE = "Вы ввели пустое значение.";
     String ENTER_EMPTY_VALUE_RETRY = "Вы ввели пустое значение! Повторите попытку:";
     String WAITING_APPROVE_APPLICATION = "Спасибо за регистрацию, ваша заявка на модерации.";
@@ -25,8 +26,9 @@ public interface MessageText {
             А теперь выберите или введите ваш город, чтобы продолжить.
             """;
     String CHOICE_TAVERN_TYPE = "Выберите тип заведения";
-    String NOTIFY_USER_RESERVE_CANCELLED = "Ваша бронь %s %s в заведение %s завершена (отменена)";
-    String INCORRECT_PHONE_NUMBER = "Некорректный номер телефона. Повторите попытку";
+    String NOTIFY_USER_RESERVE_CANCELLED = "Ваша бронь %s %s в заведение %s завершена (отменена).";
+    String NOTIFY_USER_BLOCK = "Вы добавлены в чёрный список в заведении ";
+    String INCORRECT_PHONE_NUMBER = "Некорректный номер телефона. Повторите попытку.";
     String SUPPORT_MESSAGE = "Если у Вас возникли какие-то проблемы, можете задать вопрос в нашу поддержку https://t.me/restorder_support";
     String CLAIM_APPROVE_WAIT = "Ваша заявка на модерации, ожидайте";
 }

@@ -2,11 +2,10 @@ package ru.privetdruk.restorder.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.privetdruk.restorder.model.entity.TableEntity;
 import ru.privetdruk.restorder.repository.TableRepository;
 
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * Сервис столов
@@ -22,7 +21,6 @@ public class TableService {
      * @param table Стол
      * @return Сохраненный стол
      */
-    @Transactional
     public TableEntity save(TableEntity table) {
         return repository.save(table);
     }
@@ -32,8 +30,7 @@ public class TableService {
      *
      * @param tables Столы
      */
-    @Transactional
-    public void save(Set<TableEntity> tables) {
+    public void save(Collection<TableEntity> tables) {
         repository.saveAll(tables);
     }
 }

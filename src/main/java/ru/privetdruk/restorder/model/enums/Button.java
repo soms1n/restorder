@@ -35,8 +35,8 @@ public enum Button {
     ADD("🟢 Добавить"),
     USER_NAME("™ Имя"),
     DELETE_PROFILE("❌ Удалить профиль"),
-    YES("⭕ Да"),
-    NO("🟢 Нет"),
+    YES("🟢 Да"),
+    NO("⭕ Нет"),
     ACCEPT("\uD83D\uDFE2 Подтвердить"),
     SHARE_PHONE("\uD83D\uDCDE Поделиться номером"),
     NOTHING(null),
@@ -77,7 +77,16 @@ public enum Button {
     DESCRIPTION("\uD83D\uDCC3 Описание"),
     WITHOUT_DESCRIPTION("\uD83D\uDDEF Без описания"),
     MANUALLY("\uD83D\uDC46 Выберу сам(а)"),
-    AUTOMATIC("🎲 Подобрать автоматически");
+    AUTOMATIC("🎲 Подобрать автоматически"),
+    BLACKLIST("\uD83D\uDCD3 Блокировки"),
+    BLOCK("\uD83D\uDCD5 Заблокировать"),
+    UNBLOCK("\uD83D\uDCD7 Разблокировать"),
+    BLACKLIST_LIST("\uD83D\uDCD3 Чёрный список"),
+    DOESNT_COME("Не приходит"),
+    INAPPROPRIATE_BEHAVIOUR("Неприемлемое поведение"),
+    NUMBER_TIMES("Кол-во раз"),
+    NUMBER_DAYS("Кол-во дней");
+
 
     private final String text;
 

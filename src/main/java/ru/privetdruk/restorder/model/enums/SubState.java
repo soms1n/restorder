@@ -83,7 +83,7 @@ public enum SubState {
             return ENTER_PHONE_NUMBER;
         }
     },
-    ENTER_PHONE_NUMBER(MessageText.ENTER_PHONE_NUMBER) {
+    ENTER_PHONE_NUMBER(MessageText.SHARE_PHONE_NUMBER) {
         @Override
         public State getState() {
             return State.REGISTRATION_TAVERN;
@@ -396,6 +396,105 @@ public enum SubState {
             return VIEW_PROFILE_SETTINGS;
         }
     },
+    VIEW_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SETTINGS;
+        }
+    },
+    ENTER_PHONE_NUMBER_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_BLACKLIST_SETTINGS;
+        }
+    },
+    ENTER_NUMBER_TIMES_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SETTINGS_BLACKLIST_SETTINGS;
+        }
+    },
+    ENTER_NUMBER_DAYS_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_SETTINGS_BLACKLIST_SETTINGS;
+        }
+    },
+    ENTER_REASON_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_BLACKLIST_SETTINGS;
+        }
+    },
+    UNBLOCK_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_BLACKLIST_SETTINGS;
+        }
+    },
+    VIEW_SETTINGS_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_BLACKLIST_SETTINGS;
+        }
+    },
+    VIEW_MANAGE_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_BLACKLIST_SETTINGS;
+        }
+    },
+    VIEW_MANAGE_USER_BLACKLIST_SETTINGS() {
+        @Override
+        public State getState() {
+            return State.SETTINGS;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_MANAGE_BLACKLIST_SETTINGS;
+        }
+    },
     VIEW_EMPLOYEE_SETTINGS() {
         @Override
         public State getState() {
@@ -440,7 +539,7 @@ public enum SubState {
             return ENTER_EMPLOYEE_PHONE_NUMBER;
         }
     },
-    ENTER_EMPLOYEE_PHONE_NUMBER(MessageText.ENTER_PHONE_NUMBER) {
+    ENTER_EMPLOYEE_PHONE_NUMBER(MessageText.SHARE_PHONE_NUMBER) {
         @Override
         public State getState() {
             return State.REGISTRATION_EMPLOYEE;
@@ -645,6 +744,28 @@ public enum SubState {
         }
     },
     DELETE_RESERVE_CHOICE_TABLE() {
+        @Override
+        public State getState() {
+            return State.RESERVE;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_RESERVE_LIST;
+        }
+    },
+    CONFIRM_CLIENT_RESERVE() {
+        @Override
+        public State getState() {
+            return State.RESERVE;
+        }
+
+        @Override
+        public SubState getParentSubState() {
+            return VIEW_RESERVE_LIST;
+        }
+    },
+    BLOCK_CLIENT_RESERVE() {
         @Override
         public State getState() {
             return State.RESERVE;

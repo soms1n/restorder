@@ -2,8 +2,10 @@ package ru.privetdruk.restorder.model.entity;
 
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import ru.privetdruk.restorder.model.enums.EventType;
@@ -17,7 +19,8 @@ import java.util.UUID;
 /**
  * Событие для обработки
  */
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "event")
 @NoArgsConstructor
@@ -30,32 +33,28 @@ public class EventEntity {
     /**
      * UUID записи для передачи в сообщении
      */
-    @Column(name = "uuid")
     private UUID uuid;
 
     /**
      * Тип
      */
-    @Column(name = "type")
     @Enumerated(EnumType.STRING)
     private EventType type;
 
     /**
      * Дата и время создания
      */
-    @Column(name = "create_date")
-    private LocalDateTime createDate = LocalDateTime.now();
+    @CreationTimestamp
+    private LocalDateTime createDate;
 
     /**
      * Дата и время истечения события
      */
-    @Column(name = "expiration_date")
     private LocalDateTime expirationDate;
 
     /**
      * Доступность события
      */
-    @Column(name = "available")
     private Boolean available = true;
 
     /**

@@ -2,7 +2,6 @@ package ru.privetdruk.restorder.handler.client;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Contact;
@@ -21,10 +20,7 @@ import ru.privetdruk.restorder.model.entity.ContactEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.*;
-import ru.privetdruk.restorder.service.KeyboardService;
-import ru.privetdruk.restorder.service.TavernService;
-import ru.privetdruk.restorder.service.TelegramApiService;
-import ru.privetdruk.restorder.service.UserService;
+import ru.privetdruk.restorder.service.*;
 import ru.privetdruk.restorder.service.util.ValidationService;
 
 import java.util.List;
@@ -39,13 +35,13 @@ import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 @RequiredArgsConstructor
 @Component
 public class RegistrationTavernHandler implements MessageHandler {
+    private final ContactService contactService;
     private final UserService userService;
     private final TelegramApiService telegramApiService;
     private final TavernService tavernService;
     private final ValidationService validationService;
 
     @Override
-    @Transactional
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
         String messageText = message.getText();
         Long chatId = message.getChatId();
@@ -62,7 +58,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                     subState = subState.getNextSubState();
                     sendMessage = configureMessage(chatId, changeState(user, subState).getMessage(), KeyboardService.REMOVE_KEYBOARD);
                 } else {
-                    sendMessage = configureMessage(chatId, subState.getMessage(), KeyboardService.REGISTRATION_TAVERN);
+                    sendMessage = configureMessage(chatId, subState.getMessage(), KeyboardService.REGISTRATION_TAVERN_KEYBOARD);
                 }
             }
             case ENTER_FULL_NAME -> {
@@ -71,12 +67,8 @@ public class RegistrationTavernHandler implements MessageHandler {
                 sendMessage = configureMessage(chatId, changeState(user, subState).getMessage());
             }
             case ENTER_TAVERN_NAME -> {
-                tavern = TavernEntity.builder()
-                        .name(messageText)
-                        .owner(user)
-                        .build();
-
-                tavernService.save(tavern);
+                tavern = tavernService.create(messageText, user.getId());
+                user.setTavern(tavern);
 
                 changeState(user, subState);
 
@@ -133,9 +125,9 @@ public class RegistrationTavernHandler implements MessageHandler {
                     );
                 }
 
-                messageText = sendContact.getPhoneNumber().replace("+", "");
+                String phoneNumber = contactService.preparePhoneNumber(sendContact.getPhoneNumber());
 
-                if (validationService.isNotValidPhone(messageText)) {
+                if (validationService.isNotValidPhone(phoneNumber)) {
                     return configureMessage(
                             chatId,
                             INCORRECT_ENTER_PHONE_NUMBER,
@@ -146,10 +138,10 @@ public class RegistrationTavernHandler implements MessageHandler {
                 ContactEntity contact = ContactEntity.builder()
                         .user(user)
                         .type(ContractType.MOBILE)
-                        .value(messageText)
+                        .value(phoneNumber)
                         .build();
 
-                user.addContact(contact);
+                contactService.save(contact);
 
                 changeState(user, subState);
 
@@ -348,12 +340,14 @@ public class RegistrationTavernHandler implements MessageHandler {
     private SendMessage showPersonalData(UserEntity user, Long chatId) {
         TavernEntity tavern = user.getTavern();
 
+        List<ContactEntity> contacts = contactService.findByUser(user);
+
         String yourPersonalData = "<b>Ваши данные</b>" + System.lineSeparator() +
                 "Имя: <i>" + user.getName() + "</i>" + System.lineSeparator() +
                 "Заведение: <i>" + tavern.getName() + "</i>" + System.lineSeparator() +
                 "Описание: <i>" + Optional.ofNullable(tavern.getDescription()).orElse("отсутствует") + "</i>" + System.lineSeparator() +
                 "Адрес: <i>" + tavern.getAddress().getStreet() + "</i>" + System.lineSeparator() +
-                "Номер телефона: <i>" + user.getContacts().stream()
+                "Номер телефона: <i>" + contacts.stream()
                 .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
                 .map(ContactEntity::getValue)
                 .findFirst()

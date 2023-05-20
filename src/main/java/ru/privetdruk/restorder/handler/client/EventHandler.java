@@ -62,7 +62,7 @@ public class EventHandler implements MessageHandler {
         EventType eventType = event.getType();
         if (eventType == EventType.REGISTER_EMPLOYEE) {
             Long tavernId = objectMapper.convertValue(event.getParams().get(JsonbKey.TAVERN_ID.getKey()), Long.TYPE);
-            TavernEntity tavern = tavernService.find(tavernId)
+            TavernEntity tavern = tavernService.findByIdWithEmployee(tavernId)
                     .orElse(null);
 
             if (tavern == null) {

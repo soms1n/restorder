@@ -4,9 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Стол в заведение
@@ -24,31 +24,27 @@ public class TableEntity {
      * Заведение
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tavern_id")
     private TavernEntity tavern;
 
     /**
      * Кол-во мест
      */
-    @Column(name = "number_seats")
     private Integer numberSeats;
 
     /**
      * Признак зарезервированного
      */
-    @Column(name = "reserved")
     private Boolean reserved = false;
 
     /**
      * Резервы
      */
     @OneToMany(mappedBy = "table", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ReserveEntity> reserves = new HashSet<>();
+    private List<ReserveEntity> reserves = new ArrayList<>();
 
     /**
      * Метка
      */
-    @Column(name = "label")
     private String label;
 
     @Override

@@ -1,8 +1,7 @@
 package ru.privetdruk.restorder.model.entity;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import ru.privetdruk.restorder.model.enums.ContractType;
 
 import javax.persistence.*;
@@ -11,8 +10,11 @@ import java.time.LocalDateTime;
 /**
  * Контакт
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
+@EqualsAndHashCode(of = {"value", "type"})
+@ToString(of = {"value", "type"})
 @Entity
 @Table(name = "contact")
 public class ContactEntity {
@@ -24,46 +26,40 @@ public class ContactEntity {
      * Владелец (пользователь)
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
     private UserEntity user;
 
     /**
      * Владелец (заведение)
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tavern_id")
     private TavernEntity tavern;
 
     /**
      * Тип
      */
-    @Column(name = "type")
     @Enumerated(EnumType.STRING)
     private ContractType type;
 
     /**
      * Значение
      */
-    @Column(name = "value")
     private String value;
 
     /**
      * Признак главного
      */
-    @Column(name = "main")
     private Boolean main = true;
 
     /**
      * Признак действующего
      */
-    @Column(name = "active")
     private Boolean active = true;
 
     /**
      * Дата и время создания
      */
-    @Column(name = "create_date")
-    private LocalDateTime createDate = LocalDateTime.now();
+    @CreationTimestamp
+    private LocalDateTime createDate;
 
     @Builder
     public ContactEntity(TavernEntity tavern, UserEntity user, ContractType type, String value) {

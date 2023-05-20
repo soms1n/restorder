@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import ru.privetdruk.restorder.model.consts.Constant;
 import ru.privetdruk.restorder.model.entity.*;
 import ru.privetdruk.restorder.model.enums.Category;
 import ru.privetdruk.restorder.model.enums.DayWeek;
@@ -19,13 +20,56 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class InfoService {
-
+    private final BlacklistSettingService blacklistSettingService;
+    private final ContactService contactService;
     private final StringService stringService;
+    private final TavernService tavernService;
+
+    public String fillBlacklistSettings(TavernEntity tavern) {
+        return blacklistSettingService.findByTavern(tavern)
+                .map(setting -> {
+                    if (!setting.enabled()) {
+                        return "Автоматическая блокировка выключена. Для включения, как минимум настройте параметр \"Кол-во раз\", когда человек не пришел в заведение (0 отключить).";
+                    }
+
+                    return String.format("""
+                                    Настройки автоматической блокировки
+                                    <b>Кол-во раз до блокировки (когда человек не пришел в заведение):</b> %s
+                                    <b>Кол-во дней блокировки:</b> %s
+                                    """,
+                            setting.getTimes(),
+                            setting.getDays() <= 0 ? "навсегда" : setting.getDays()
+                    );
+                })
+                .orElse("Автоматическая блокировка выключена. Для включения, как минимум настройте параметр \"Кол-во раз\", когда человек не пришел в заведение (0 отключить).");
+    }
+
+    public String fillBlacklist(BlacklistEntity blacklist) {
+        return String.format(
+                """
+                        Информация о блокировке
+                        <b>Номер:</b> %s
+                        <b>Имя:</b> %s
+                        <b>Причина:</b> %s
+                        <b>Дата блокировки:</b> %s
+                        <b>Заблокирован до:</b> %s
+                        """,
+                blacklist.getPhoneNumber(),
+                blacklist.getUser() == null ? "не указано" : blacklist.getUser().getName(),
+                blacklist.getReason(),
+                blacklist.getLockDate().format(Constant.DD_MM_YYYY_FORMATTER),
+                blacklist.getUnlockDate().format(Constant.DD_MM_YYYY_FORMATTER)
+        );
+    }
 
     public String fillProfile(UserEntity user) {
         return fillUser(user.getName()) + System.lineSeparator() + System.lineSeparator() +
                 fillRoleInfo(user.getRoles()) + System.lineSeparator() + System.lineSeparator() +
-                fillContact(user.getContacts()) + System.lineSeparator() + System.lineSeparator();
+                fillContact(user) + System.lineSeparator() + System.lineSeparator();
+    }
+
+    public String fillGeneralWithLoadData(TavernEntity tavern) {
+        return fillGeneral(tavernService.findWithContactsAddressSchedules(tavern));
     }
 
     public String fillGeneral(TavernEntity tavern) {
@@ -49,7 +93,7 @@ public class InfoService {
         return "<b>Ваше имя:</b> " + name + "";
     }
 
-    public String fillRoleInfo(Set<Role> roles) {
+    public String fillRoleInfo(Collection<Role> roles) {
         String rolesString = roles.stream()
                 .map(Role::getDescription)
                 .collect(Collectors.joining(System.lineSeparator()));
@@ -69,7 +113,15 @@ public class InfoService {
         );
     }
 
-    public String fillContact(Set<ContactEntity> contacts) {
+    public String fillContact(UserEntity user) {
+        return fillContact(contactService.findByUser(user));
+    }
+
+    public String fillContact(TavernEntity tavern) {
+        return fillContact(contactService.findByTavern(tavern));
+    }
+
+    private String fillContact(Collection<ContactEntity> contacts) {
         if (CollectionUtils.isEmpty(contacts)) {
             return "Контактная информация отсутствует.";
         }
@@ -81,7 +133,11 @@ public class InfoService {
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 
-    public String fillTables(Set<TableEntity> tables) {
+    public String fillTables(TavernEntity tavern) {
+        return fillTables(tavernService.findWithTables(tavern).getTables());
+    }
+
+    public String fillTables(Collection<TableEntity> tables) {
         if (CollectionUtils.isEmpty(tables)) {
             return "Столы не добавлены.";
         }
@@ -100,7 +156,11 @@ public class InfoService {
                 .orElse("Категория не выбрана.");
     }
 
-    public String fillEmployee(Set<UserEntity> employees) {
+    public String fillEmployee(TavernEntity tavern) {
+        return fillEmployee(tavernService.findWithEmployees(tavern).getEmployees());
+    }
+
+    public String fillEmployee(Collection<UserEntity> employees) {
         return "<b>Сотрудники:</b>"
                 + System.lineSeparator()
                 + employees.stream()
@@ -114,13 +174,17 @@ public class InfoService {
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 
+    public String fillSchedules(TavernEntity tavern) {
+        return fillSchedules(tavernService.findWithSchedules(tavern).getSchedules());
+    }
+
     /**
      * Заполнить информацию по графику
      *
      * @param schedules Графики
      * @return Информацию по графику работы
      */
-    public String fillSchedules(Set<ScheduleEntity> schedules) {
+    public String fillSchedules(Collection<ScheduleEntity> schedules) {
         if (CollectionUtils.isEmpty(schedules)) {
             return "График работы не установлен." + System.lineSeparator();
         }

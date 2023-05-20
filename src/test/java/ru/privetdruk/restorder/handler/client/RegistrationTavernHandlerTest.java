@@ -474,6 +474,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
         SendMessage sendMessage = registrationTavernHandler.handle(user, message, null);
 
+
         assertEquals(user.getSubState(), SubState.EDIT_TAVERN);
         assertEquals(sendMessage.getText(), SubState.ENTER_TAVERN_NAME.getMessage());
 
