@@ -30,4 +30,5 @@ public interface MessageText {
     String NOTIFY_USER_BLOCK = "Вы добавлены в чёрный список в заведении ";
     String INCORRECT_PHONE_NUMBER = "Некорректный номер телефона. Повторите попытку.";
     String SUPPORT_MESSAGE = "Если у Вас возникли какие-то проблемы, можете задать вопрос в нашу поддержку https://t.me/restorder_support";
+    String CLAIM_APPROVE_WAIT = "Ваша заявка на модерации, ожидайте";
 }

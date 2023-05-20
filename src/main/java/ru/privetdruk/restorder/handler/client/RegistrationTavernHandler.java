@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static ru.privetdruk.restorder.model.consts.MessageText.*;
+import static ru.privetdruk.restorder.model.enums.Button.COMPLETE_REGISTRATION;
+import static ru.privetdruk.restorder.model.enums.Button.EDIT_MENU;
 import static ru.privetdruk.restorder.model.enums.SubState.EDIT_PERSONAL_DATA;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
@@ -38,8 +40,6 @@ public class RegistrationTavernHandler implements MessageHandler {
     private final TelegramApiService telegramApiService;
     private final TavernService tavernService;
     private final ValidationService validationService;
-
-    final String CLAIM_APPROVE_WAIT = "Ваша заявка на модерации, ожидайте.";
 
     @Override
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
@@ -188,35 +188,17 @@ public class RegistrationTavernHandler implements MessageHandler {
 
                         attachEditMenu(sendMessage);
                     }
-                    case PHONE_NUMBER -> {
-                        sendMessage = configureMessage(chatId, SubState.ENTER_PHONE_NUMBER.getMessage());
-                        userService.updateSubState(user, SubState.EDIT_PHONE_NUMBER);
-
-                        attachEditMenu(sendMessage);
-                    }
                     case TAVERN_ADDRESS -> {
                         sendMessage = configureMessage(chatId, SubState.ENTER_ADDRESS.getMessage());
                         userService.updateSubState(user, SubState.EDIT_ADDRESS);
 
                         attachEditMenu(sendMessage);
                     }
-                    case CITY -> {
-                        sendMessage = configureMessage(chatId, MessageText.CHOICE_CITY);
-                        sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder()
-                                .removeKeyboard(true)
-                                .build());
-
-                        userService.updateSubState(user, SubState.EDIT_CITY);
-
-                        return sendMessage;
-                    }
                     case COMPLETE_REGISTRATION -> {
                         userService.updateSubState(user, SubState.WAITING_APPROVE_APPLICATION);
 
                         sendMessage = configureMessage(chatId, SubState.WAITING_APPROVE_APPLICATION.getMessage());
-                        sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder()
-                                .removeKeyboard(true)
-                                .build());
+                        sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
 
                         sendClaimToApprove(user);
                     }
@@ -240,18 +222,6 @@ public class RegistrationTavernHandler implements MessageHandler {
                     tavernService.save(tavern);
                 }
             }
-            case EDIT_PHONE_NUMBER -> {
-                if (!isUserPressKeyBoardElement(sendMessage, user, messageText, chatId)) {
-                    final String finalMessageText = messageText;
-
-                    user.getContacts().stream()
-                            .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
-                            .findFirst()
-                            .ifPresent(contact -> contact.setValue(finalMessageText));
-
-                    userService.save(user);
-                }
-            }
             case EDIT_ADDRESS -> {
                 if (!isUserPressKeyBoardElement(sendMessage, user, messageText, chatId)) {
                     tavern.getAddress().setStreet(messageText);
@@ -271,15 +241,13 @@ public class RegistrationTavernHandler implements MessageHandler {
                                 new KeyboardRow(List.of(
                                         new KeyboardButton(Button.NAME.getText()),
                                         new KeyboardButton(Button.TAVERN_NAME.getText())
-
                                 )),
                                 new KeyboardRow(List.of(
                                         new KeyboardButton(Button.DESCRIPTION.getText()),
-                                        new KeyboardButton(Button.TAVERN_ADDRESS.getText()),
-                                        new KeyboardButton(Button.PHONE_NUMBER.getText())
+                                        new KeyboardButton(Button.TAVERN_ADDRESS.getText())
                                 )),
                                 new KeyboardRow(List.of(
-                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())
+                                        new KeyboardButton(COMPLETE_REGISTRATION.getText())
                                 ))
                         ))
                         .resizeKeyboard(true)
@@ -291,9 +259,8 @@ public class RegistrationTavernHandler implements MessageHandler {
                 ReplyKeyboardMarkup.builder()
                         .keyboard(List.of(
                                 new KeyboardRow(List.of(
-                                        new KeyboardButton(Button.EDIT_MENU.getText()),
-                                        new KeyboardButton(Button.COMPLETE_REGISTRATION.getText())
-                                ))
+                                        new KeyboardButton(EDIT_MENU.getText()),
+                                        new KeyboardButton(COMPLETE_REGISTRATION.getText())))
                         ))
                         .resizeKeyboard(true)
                         .build()
@@ -333,48 +300,41 @@ public class RegistrationTavernHandler implements MessageHandler {
     private SubState changeState(UserEntity user, SubState subState) {
         SubState nextSubState = subState.getNextSubState();
         user.setState(nextSubState.getState());
-        user.setSubState(nextSubState);
 
-        userService.save(user);
+        userService.updateSubState(user, nextSubState);
 
         return nextSubState;
     }
 
     private boolean isUserPressKeyBoardElement(SendMessage sendMessage, UserEntity user, String messageText, Long chatId) {
-        boolean result = false;
+        return Button.fromText(messageText)
+                .map(button -> {
+                    switch (button) {
+                        case EDIT_MENU -> {
+                            userService.updateSubState(user, SubState.EDIT_PERSONAL_DATA);
 
-        Optional<Button> button = Button.fromText(messageText);
+                            sendMessage.setChatId(chatId.toString());
+                            sendMessage.setText(SELECT_ELEMENT_FOR_EDIT);
+                            attachMainEditMenu(sendMessage);
+                        }
+                        case COMPLETE_REGISTRATION -> {
+                            userService.updateSubState(user, SubState.WAITING_APPROVE_APPLICATION);
 
-        if (button.isPresent()) {
-            switch (button.get()) {
-                case EDIT_MENU -> {
-                    user.setSubState(SubState.EDIT_PERSONAL_DATA);
-                    userService.save(user);
-                    sendMessage.setChatId(chatId.toString());
-                    sendMessage.setText(SELECT_ELEMENT_FOR_EDIT);
-                    attachMainEditMenu(sendMessage);
-                }
-                case COMPLETE_REGISTRATION -> {
-                    user.setSubState(SubState.WAITING_APPROVE_APPLICATION);
-                    userService.save(user);
+                            sendMessage.setChatId(chatId.toString());
+                            sendMessage.setText(SubState.WAITING_APPROVE_APPLICATION.getMessage());
+                            sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
 
-                    sendMessage.setChatId(chatId.toString());
-                    sendMessage.setText(SubState.WAITING_APPROVE_APPLICATION.getMessage());
-                    sendMessage.setReplyMarkup(ReplyKeyboardRemove.builder()
-                            .removeKeyboard(true)
-                            .build());
+                            sendClaimToApprove(user);
+                        }
+                        default -> attachEditMenu(sendMessage);
+                    }
 
-                    sendClaimToApprove(user);
-                }
-                default -> attachEditMenu(sendMessage);
-            }
-
-            result = true;
-        } else {
-            attachEditMenu(sendMessage);
-        }
-
-        return result;
+                    return true;
+                })
+                .orElseGet(() -> {
+                    attachEditMenu(sendMessage);
+                    return false;
+                });
     }
 
     private SendMessage showPersonalData(UserEntity user, Long chatId) {
