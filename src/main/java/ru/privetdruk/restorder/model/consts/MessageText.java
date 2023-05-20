@@ -25,7 +25,8 @@ public interface MessageText {
             А теперь выберите или введите ваш город, чтобы продолжить.
             """;
     String CHOICE_TAVERN_TYPE = "Выберите тип заведения";
-    String NOTIFY_USER_RESERVE_CANCELLED = "Ваша бронь %s %s в заведение %s завершена (отменена).";
-    String INCORRECT_PHONE_NUMBER = "Некорректный номер телефона. Повторите попытку.";
+    String NOTIFY_USER_RESERVE_CANCELLED = "Ваша бронь %s %s в заведение %s завершена (отменена)";
+    String INCORRECT_PHONE_NUMBER = "Некорректный номер телефона. Повторите попытку";
     String SUPPORT_MESSAGE = "Если у Вас возникли какие-то проблемы, можете задать вопрос в нашу поддержку https://t.me/restorder_support";
+    String CLAIM_APPROVE_WAIT = "Ваша заявка на модерации, ожидайте";
 }
