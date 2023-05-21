@@ -132,4 +132,5 @@ public interface MessageText {
             " Подтверждаете бронирование?";
     String TABLE_NOT_FOUND = "К сожалению не удалось найти подходящий столик на %s %s в выбранную дату и время.";
     String CHOICE_TAVERN = "Выберите заведение.";
+    String SOMETHING_WENT_WRONG = "Что-то пошло не так...";
 }

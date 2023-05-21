@@ -21,7 +21,6 @@ import java.util.Objects;
 @NoArgsConstructor
 @Entity
 @Table(name = "tavern")
-@Cacheable
 public class TavernEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

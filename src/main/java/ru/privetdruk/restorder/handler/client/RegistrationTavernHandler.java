@@ -26,6 +26,8 @@ import static java.util.List.of;
 import static org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton.builder;
 import static ru.privetdruk.restorder.model.consts.MessageText.*;
 import static ru.privetdruk.restorder.model.enums.Role.ADMIN;
+import static ru.privetdruk.restorder.model.enums.Button.COMPLETE_REGISTRATION;
+import static ru.privetdruk.restorder.model.enums.Button.EDIT_MENU;
 import static ru.privetdruk.restorder.model.enums.SubState.EDIT_PERSONAL_DATA;
 import static ru.privetdruk.restorder.service.KeyboardService.*;
 import static ru.privetdruk.restorder.service.MessageService.toMessage;
@@ -247,9 +249,8 @@ public class RegistrationTavernHandler implements MessageHandler {
     private SubState changeState(UserEntity user, SubState subState) {
         SubState nextSubState = subState.getNextSubState();
         user.setState(nextSubState.getState());
-        user.setSubState(nextSubState);
 
-        userService.save(user);
+        userService.updateSubState(user, nextSubState);
 
         return nextSubState;
     }

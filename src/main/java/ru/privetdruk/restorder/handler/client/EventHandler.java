@@ -27,6 +27,8 @@ import static java.lang.String.format;
 import static ru.privetdruk.restorder.model.consts.Constant.SPACE;
 import static ru.privetdruk.restorder.model.consts.MessageText.UNEXPECTED_ERROR;
 import static ru.privetdruk.restorder.service.MessageService.toMessage;
+import static ru.privetdruk.restorder.model.consts.MessageText.SOMETHING_WENT_WRONG;
+import static ru.privetdruk.restorder.model.consts.MessageText.SUPPORT_MESSAGE;
 
 @Component
 @RequiredArgsConstructor
@@ -49,13 +51,13 @@ public class EventHandler implements MessageHandler {
         }
 
         if (command != Command.START || messageSplit.length != 2) {
-            return toMessage(chatId, UNEXPECTED_ERROR);
+            return toMessage(chatId, SOMETHING_WENT_WRONG);
         }
 
         EventEntity event = eventService.find(parseEventUuid(messageSplit));
 
         if (event == null) {
-            return toMessage(chatId, UNEXPECTED_ERROR);
+            return toMessage(chatId, SOMETHING_WENT_WRONG);
         }
 
         if (!event.getAvailable() || LocalDateTime.now().isAfter(event.getExpirationDate())) {
