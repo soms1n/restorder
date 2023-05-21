@@ -8,6 +8,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.privetdruk.restorder.handler.MessageHandler;
+import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.entity.EventEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
@@ -22,8 +23,10 @@ import ru.privetdruk.restorder.service.UserService;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import static ru.privetdruk.restorder.model.consts.MessageText.SUPPORT_MESSAGE;
-import static ru.privetdruk.restorder.service.MessageService.configureMessage;
+import static java.lang.String.format;
+import static ru.privetdruk.restorder.model.consts.Constant.SPACE;
+import static ru.privetdruk.restorder.model.consts.MessageText.UNEXPECTED_ERROR;
+import static ru.privetdruk.restorder.service.MessageService.toMessage;
 
 @Component
 @RequiredArgsConstructor
@@ -38,25 +41,25 @@ public class EventHandler implements MessageHandler {
     public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
         Long chatId = message.getChatId();
 
-        String[] messageSplit = message.getText().split(" ");
+        String[] messageSplit = message.getText().split(SPACE);
         Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
 
         if (command == Command.HELP) {
-            return configureMessage(chatId, SUPPORT_MESSAGE);
+            return toMessage(chatId, MessageText.SUPPORT_MESSAGE);
         }
 
         if (command != Command.START || messageSplit.length != 2) {
-            return configureMessage(chatId, "Что-то пошло не так...");
+            return toMessage(chatId, UNEXPECTED_ERROR);
         }
 
-        EventEntity event = eventService.find(UUID.fromString(messageSplit[Command.MESSAGE_EVENT_ID_INDEX]));
+        EventEntity event = eventService.find(parseEventUuid(messageSplit));
 
         if (event == null) {
-            return configureMessage(chatId, "Что-то пошло не так...");
+            return toMessage(chatId, UNEXPECTED_ERROR);
         }
 
         if (!event.getAvailable() || LocalDateTime.now().isAfter(event.getExpirationDate())) {
-            return configureMessage(chatId, "Данная ссылка больше недоступна.");
+            return toMessage(chatId, MessageText.LINK_NOT_AVAILABLE);
         }
 
         EventType eventType = event.getType();
@@ -68,11 +71,11 @@ public class EventHandler implements MessageHandler {
             if (tavern == null) {
                 eventService.complete(event);
 
-                return configureMessage(chatId, "Некорректная ссылка");
+                return toMessage(chatId, MessageText.LINK_IS_INVALID);
             }
 
-            if (user.getTavern() != null && user.getTavern() != tavern) {
-                return configureMessage(chatId, "Вы уже является владельцем/сотрудником другого заведения: " + tavern.getName() + ". Удалите в настройках ваш профиль и попробуйте повторно перейти по ссылке.");
+            if (checkOwner(user, tavern)) {
+                return toMessage(chatId, format(MessageText.YOU_ALREADY_HAVE_TAVERN, tavern.getName()));
             }
 
             if (CollectionUtils.isEmpty(user.getRoles()) || user.getTavern() == null) {
@@ -87,11 +90,19 @@ public class EventHandler implements MessageHandler {
                 eventService.complete(event);
 
                 return registrationEmployeeHandler.handle(user, message, callback);
-            } else if (user.getTavern() != null && user.getTavern() != tavern) {
-                return configureMessage(chatId, "Вы уже является владельцем/сотрудником другого заведения: " + tavern.getName() + ". Удалите в настройках ваш профиль и попробуйте повторно перейти по ссылке.");
+            } else if (checkOwner(user, tavern)) {
+                return toMessage(chatId, format(MessageText.YOU_ALREADY_HAVE_TAVERN, tavern.getName()));
             }
         }
 
-        return configureMessage(chatId, "Что-то пошло не так...");
+        return toMessage(chatId, UNEXPECTED_ERROR);
+    }
+
+    private UUID parseEventUuid(String[] messageSplit) {
+        return UUID.fromString(messageSplit[Command.MESSAGE_EVENT_ID_INDEX]);
+    }
+
+    private boolean checkOwner(UserEntity user, TavernEntity tavern) {
+        return user.getTavern() != null && user.getTavern() != tavern;
     }
 }

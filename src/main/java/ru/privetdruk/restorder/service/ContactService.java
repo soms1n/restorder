@@ -9,6 +9,11 @@ import ru.privetdruk.restorder.repository.ContactRepository;
 
 import java.util.List;
 
+import static ru.privetdruk.restorder.model.consts.Constant.*;
+
+/**
+ * Сервис контактов
+ */
 @Service
 @RequiredArgsConstructor
 public class ContactService {
@@ -23,22 +28,45 @@ public class ContactService {
         contactRepository.save(contact);
     }
 
+    /**
+     * Найти
+     *
+     * @param user Пользователь
+     * @return Контактная информация пользователя
+     */
     public List<ContactEntity> findByUser(UserEntity user) {
         return contactRepository.findByUser(user);
     }
 
+    /**
+     * Найти
+     *
+     * @param tavern Заведение
+     * @return Контактная информация заведения
+     */
     public List<ContactEntity> findByTavern(TavernEntity tavern) {
         return contactRepository.findByTavern(tavern);
     }
 
+    /**
+     * Удалить
+     *
+     * @param contact Контакт
+     */
     public void delete(ContactEntity contact) {
         contactRepository.delete(contact);
     }
 
+    /**
+     * Подготовить номер телефона для проверок и сохранения
+     *
+     * @param phoneNumber Номер телефона
+     * @return Вместо +7 | 7 return 8
+     */
     public String preparePhoneNumber(String phoneNumber) {
-        String convertedPhone = phoneNumber.replace("+", "");
-        if (convertedPhone.charAt(0) == '7') {
-            convertedPhone = convertedPhone.replaceFirst("7", "8");
+        String convertedPhone = phoneNumber.replace(PLUS, EMPTY_STRING);
+        if (convertedPhone.charAt(FIRST_INDEX) == SEVEN_CHAR) {
+            convertedPhone = convertedPhone.replaceFirst(SEVEN_STRING, EIGHT_STRING);
         }
         return convertedPhone;
     }

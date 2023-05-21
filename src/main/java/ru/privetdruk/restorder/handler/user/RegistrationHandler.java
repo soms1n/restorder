@@ -19,7 +19,7 @@ import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.UserService;
 import ru.privetdruk.restorder.service.util.ValidationService;
 
-import static ru.privetdruk.restorder.service.MessageService.configureMessage;
+import static ru.privetdruk.restorder.service.MessageService.toMessage;
 
 @Component
 @RequiredArgsConstructor
@@ -38,25 +38,25 @@ public class RegistrationHandler implements MessageHandler {
             case SHOW_REGISTER_BUTTON -> {
                 userService.updateSubState(user, SubState.CITY_SELECT);
 
-                return configureMessage(chatId, MessageText.GREETING, KeyboardService.CITIES_KEYBOARD);
+                return toMessage(chatId, MessageText.GREETING, KeyboardService.CITIES_KEYBOARD);
             }
             case CITY_SELECT -> {
                 City city = City.fromDescription(messageText);
                 if (city == null) {
-                    return configureMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.CITIES_KEYBOARD);
+                    return toMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.CITIES_KEYBOARD);
                 }
 
                 user.setCity(city);
 
                 userService.updateSubState(user, SubState.ENTER_PHONE_NUMBER);
 
-                return configureMessage(chatId, MessageText.SHARE_PHONE_NUMBER, KeyboardService.SHARE_PHONE_KEYBOARD);
+                return toMessage(chatId, MessageText.SHARE_PHONE_NUMBER, KeyboardService.SHARE_PHONE_KEYBOARD);
             }
             case ENTER_PHONE_NUMBER -> {
                 Contact sendContact = message.getContact();
 
                 if (sendContact == null) {
-                    return configureMessage(
+                    return toMessage(
                             chatId,
                             MessageText.SHARE_PHONE_NUMBER,
                             KeyboardService.SHARE_PHONE_KEYBOARD
@@ -66,7 +66,7 @@ public class RegistrationHandler implements MessageHandler {
                 String phoneNumber = contactService.preparePhoneNumber(sendContact.getPhoneNumber());
 
                 if (validationService.isNotValidPhone(phoneNumber)) {
-                    return configureMessage(
+                    return toMessage(
                             chatId,
                             MessageText.INCORRECT_PHONE_NUMBER,
                             KeyboardService.SHARE_PHONE_KEYBOARD
@@ -83,11 +83,11 @@ public class RegistrationHandler implements MessageHandler {
 
                 userService.updateSubState(user, SubState.ENTER_FULL_NAME);
 
-                return configureMessage(chatId, MessageText.ENTER_NAME, KeyboardService.REMOVE_KEYBOARD);
+                return toMessage(chatId, MessageText.ENTER_YOUR_NAME, KeyboardService.REMOVE_KEYBOARD);
             }
             case ENTER_FULL_NAME -> {
                 if (validationService.isNotValidName(messageText)) {
-                    return configureMessage(
+                    return toMessage(
                             chatId,
                             "Имя должно содержать только символы кириллицы. Повторите попытку.",
                             KeyboardService.REMOVE_KEYBOARD

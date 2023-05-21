@@ -132,8 +132,8 @@ public class UserService {
         save(user);
     }
 
-    public UserEntity findByPhoneNumber(String phoneNumber) {
-        return userRepository.findByPhoneNumber(phoneNumber);
+    public UserEntity findByPhoneNumberFromUser(String phoneNumber) {
+        return userRepository.findByPhoneNumberAndType(phoneNumber, UserType.USER);
     }
 
     public UserEntity findById(Long userId) {

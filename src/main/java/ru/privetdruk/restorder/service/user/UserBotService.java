@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import ru.privetdruk.restorder.model.consts.Constant;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Command;
 import ru.privetdruk.restorder.model.enums.Role;
@@ -59,7 +60,7 @@ public class UserBotService extends AbstractBotService {
         }
 
         if (user.isRegistered()) {
-            String[] messageSplit = message.getText().split(" ");
+            String[] messageSplit = message.getText().split(Constant.SPACE);
             Command command = Command.fromCommand(messageSplit[Command.MESSAGE_INDEX]);
 
             if (command == Command.MAIN_MENU) {

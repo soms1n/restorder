@@ -2,6 +2,7 @@ package ru.privetdruk.restorder.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.privetdruk.restorder.model.consts.Constant;
 import ru.privetdruk.restorder.model.entity.BlacklistEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.repository.BlacklistRepository;
@@ -35,5 +36,9 @@ public class BlacklistService {
 
     public BlacklistEntity findActiveByPhoneNumber(TavernEntity tavern, String phoneNumber) {
         return blacklistRepository.findByTavernAndPhoneNumberAndActive(tavern, phoneNumber, true);
+    }
+
+    public LocalDateTime calculateUnlockDate(int blockDays) {
+        return blockDays > 0 ? LocalDateTime.now().plusDays(blockDays) : Constant.MAX_DATE_TIME;
     }
 }

@@ -66,16 +66,8 @@ public class ReserveService {
         return repository.findByTavernAndStatusWithTable(tavern, ACTIVE);
     }
 
-    public List<ReserveEntity> findActiveByTavernWithTable(TavernEntity tavern, LocalDate date) {
-        return repository.findByTavernAndStatusWithTable(tavern, date, ACTIVE);
-    }
-
     public List<ReserveEntity> findActiveByTavernWithTableUser(TavernEntity tavern) {
         return repository.findByTavernAndStatusWithTableUser(tavern, ACTIVE);
-    }
-
-    public List<ReserveEntity> findActiveByTavernWithTableUserTavern(TavernEntity tavern) {
-        return repository.findByTavernAndStatusWithTableUserTavern(tavern, ACTIVE);
     }
 
     public ReserveEntity findActiveByIdWithTableUserTavern(Long reserveId, TavernEntity tavern) {
@@ -84,10 +76,6 @@ public class ReserveService {
 
     public List<ReserveEntity> findActiveByTavernWithTableUser(TavernEntity tavern, LocalDate date) {
         return repository.findByTavernAndStatusWithTableUser(tavern, date, ACTIVE);
-    }
-
-    public List<ReserveEntity> findActiveByTable(TableEntity table) {
-        return repository.findByTableAndStatus(table, ACTIVE);
     }
 
     public List<ReserveEntity> findActiveByTable(TableEntity table, LocalDate date) {

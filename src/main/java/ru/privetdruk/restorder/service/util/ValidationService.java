@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.dto.ValidateTavernResult;
 import ru.privetdruk.restorder.model.entity.AddressEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
@@ -14,6 +15,14 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 public class ValidationService {
+    public static final String ADDRESS_IS_NOT_SET = "- отсутствует адрес";
+    public static final String CITI_IS_NOT_SET = "- не выбран город";
+    public static final String ADDRESS_IS_NOT_SET_2 = "- не заполнен адрес";
+    public static final String CATEGORY_IS_NOT_SET = "- не выбрана категория";
+    public static final String SCHEDULE_IS_NOT_SET = "- не заполнен график работы";
+    public static final String CONTACT_IS_NOT_SET = "- не заполнены контакты";
+    public static final String TABLES_IS_NOT_SET = "- не добавлены столы";
+    public static final String TAVERN_NAME_IS_NOT_SET = "- не заполнено название заведения";
     private final Pattern MOBILE_PHONE_PATTERN = Pattern.compile("^8\\d{10}$");
     private final Pattern NAME_PATTERN = Pattern.compile("^(?=.{1,40}$)[а-яёА-ЯЁ]+(?:[-' ][а-яёА-ЯЁ]+)*$");
 
@@ -39,42 +48,42 @@ public class ValidationService {
     public ValidateTavernResult validate(TavernEntity tavern) {
         ValidateTavernResult result = new ValidateTavernResult();
         if (tavern == null) {
-            result.addMessage("Что-то пошло не так...");
+            result.addMessage(MessageText.UNEXPECTED_ERROR);
 
             return result;
         }
 
         AddressEntity address = tavern.getAddress();
         if (address == null) {
-            result.addMessage("- отсутствует адрес");
+            result.addMessage(ADDRESS_IS_NOT_SET);
         } else {
             if (address.getCity() == null) {
-                result.addMessage("- не выбран город");
+                result.addMessage(CITI_IS_NOT_SET);
             }
 
             if (!StringUtils.hasText(address.getStreet())) {
-                result.addMessage("- не заполнен адрес");
+                result.addMessage(ADDRESS_IS_NOT_SET_2);
             }
         }
 
         if (tavern.getCategory() == null) {
-            result.addMessage("- не выбрана категория");
+            result.addMessage(CATEGORY_IS_NOT_SET);
         }
 
         if (CollectionUtils.isEmpty(tavern.getSchedules())) {
-            result.addMessage("- не заполнен график работы");
+            result.addMessage(SCHEDULE_IS_NOT_SET);
         }
 
         if (CollectionUtils.isEmpty(tavern.getContacts())) {
-            result.addMessage("- не заполнены контакты");
+            result.addMessage(CONTACT_IS_NOT_SET);
         }
 
         if (CollectionUtils.isEmpty(tavern.getTables())) {
-            result.addMessage("- не добавлены столы");
+            result.addMessage(TABLES_IS_NOT_SET);
         }
 
         if (!StringUtils.hasText(tavern.getName())) {
-            result.addMessage("- не добавлены столы");
+            result.addMessage(TAVERN_NAME_IS_NOT_SET);
         }
 
         if (CollectionUtils.isEmpty(result.getMessages())) {

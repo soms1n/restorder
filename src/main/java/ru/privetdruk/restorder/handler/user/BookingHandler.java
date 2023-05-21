@@ -24,18 +24,29 @@ import ru.privetdruk.restorder.service.util.StringService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.comparingInt;
 import static org.springframework.util.CollectionUtils.isEmpty;
+import static ru.privetdruk.restorder.model.consts.Constant.*;
+import static ru.privetdruk.restorder.service.KeyboardService.BOOKING_CHOICE_TIME_KEYBOARD;
 import static ru.privetdruk.restorder.service.MessageService.configureMarkdownMessage;
-import static ru.privetdruk.restorder.service.MessageService.configureMessage;
+import static ru.privetdruk.restorder.service.MessageService.toMessage;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class BookingHandler implements MessageHandler {
+    public static final String BEFORE = " до ";
+    public static final String FREE_UP = ", освободить до ";
+    public static final long FREE_UP_MINUTES = 10L;
     private final ContactService contactService;
     private final InfoService infoService;
     private final MessageService messageService;
@@ -80,11 +91,7 @@ public class BookingHandler implements MessageHandler {
                     if (button == Button.RESERVE || button == Button.BACK) {
                         userService.updateSubState(user, SubState.BOOKING_CHOICE_DATE);
 
-                        return configureMessage(
-                                chatId,
-                                "Введите дату в формате ДДММГГГГ <i>(пример: если хотите забронировать 24.05.2022, то введите 24052022)</i>:",
-                                KeyboardService.BOOKING_CHOICE_DATE_KEYBOARD
-                        );
+                        return toMessage(chatId, MessageText.ENTER_RESERVE_DATE, KeyboardService.BOOKING_CHOICE_DATE_KEYBOARD);
                     }
                 }
                 case BOOKING_CHOICE_DATE -> {
@@ -99,11 +106,7 @@ public class BookingHandler implements MessageHandler {
                             };
 
                             if (date.isBefore(now)) {
-                                return configureMessage(
-                                        chatId,
-                                        "Дата бронирования должна быть больше, либо равна текущей дате. Повторите попытку:",
-                                        KeyboardService.BOOKING_CHOICE_DATE_KEYBOARD
-                                );
+                                return toMessage(chatId, MessageText.INCORRECT_MORE_DATE_RETRY, KeyboardService.BOOKING_CHOICE_DATE_KEYBOARD);
                             }
 
                             bookings.get(user)
@@ -112,13 +115,9 @@ public class BookingHandler implements MessageHandler {
 
                         userService.updateSubState(user, SubState.BOOKING_CHOICE_TIME);
 
-                        return configureMessage(chatId, "Введите время в формате ЧЧММ <i>(пример: если хотите забронировать в 17:48, то введите 1748)</i>:", KeyboardService.BOOKING_CHOICE_TIME_KEYBOARD);
-                    } catch (Throwable t) {
-                        return configureMessage(
-                                chatId,
-                                "Введенная дата не соответствует формату. Пример - 05092022 <i>(5 сентября 2022 года)</i>. Повторите попытку:",
-                                KeyboardService.BOOKING_CHOICE_DATE_KEYBOARD
-                        );
+                        return toMessage(chatId, MessageText.ENTER_RESERVE_TIME, BOOKING_CHOICE_TIME_KEYBOARD);
+                    } catch (Exception exception) {
+                        return toMessage(chatId, MessageText.INCORRECT_DATE_RETRY, KeyboardService.BOOKING_CHOICE_DATE_KEYBOARD);
                     }
                 }
                 case BOOKING_CHOICE_TIME -> {
@@ -142,19 +141,11 @@ public class BookingHandler implements MessageHandler {
                                     });
 
                             if (!available) {
-                                return configureMessage(
-                                        chatId,
-                                        "В указанное время заведение не работает. Введите другое время:",
-                                        KeyboardService.BOOKING_CHOICE_TIME_KEYBOARD
-                                );
+                                return toMessage(chatId, MessageText.TAVERN_IS_NOT_WORKING, BOOKING_CHOICE_TIME_KEYBOARD);
                             }
 
                             if (booking.getDate().isEqual(LocalDate.now()) && time.isBefore(LocalTime.now())) {
-                                return configureMessage(
-                                        chatId,
-                                        "Время бронирования должно быть больше, либо равно текущему времени.",
-                                        KeyboardService.BOOKING_CHOICE_TIME_KEYBOARD
-                                );
+                                return toMessage(chatId, MessageText.INCORRECT_MORE_TIME_RETRY, BOOKING_CHOICE_TIME_KEYBOARD);
                             }
 
                             booking.setTime(time);
@@ -162,13 +153,9 @@ public class BookingHandler implements MessageHandler {
 
                         userService.updateSubState(user, SubState.BOOKING_CHOICE_PERSONS);
 
-                        return configureMessage(chatId, "Введите кол-во персон:", KeyboardService.NUMBERS_KEYBOARD);
-                    } catch (Throwable t) {
-                        return configureMessage(
-                                chatId,
-                                "Введенное время не соответствует формату. Пример - 0305 (3 часа 5 минут). Повторите попытку:",
-                                KeyboardService.BOOKING_CHOICE_TIME_KEYBOARD
-                        );
+                        return toMessage(chatId, MessageText.ENTER_NUMBER_PERSONS, KeyboardService.NUMBERS_KEYBOARD);
+                    } catch (Exception exception) {
+                        return toMessage(chatId, MessageText.INCORRECT_TIME_RETRY, BOOKING_CHOICE_TIME_KEYBOARD);
                     }
                 }
                 case BOOKING_CHOICE_PERSONS -> {
@@ -183,23 +170,16 @@ public class BookingHandler implements MessageHandler {
 
                         if (StringUtils.hasText(booking.getTavern().getLinkTableLayout())) {
                             userService.updateSubState(user, SubState.BOOKING_CHOICE_TABLE_ANSWER);
-                            return configureMessage(
-                                    chatId,
-                                    "Хотите сами выбрать место или мы подберем его автоматически?",
-                                    KeyboardService.BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD
-                            );
+                            return toMessage(chatId, MessageText.MANUAL_OR_AUTO, KeyboardService.BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD);
                         }
 
                         return choiceTableAutomatic(user, chatId, booking);
                     } catch (Exception exception) {
                         if (!(exception instanceof NumberFormatException)) {
-                            log.error("Произошла непредвиденная ошибка", exception);
+                            log.error(MessageText.UNEXPECTED_ERROR, exception);
                         }
 
-                        return configureMessage(chatId,
-                                "Вы ввели некорректное значение. Повторите попытку.",
-                                KeyboardService.NUMBERS_KEYBOARD
-                        );
+                        return toMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.NUMBERS_KEYBOARD);
                     }
                 }
                 case BOOKING_CHOICE_TABLE_ANSWER -> {
@@ -208,26 +188,23 @@ public class BookingHandler implements MessageHandler {
                     } else if (button == Button.AUTOMATIC) {
                         return choiceTableAutomatic(user, chatId, bookings.get(user));
                     } else {
-                        return configureMessage(
-                                chatId,
-                                "Вы ввели некорректное значение. Повторите попытку.",
-                                KeyboardService.BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD
-                        );
+                        return toMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD);
                     }
                 }
                 case BOOKING_CHOICE_TABLE_MANUALLY -> {
                     Long tableId = messageService.parseId(messageText);
                     BookingDto booking = bookings.get(user);
+
                     TableEntity reserveTable = booking.getTavern().getTables().stream()
                             .filter(table -> table.getId().equals(tableId))
                             .findFirst()
                             .orElse(null);
 
                     if (reserveTable == null) {
-                        return toMainMenu(user, "Выбрано некорректное значение.");
+                        return toMainMenu(user, MessageText.INCORRECT_VALUE_CANCELLED);
                     }
 
-                    int beforeIndex = messageText.indexOf(" до ");
+                    int beforeIndex = messageText.indexOf(BEFORE);
                     if (beforeIndex != -1) {
                         booking.setBeforeTime(LocalTime.parse(messageText.substring(beforeIndex + 4, beforeIndex + 9)));
                     }
@@ -236,16 +213,16 @@ public class BookingHandler implements MessageHandler {
 
                     userService.updateSubState(user, SubState.BOOKING_APPROVE);
 
-                    return configureMessage(chatId, fillReserveInfo(bookings.get(user), true), KeyboardService.APPROVE_KEYBOARD);
+                    return toMessage(chatId, infoService.fillReserveInfo(bookings.get(user), true), KeyboardService.APPROVE_KEYBOARD);
                 }
                 case BOOKING_APPROVE_BEFORE -> {
                     if (button == Button.ACCEPT) {
                         userService.updateSubState(user, SubState.BOOKING_APPROVE);
 
-                        return configureMessage(chatId, fillReserveInfo(bookings.get(user), true), KeyboardService.APPROVE_KEYBOARD);
+                        return toMessage(chatId, infoService.fillReserveInfo(bookings.get(user), true), KeyboardService.APPROVE_KEYBOARD);
                     } else {
                         bookings.remove(user);
-                        return toMainMenu(user, "Вы отменили бронирование.");
+                        return toMainMenu(user, MessageText.RESERVE_CANCEL);
                     }
                 }
                 case BOOKING_APPROVE -> {
@@ -276,23 +253,23 @@ public class BookingHandler implements MessageHandler {
 
                         String messageForAdmin = "Только что забронировали новый столик."
                                 + System.lineSeparator() + System.lineSeparator()
-                                + fillReserveInfo(booking, false);
+                                + infoService.fillReserveInfo(booking, false);
 
                         Flux.fromIterable(
                                         booking.getTavern().getEmployees().stream()
                                                 .filter(employee -> employee.getRoles().contains(Role.CLIENT_EMPLOYEE))
                                                 .collect(Collectors.toSet())
                                 )
-                                .flatMap(employee -> telegramApiService.sendMessage(employee.getTelegramId(), messageForAdmin, true))
+                                .flatMap(employee -> telegramApiService.prepareSendMessage(employee.getTelegramId(), messageForAdmin, true))
                                 .subscribeOn(Schedulers.boundedElastic())
                                 .subscribe();
 
-                        return toMainMenu(user, "Вы успешно забронировали столик!");
+                        return toMainMenu(user, MessageText.RESERVE_SUCCESS);
                     }
 
                     bookings.remove(user);
 
-                    return toMainMenu(user, "Операция отменена. Возврат в главное меню.");
+                    return toMainMenu(user, MessageText.CANCEL_OPERATION_RETURN_TO_MENU);
                 }
                 case CHOICE_TAVERN -> {
                     TavernEntity tavern;
@@ -302,12 +279,12 @@ public class BookingHandler implements MessageHandler {
                     } else {
                         Long tavernId = messageService.parseId(messageText);
                         if (tavernId == null) {
-                            return toMainMenu(user, "Вы не выбрали заведение.");
+                            return toMainMenu(user, MessageText.YOU_DONT_CHOICE_TAVERN);
                         }
 
                         tavern = tavernService.findWithAllData(tavernId);
                         if (tavern == null) {
-                            return toMainMenu(user, "Нельзя забронировать столик в выбранном заведении.");
+                            return toMainMenu(user, MessageText.CANT_MAKE_RESERVATION);
                         }
 
                         bookings.get(user)
@@ -316,12 +293,12 @@ public class BookingHandler implements MessageHandler {
 
                     userService.updateSubState(user, SubState.VIEW_TAVERN);
 
-                    return configureMessage(chatId, infoService.fillGeneral(tavern), KeyboardService.TAVERN_INFO_KEYBOARD);
+                    return toMessage(chatId, infoService.fillGeneral(tavern), KeyboardService.TAVERN_INFO_KEYBOARD);
                 }
                 case DELETE_RESERVE_CHOICE_TAVERN -> {
                     Long id = messageService.parseId(messageText);
                     if (id == null) {
-                        return configureMessage(chatId, MessageText.INCORRECT_VALUE_CANCELLED, KeyboardService.USER_MAIN_MENU);
+                        return toMessage(chatId, MessageText.INCORRECT_VALUE_CANCELLED, KeyboardService.USER_MAIN_MENU_KEYBOARD);
                     }
 
                     ReserveEntity reserve = reserveService.findById(id);
@@ -336,7 +313,7 @@ public class BookingHandler implements MessageHandler {
         // отрисовка меню
         return switch (user.getSubState()) {
             case VIEW_MAIN_MENU -> configureMainMenu(chatId, user);
-            case VIEW_RESERVE_LIST -> configureMessage(chatId, fillReserves(user), KeyboardService.USER_RESERVE_LIST_KEYBOARD);
+            case VIEW_RESERVE_LIST -> toMessage(chatId, fillReserves(user), KeyboardService.USER_RESERVE_LIST_KEYBOARD);
             case VIEW_TAVERN_LIST -> fillTaverns(user);
 
             default -> new SendMessage();
@@ -345,7 +322,7 @@ public class BookingHandler implements MessageHandler {
 
     private SendMessage configureMainMenu(Long chatId, UserEntity user) {
         bookings.remove(user);
-        return configureMessage(chatId, "Открываю главное меню.", KeyboardService.USER_MAIN_MENU);
+        return toMessage(chatId, MessageText.OPEN_MENU, KeyboardService.USER_MAIN_MENU_KEYBOARD);
     }
 
     private SendMessage choiceTableManually(UserEntity user, Long chatId, BookingDto booking) {
@@ -353,7 +330,7 @@ public class BookingHandler implements MessageHandler {
 
         List<TableEntity> tables = tavern.getTables().stream()
                 .filter(table -> table.getNumberSeats() >= booking.getPersons())
-                .sorted(Comparator.comparingInt(TableEntity::getNumberSeats))
+                .sorted(comparingInt(TableEntity::getNumberSeats))
                 .toList();
 
         if (isEmpty(tables)) {
@@ -375,7 +352,7 @@ public class BookingHandler implements MessageHandler {
         Map<LocalTime, TableEntity> tablesTime = new HashMap<>();
         for (TableEntity table : tables) {
             ReserveEntity foundReserve = reserveService.findActiveByTable(table, booking.getDate()).stream()
-                    .min(Comparator.comparing(ReserveEntity::getTime))
+                    .min(comparing(ReserveEntity::getTime))
                     .orElse(null);
 
             if (foundReserve == null || (foundReserve.getTime().isBefore(time)
@@ -396,9 +373,9 @@ public class BookingHandler implements MessageHandler {
         if (!freeTables.isEmpty()) {
             freeTables.forEach(table ->
                     rows.add(new KeyboardRow(List.of(new KeyboardButton(
-                            table.getLabel() + " " + table.getNumberSeats() + " "
+                            table.getLabel() + SPACE + table.getNumberSeats() + SPACE
                                     + stringService.declensionWords(table.getNumberSeats(), StringService.SEATS_WORDS)
-                                    + " [" + table.getId() + "]"
+                                    + LEFT_SQUARE_BRACKET_WITH_SPACE + table.getId() + RIGHT_SQUARE_BRACKET
                     ))))
             );
         }
@@ -407,9 +384,10 @@ public class BookingHandler implements MessageHandler {
             for (var entry : tablesTime.entrySet()) {
                 TableEntity table = entry.getValue();
                 rows.add(new KeyboardRow(List.of(new KeyboardButton(
-                        table.getLabel() + " " + table.getNumberSeats() + " "
+                        table.getLabel() + SPACE + table.getNumberSeats() + SPACE
                                 + stringService.declensionWords(table.getNumberSeats(), StringService.SEATS_WORDS)
-                                + ", освободить до " + entry.getKey().minusMinutes(10L) + " [" + table.getId() + "]"
+                                + FREE_UP + entry.getKey().minusMinutes(FREE_UP_MINUTES)
+                                + LEFT_SQUARE_BRACKET_WITH_SPACE + table.getId() + RIGHT_SQUARE_BRACKET
                 ))));
             }
         }
@@ -421,7 +399,7 @@ public class BookingHandler implements MessageHandler {
 
         userService.updateSubState(user, SubState.BOOKING_CHOICE_TABLE_MANUALLY);
 
-        return configureMarkdownMessage(chatId, "Выберите стол.\n\nСхема расположения столов: [\u200B](" + tavern.getLinkTableLayout() + ")", tablesKeyboard);
+        return configureMarkdownMessage(chatId, format(MessageText.CHOICE_TABLE_WITH_LINK, tavern.getLinkTableLayout()), tablesKeyboard);
     }
 
     private SendMessage choiceTableAutomatic(UserEntity user, Long chatId, BookingDto booking) {
@@ -429,7 +407,7 @@ public class BookingHandler implements MessageHandler {
 
         List<TableEntity> tables = tavern.getTables().stream()
                 .filter(table -> table.getNumberSeats() >= booking.getPersons())
-                .sorted(Comparator.comparingInt(TableEntity::getNumberSeats))
+                .sorted(comparingInt(TableEntity::getNumberSeats))
                 .toList();
 
         if (isEmpty(tables)) {
@@ -444,7 +422,7 @@ public class BookingHandler implements MessageHandler {
 
                 userService.updateSubState(user, SubState.BOOKING_APPROVE);
 
-                return configureMessage(chatId, fillReserveInfo(booking, true), KeyboardService.APPROVE_KEYBOARD);
+                return toMessage(chatId, infoService.fillReserveInfo(booking, true), KeyboardService.APPROVE_KEYBOARD);
             }
         }
 
@@ -453,7 +431,7 @@ public class BookingHandler implements MessageHandler {
         Map<LocalTime, TableEntity> tablesTime = new HashMap<>();
         for (TableEntity table : tables) {
             ReserveEntity foundReserve = reserveService.findActiveByTable(table, booking.getDate()).stream()
-                    .min(Comparator.comparing(ReserveEntity::getTime))
+                    .min(comparing(ReserveEntity::getTime))
                     .orElse(null);
 
             if (foundReserve == null || (foundReserve.getTime().isBefore(time)
@@ -478,37 +456,19 @@ public class BookingHandler implements MessageHandler {
 
         userService.updateSubState(user, SubState.BOOKING_APPROVE_BEFORE);
 
-        return configureMessage(
+        return toMessage(
                 chatId,
-                "В указанное вами время столик свободен до "
-                        + maxTime.format(Constant.HH_MM_FORMATTER)
-                        + ". Данный столик нужно будет освободить не позднее "
-                        + maxTime.minusMinutes(10L) + ". Подтверждаете бронирование?",
+                format(MessageText.TABLE_FREE_UP, maxTime.format(HH_MM_FORMATTER), maxTime.minusMinutes(FREE_UP_MINUTES)),
                 KeyboardService.APPROVE_BEFORE_KEYBOARD
         );
     }
 
     private String tableFullMessage(BookingDto booking) {
-        return "К сожалению не удалось найти подходящий столик на "
-                + booking.getPersons()
-                + " "
-                + stringService.declensionWords(booking.getPersons(), StringService.SEATS_WORDS)
-                + " в выбранную дату и время.";
-    }
-
-    private String fillReserveInfo(BookingDto booking, boolean fillTavernName) {
-        return "<b>Информация о бронировании</b>"
-                + System.lineSeparator()
-                + (fillTavernName ? "" : booking.getName() + " " + booking.getPhoneNumber() + System.lineSeparator())
-                + (fillTavernName ? "Заведение: <i>" + booking.getTavern().getName() + "</i>" + System.lineSeparator() : "")
-                + "Дата: <i>" + booking.getDate().format(Constant.DD_MM_YYYY_FORMATTER) + "</i>"
-                + System.lineSeparator()
-                + "Время: <i>" + booking.getTime().format(Constant.HH_MM_FORMATTER) + "</i>"
-                + System.lineSeparator()
-                + "Кол-во персон: <i>" + booking.getPersons() + "</i>"
-                + (booking.getBeforeTime() == null ? ""
-                : System.lineSeparator()
-                + "Примечание: <i>стол нужно будет освободить до " + booking.getBeforeTime().format(Constant.HH_MM_FORMATTER) + "</i>");
+        return format(
+                MessageText.TABLE_NOT_FOUND,
+                booking.getPersons(),
+                stringService.declensionWords(booking.getPersons(), StringService.SEATS_WORDS)
+        );
     }
 
     private SendMessage fillTaverns(UserEntity user) {
@@ -531,14 +491,14 @@ public class BookingHandler implements MessageHandler {
 
         List<KeyboardRow> keyboardRows = new ArrayList<>(
                 taverns.stream()
-                        .map(tavern -> new KeyboardButton(tavern.getName() + " [" + tavern.getId() + "]"))
-                        .collect(Collectors.groupingBy(e -> counter.getAndIncrement() / 2))
+                        .map(tavern -> new KeyboardButton(tavern.getName() + LEFT_SQUARE_BRACKET_WITH_SPACE + tavern.getId() + RIGHT_SQUARE_BRACKET))
+                        .collect(Collectors.groupingBy(button -> counter.getAndIncrement() / 2))
                         .values())
                 .stream()
                 .map(KeyboardRow::new)
                 .collect(Collectors.toList());
 
-        keyboardRows.add(new KeyboardRow(List.of(new KeyboardButton(Button.RETURN_MAIN_MENU.getText()))));
+        keyboardRows.add(KeyboardService.RETURN_MAIN_MENU_ROW);
 
         ReplyKeyboardMarkup keyboard = ReplyKeyboardMarkup.builder()
                 .keyboard(keyboardRows)
@@ -546,13 +506,13 @@ public class BookingHandler implements MessageHandler {
 
         keyboard.setResizeKeyboard(true);
 
-        return configureMessage(user.getTelegramId(), "Выберите заведение.", keyboard);
+        return toMessage(user.getTelegramId(), MessageText.CHOICE_TAVERN, keyboard);
     }
 
     private SendMessage toMainMenu(UserEntity user, String message) {
         bookings.remove(user);
         userService.updateState(user, State.BOOKING);
-        return configureMessage(user.getTelegramId(), message, KeyboardService.USER_MAIN_MENU);
+        return toMessage(user.getTelegramId(), message, KeyboardService.USER_MAIN_MENU_KEYBOARD);
     }
 
     private void returnToMainMenu(UserEntity user) {
@@ -563,7 +523,7 @@ public class BookingHandler implements MessageHandler {
         List<ReserveEntity> activeReserves = reserveService.findActiveByUser(user);
 
         if (isEmpty(activeReserves)) {
-            return configureMessage(chatId, "У Вас нет активных бронирований.", KeyboardService.USER_RESERVE_LIST_KEYBOARD);
+            return toMessage(chatId, MessageText.ACTIVE_RESERVES_NOT_FOUND, KeyboardService.USER_RESERVE_LIST_KEYBOARD);
         }
 
         userService.updateSubState(user, SubState.DELETE_RESERVE_CHOICE_TAVERN);
@@ -572,11 +532,11 @@ public class BookingHandler implements MessageHandler {
         List<KeyboardRow> rows = new ArrayList<>();
 
         activeReserves.stream()
-                .sorted(Comparator.comparing(o -> LocalDateTime.of(o.getDate(), o.getTime())))
+                .sorted(comparing(o -> LocalDateTime.of(o.getDate(), o.getTime())))
                 .filter(reserve -> reserve.getStatus() == ReserveStatus.ACTIVE)
-                .map(reserve -> String.format(
+                .map(reserve -> format(
                         "%s %s %s [%s]",
-                        reserve.getDate().format(Constant.DD_MM_YYYY_FORMATTER),
+                        reserve.getDate().format(DD_MM_YYYY_FORMATTER),
                         reserve.getTime(),
                         reserve.getTable().getTavern().getName(),
                         reserve.getId()
@@ -588,27 +548,27 @@ public class BookingHandler implements MessageHandler {
         reservesKeyboard.setKeyboard(rows);
         reservesKeyboard.setResizeKeyboard(true);
 
-        return configureMessage(chatId, "Выберите бронь, которую хотите отменить.", reservesKeyboard);
+        return toMessage(chatId, "Выберите бронь, которую хотите отменить.", reservesKeyboard);
     }
 
     private String fillReserves(UserEntity user) {
         List<ReserveEntity> activeReserves = reserveService.findActiveByUser(user);
 
         if (isEmpty(activeReserves)) {
-            return "У Вас нет активных бронирований.";
+            return MessageText.ACTIVE_RESERVES_NOT_FOUND;
         }
 
         return activeReserves.stream()
                 .filter(reserve -> reserve.getStatus() == ReserveStatus.ACTIVE)
-                .sorted(Comparator.comparing(o -> LocalDateTime.of(o.getDate(), o.getTime())))
-                .map(reserve -> String.format(
+                .sorted(comparing(o -> LocalDateTime.of(o.getDate(), o.getTime())))
+                .map(reserve -> format(
                         """
                                 ™️ <b>Заведение:</b> <i>%s</i>
                                 \uD83D\uDDD3 <b>Дата и время:</b> <i>%s</i> в <i>%s</i>
                                 \uD83D\uDC65 <b>Кол-во персон:</b> <i>%s</i>""",
                         reserve.getTable().getTavern().getName(),
-                        reserve.getDate().format(Constant.DD_MM_YYYY_FORMATTER),
-                        reserve.getTime().format(Constant.HH_MM_FORMATTER),
+                        reserve.getDate().format(DD_MM_YYYY_FORMATTER),
+                        reserve.getTime().format(HH_MM_FORMATTER),
                         reserve.getNumberPeople()
                 ))
                 .collect(Collectors.joining(System.lineSeparator() + System.lineSeparator()));

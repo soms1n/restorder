@@ -28,7 +28,7 @@ public interface UserRepository extends CrudRepository<UserEntity, Long> {
             SELECT user
              FROM UserEntity user
              JOIN ContactEntity contact ON contact.user = user
-            WHERE contact.value = :phoneNumber
+            WHERE contact.value = :phoneNumber AND user.type = :type
             """)
-    UserEntity findByPhoneNumber(String phoneNumber);
+    UserEntity findByPhoneNumberAndType(String phoneNumber, UserType type);
 }

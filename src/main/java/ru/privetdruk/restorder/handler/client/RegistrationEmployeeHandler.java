@@ -2,7 +2,6 @@ package ru.privetdruk.restorder.handler.client;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Contact;
@@ -14,12 +13,12 @@ import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.ContractType;
 import ru.privetdruk.restorder.model.enums.SubState;
 import ru.privetdruk.restorder.service.ContactService;
-import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.UserService;
 import ru.privetdruk.restorder.service.util.ValidationService;
 
-import static ru.privetdruk.restorder.model.consts.MessageText.INCORRECT_ENTER_PHONE_NUMBER;
-import static ru.privetdruk.restorder.service.MessageService.configureMessage;
+import static org.springframework.util.StringUtils.hasText;
+import static ru.privetdruk.restorder.service.KeyboardService.SHARE_PHONE_KEYBOARD;
+import static ru.privetdruk.restorder.service.MessageService.toMessage;
 
 @Component
 @RequiredArgsConstructor
@@ -39,39 +38,32 @@ public class RegistrationEmployeeHandler implements MessageHandler {
 
         switch (subState) {
             case REGISTER_EMPLOYEE_BUTTON_PRESS -> {
-                return configureMessage(chatId, changeState(user, subState).getMessage());
+                return toMessage(chatId, changeState(user, subState).getMessage());
             }
             case ENTER_EMPLOYEE_FULL_NAME -> {
-                if (!StringUtils.hasText(messageText)) {
-                    return configureMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
+                if (!hasText(messageText)) {
+                    return toMessage(chatId, MessageText.ENTER_EMPTY_VALUE);
                 }
 
                 user.setName(messageText);
 
-                sendMessage = configureMessage(chatId, changeState(user, subState).getMessage());
+                sendMessage = toMessage(chatId, changeState(user, subState).getMessage());
 
-                sendMessage.setReplyMarkup(KeyboardService.SHARE_PHONE_KEYBOARD);
+                sendMessage.setReplyMarkup(SHARE_PHONE_KEYBOARD);
 
                 return sendMessage;
             }
             case ENTER_EMPLOYEE_PHONE_NUMBER -> {
                 Contact sendContact = message.getContact();
+
                 if (sendContact == null) {
-                    return configureMessage(
-                            chatId,
-                            MessageText.SHARE_PHONE_NUMBER,
-                            KeyboardService.SHARE_PHONE_KEYBOARD
-                    );
+                    return toMessage(chatId, MessageText.SHARE_PHONE_NUMBER, SHARE_PHONE_KEYBOARD);
                 }
 
                 String phoneNumber = contactService.preparePhoneNumber(sendContact.getPhoneNumber());
 
                 if (validationService.isNotValidPhone(phoneNumber)) {
-                    return configureMessage(
-                            chatId,
-                            INCORRECT_ENTER_PHONE_NUMBER,
-                            KeyboardService.SHARE_PHONE_KEYBOARD
-                    );
+                    return toMessage(chatId, MessageText.INCORRECT_ENTER_PHONE_NUMBER, SHARE_PHONE_KEYBOARD);
                 }
 
                 ContactEntity contact = ContactEntity.builder()
@@ -93,6 +85,7 @@ public class RegistrationEmployeeHandler implements MessageHandler {
 
     private SubState changeState(UserEntity user, SubState subState) {
         SubState nextSubState = subState.getNextSubState();
+
         user.setState(nextSubState.getState());
         user.setSubState(nextSubState);
 

@@ -10,16 +10,26 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.privetdruk.restorder.handler.MessageHandler;
+import ru.privetdruk.restorder.model.consts.Constant;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.State;
 
 import java.util.Map;
 import java.util.Optional;
 
+import static java.lang.String.format;
+
 @Slf4j
 public abstract class AbstractBotService {
     protected final UserService userService;
     protected final Map<State, MessageHandler> handlers;
+
+    protected final String UNEXPECTED_ERROR = """
+            Произошла непредвиденная ошибка.
+                                
+            %s
+            Сообщение: %s
+            %s""";
 
     public AbstractBotService(UserService userService, BotHandler handlerService) {
         this.userService = userService;
@@ -53,17 +63,16 @@ public abstract class AbstractBotService {
 
     protected BotApiMethod<Message> getSendMessage(ShortUpdate shortUpdate, UserEntity user, MessageHandler messageHandler) {
         try {
-            return messageHandler
-                    .handle(user, shortUpdate.getMessage(), shortUpdate.getCallback());
-        } catch (Throwable t) {
-            log.error(
-                    "Произошла непредвиденная ошибка."
-                            + System.lineSeparator() + System.lineSeparator()
-                            + user + System.lineSeparator()
-                            + "Сообщение: " + shortUpdate.getMessage().getText() + System.lineSeparator()
-                            + (shortUpdate.getCallback() == null ? "" : shortUpdate.getCallback()),
-                    t
-            );
+            return messageHandler.handle(user, shortUpdate.getMessage(), shortUpdate.getCallback());
+        } catch (Exception exception) {
+            log.error(format(
+                            UNEXPECTED_ERROR,
+                            user,
+                            shortUpdate.getMessage().getText(),
+                            (shortUpdate.getCallback() == null ? Constant.EMPTY_STRING : shortUpdate.getCallback())
+                    ),
+                    exception);
+
             return new SendMessage();
         }
     }

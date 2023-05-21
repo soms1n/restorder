@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 @Service
 public class KeyboardService {
     public static final ReplyKeyboardRemove REMOVE_KEYBOARD = new ReplyKeyboardRemove(true);
-    public static final ReplyKeyboardMarkup CLIENT_MAIN_MENU = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup USER_MAIN_MENU = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup CLIENT_MAIN_MENU_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup USER_MAIN_MENU_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup SHARE_PHONE_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup YES_NO_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup CANCEL_KEYBOARD = new ReplyKeyboardMarkup();
@@ -56,10 +56,13 @@ public class KeyboardService {
     public static final ReplyKeyboardMarkup BOOKING_CHOICE_TIME_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup RESERVE_CHOICE_TIME_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup WITHOUT_DESCRIPTION_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup REGISTRATION_TAVERN_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final ReplyKeyboardMarkup REGISTRATION_APPROVING = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup REGISTRATION_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup REGISTRATION_APPROVING_KEYBOARD = new ReplyKeyboardMarkup();
     public static final ReplyKeyboardMarkup BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD = new ReplyKeyboardMarkup();
-    public static final KeyboardRow BACK_AND_MAIN_MENU_ROW = new KeyboardRow(newKeyboardRow(Button.BACK, Button.RETURN_MAIN_MENU));
+    public static final ReplyKeyboardMarkup TAVERN_REGISTRATION_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final ReplyKeyboardMarkup TAVERN_EDIT_REGISTRATION_KEYBOARD = new ReplyKeyboardMarkup();
+    public static final KeyboardRow BACK_AND_MAIN_MENU_ROW = newKeyboardRow(Button.BACK, Button.RETURN_MAIN_MENU);
+    public static final KeyboardRow RETURN_MAIN_MENU_ROW = newKeyboardRow(Button.RETURN_MAIN_MENU);
 
     {
         init();
@@ -76,14 +79,15 @@ public class KeyboardService {
         fillKeyboard(BOOKING_CHOICE_TIME_KEYBOARD, BACK_AND_MAIN_MENU_ROW);
 
         fillKeyboard(CITIES_KEYBOARD, newKeyboardRow(City.YOSHKAR_OLA.getDescription()));
-        fillKeyboard(REGISTRATION_TAVERN_KEYBOARD, newKeyboardRow(Button.REGISTRATION));
+        fillKeyboard(REGISTRATION_KEYBOARD, newKeyboardRow(Button.REGISTRATION));
         fillKeyboard(CITIES_KEYBOARD, newKeyboardRow(City.YOSHKAR_OLA.getDescription()));
         fillKeyboard(WITHOUT_DESCRIPTION_KEYBOARD, newKeyboardRow(Button.WITHOUT_DESCRIPTION));
 
         fillKeyboard(YES_NO_KEYBOARD, newKeyboardRow(Button.YES, Button.NO));
         fillKeyboard(APPROVE_KEYBOARD, newKeyboardRow(Button.CANCEL, Button.ACCEPT));
-        fillKeyboard(REGISTRATION_APPROVING, newKeyboardRow(Button.EDIT, Button.APPROVE));
+        fillKeyboard(REGISTRATION_APPROVING_KEYBOARD, newKeyboardRow(Button.EDIT, Button.APPROVE));
         fillKeyboard(APPROVE_BEFORE_KEYBOARD, newKeyboardRow(Button.CANCEL, Button.ACCEPT));
+        fillKeyboard(TAVERN_EDIT_REGISTRATION_KEYBOARD, newKeyboardRow(Button.EDIT_MENU, Button.COMPLETE_REGISTRATION));
 
         fillKeyboard(
                 BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD,
@@ -104,14 +108,14 @@ public class KeyboardService {
         );
 
         fillKeyboard(
-                CLIENT_MAIN_MENU,
+                CLIENT_MAIN_MENU_KEYBOARD,
                 newKeyboardRow(Button.RESERVE),
                 newKeyboardRow(Button.RESERVE_LIST),
                 newKeyboardRow(Button.SETTINGS, Button.INFORMATION)
         );
 
         fillKeyboard(
-                USER_MAIN_MENU,
+                USER_MAIN_MENU_KEYBOARD,
                 newKeyboardRow(Button.CAFE_BAR_RESTAURANT),
                 newKeyboardRow(Button.NIGHT_CLUB, Button.HOOKAH_BAR),
                 newKeyboardRow(Button.BILLIARDS, Button.BOWLING),
@@ -135,6 +139,13 @@ public class KeyboardService {
                 newKeyboardRow(Button.GENERAL, Button.EMPLOYEES),
                 newKeyboardRow(Button.SCHEDULE, Button.TABLES),
                 newKeyboardRow(Button.RETURN_MAIN_MENU)
+        );
+
+        fillKeyboard(
+                TAVERN_REGISTRATION_KEYBOARD,
+                newKeyboardRow(Button.NAME, Button.TAVERN_NAME),
+                newKeyboardRow(Button.DESCRIPTION, Button.TAVERN_ADDRESS, Button.PHONE_NUMBER),
+                newKeyboardRow(Button.COMPLETE_REGISTRATION)
         );
 
         fillKeyboard(
