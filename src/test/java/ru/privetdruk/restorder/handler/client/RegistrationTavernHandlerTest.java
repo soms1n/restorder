@@ -29,8 +29,8 @@ import ru.privetdruk.restorder.service.util.ValidationService;
 
 import java.util.Collections;
 
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static ru.privetdruk.restorder.model.consts.MessageText.CLAIM_APPROVE_WAIT;
 import static ru.privetdruk.restorder.model.consts.MessageText.SELECT_ELEMENT_FOR_EDIT;
 import static ru.privetdruk.restorder.model.enums.City.YOSHKAR_OLA;
@@ -411,7 +411,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     @Test
     void client_in_REGISTRATION_APPROVING_SUB_STATE_and_click_approve_button() {
         UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.REGISTRATION_APPROVING);
-        Mockito.when(telegramApiService.sendMessage(Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any())).thenReturn(Mono.never());
+        Mockito.when(telegramApiService.prepareSendMessage(Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any())).thenReturn(Mono.never());
         Mockito.when(userService.findUsersByRole(Mockito.any(Role.class))).thenReturn(Collections.singletonList(user));
         Mockito.when(message.getText()).thenReturn(Button.APPROVE.getText());
         doAnswer(invocation -> user.setSubState(SubState.WAITING_APPROVE_APPLICATION)).when(userService).updateSubState(any(), any());
@@ -546,7 +546,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     void client_in_EDIT_PERSONAL_DATA_SUB_STATE_and_click_complete_registration() {
         UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.COMPLETE_REGISTRATION.getText());
-        Mockito.when(telegramApiService.sendMessage(Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any())).thenReturn(Mono.never());
+        Mockito.when(telegramApiService.prepareSendMessage(Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any())).thenReturn(Mono.never());
         Mockito.when(userService.findUsersByRole(Mockito.any(Role.class))).thenReturn(Collections.singletonList(user));
         doAnswer(invocation -> user.setSubState(SubState.WAITING_APPROVE_APPLICATION)).when(userService).updateSubState(any(), any());
 
@@ -734,7 +734,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     void client_in_EDIT_ADDRESS_SUB_STATE_and_press_complete_registration_button() {
         UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_ADDRESS);
         Mockito.when(message.getText()).thenReturn(Button.COMPLETE_REGISTRATION.getText());
-        Mockito.when(telegramApiService.sendMessage(Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any())).thenReturn(Mono.never());
+        Mockito.when(telegramApiService.prepareSendMessage(Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any())).thenReturn(Mono.never());
         Mockito.when(userService.findUsersByRole(Mockito.any(Role.class))).thenReturn(Collections.singletonList(user));
         doAnswer(invocation -> user.setSubState(SubState.WAITING_APPROVE_APPLICATION)).when(userService).updateSubState(any(), any());
 

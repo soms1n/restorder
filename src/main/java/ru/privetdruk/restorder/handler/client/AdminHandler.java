@@ -6,8 +6,9 @@ import org.springframework.util.CollectionUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import reactor.core.scheduler.Schedulers;
 import ru.privetdruk.restorder.handler.MessageHandler;
+import ru.privetdruk.restorder.model.consts.Constant;
+import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.Role;
 import ru.privetdruk.restorder.model.enums.State;
@@ -17,7 +18,7 @@ import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.TelegramApiService;
 import ru.privetdruk.restorder.service.UserService;
 
-import static ru.privetdruk.restorder.service.MessageService.configureMessage;
+import static ru.privetdruk.restorder.service.MessageService.toMessage;
 
 @Component
 @RequiredArgsConstructor
@@ -35,11 +36,11 @@ public class AdminHandler implements MessageHandler {
             UserEntity client = userService.findByTelegramId(userId, UserType.CLIENT).orElse(null);
 
             if (client == null) {
-                return configureMessageForAdmin(admin, chatId, USER_NOT_FOUND);
+                return configureMessageForAdmin(admin, chatId, MessageText.USER_NOT_FOUND);
             }
 
             if (client.getSubState() != SubState.WAITING_APPROVE_APPLICATION) {
-                return configureMessageForAdmin(admin, chatId, APPLICATION_ALREADY_CONFIRMED);
+                return configureMessageForAdmin(admin, chatId, MessageText.APPLICATION_ALREADY_CONFIRMED);
             }
 
             client.setRegistered(true);
@@ -51,23 +52,23 @@ public class AdminHandler implements MessageHandler {
 
             telegramApiService.sendMessage(
                     client.getTelegramId(),
-                    MessageText.HI_APPLICATION_APPROVED,
+                    MessageText.HI_APPLICATION_CONFIRMED,
                     true,
-                    CLIENT_MAIN_MENU_KEYBOARD
+                    KeyboardService.CLIENT_MAIN_MENU_KEYBOARD
             );
 
-            return configureMessageForAdmin(user, chatId, MessageText.APPLICATION_APPROVED);
+            return configureMessageForAdmin(admin, chatId, MessageText.APPLICATION_CONFIRMED);
         }
 
-        return toMessage(chatId, UNEXPECTED_ERROR);
+        return toMessage(chatId, MessageText.UNEXPECTED_ERROR);
     }
 
     private Long parseId(CallbackQuery callback) {
-        return Long.valueOf(callback.getData().split(SPACE)[1]);
+        return Long.valueOf(callback.getData().split(Constant.SPACE)[1]);
     }
 
     private SendMessage configureMessageForAdmin(UserEntity user, Long chatId, String message) {
-        userService.updateState(user, MAIN_MENU);
-        return toMessage(chatId, message, CLIENT_MAIN_MENU_KEYBOARD);
+        userService.updateState(user, State.MAIN_MENU);
+        return toMessage(chatId, message, KeyboardService.CLIENT_MAIN_MENU_KEYBOARD);
     }
 }

@@ -89,7 +89,7 @@ class AdminHandlerTest extends AbstractTest {
 
         when(message.getText()).thenReturn("some text");
         when(userService.findByTelegramId(any(), any())).thenReturn(Optional.of(client));
-        when(telegramApiService.sendMessage(any(), any(), anyBoolean(), any())).thenReturn(Mono.never());
+        when(telegramApiService.prepareSendMessage(any(), any(), anyBoolean(), any())).thenReturn(Mono.never());
         doAnswer(invocation -> client.setState(State.MAIN_MENU)).when(userService).updateState(any(), any());
 
         String callbackData = "ACCEPT 12345678";
@@ -114,7 +114,7 @@ class AdminHandlerTest extends AbstractTest {
 
         when(message.getText()).thenReturn("some text");
         when(userService.findByTelegramId(any(), any())).thenReturn(Optional.of(client));
-        when(telegramApiService.sendMessage(any(), any(), anyBoolean(), any())).thenReturn(Mono.never());
+        when(telegramApiService.prepareSendMessage(any(), any(), anyBoolean(), any())).thenReturn(Mono.never());
         doAnswer(invocation -> client.setState(State.MAIN_MENU)).when(userService).updateState(any(), any());
 
         String callbackData = "ACCEPT 12345678";

@@ -40,9 +40,9 @@ public interface MessageText {
     String INCORRECT_PHONE_NUMBER = "Некорректный номер телефона. Повторите попытку.";
     String SUPPORT_MESSAGE = "Если у Вас возникли какие-то проблемы, можете задать вопрос в нашу поддержку https://t.me/restorder_support";
     String USER_NOT_FOUND = "Не удалось найти пользователя.";
-    String APPLICATION_ALREADY_APPROVED = "Заявка уже подтверждена.";
-    String HI_APPLICATION_APPROVED = "Добрый день. Ваша заявка подтверждена. Приятной работы!";
-    String APPLICATION_APPROVED = "Заявка подтверждена.";
+    String APPLICATION_ALREADY_CONFIRMED = "Заявка уже подтверждена.";
+    String HI_APPLICATION_CONFIRMED = "Добрый день. Ваша заявка подтверждена. Приятной работы!";
+    String APPLICATION_CONFIRMED = "Заявка подтверждена.";
     String UNEXPECTED_ERROR = "Произошла непредвиденная ошибка. Обратитесь в поддержку.";
     String LINK_NOT_AVAILABLE = "Данная ссылка больше недоступна.";
     String LINK_IS_INVALID = "Некорректная ссылка";
