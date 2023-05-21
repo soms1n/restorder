@@ -11,6 +11,8 @@ import ru.privetdruk.restorder.model.entity.TavernEntity;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static ru.privetdruk.restorder.model.consts.MessageText.SOMETHING_WENT_WRONG;
+
 @Service
 @RequiredArgsConstructor
 public class ValidationService {
@@ -39,7 +41,7 @@ public class ValidationService {
     public ValidateTavernResult validate(TavernEntity tavern) {
         ValidateTavernResult result = new ValidateTavernResult();
         if (tavern == null) {
-            result.addMessage("Что-то пошло не так...");
+            result.addMessage(SOMETHING_WENT_WRONG);
 
             return result;
         }

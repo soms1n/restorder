@@ -21,6 +21,7 @@ import ru.privetdruk.restorder.model.entity.ContactEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 import ru.privetdruk.restorder.model.enums.*;
+import ru.privetdruk.restorder.service.ContactService;
 import ru.privetdruk.restorder.service.TavernService;
 import ru.privetdruk.restorder.service.TelegramApiService;
 import ru.privetdruk.restorder.service.UserService;
@@ -50,6 +51,8 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     TavernService tavernService;
     @Mock
     ValidationService validationService;
+    @Mock
+    ContactService contactService;
 
     @BeforeEach
     @DisplayName("Presets")
@@ -59,7 +62,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_SHOW_REGISTER_BUTTON_SUB_STATE_and_does_not_click_registration_button() {
-        UserEntity user = generateTestUser(SubState.SHOW_REGISTER_BUTTON);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.SHOW_REGISTER_BUTTON);
         Mockito.when(message.getText()).thenReturn("Any string");
 
         SendMessage sendMessage = registrationTavernHandler.handle(
@@ -82,7 +85,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_SHOW_REGISTER_BUTTON_SUB_STATE_and_click_registration_button() {
-        UserEntity user = generateTestUser(SubState.SHOW_REGISTER_BUTTON);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.SHOW_REGISTER_BUTTON);
         Mockito.when(message.getText()).thenReturn(Button.REGISTRATION.getText());
         doAnswer(invocation -> user.setSubState(SubState.ENTER_FULL_NAME))
                 .when(userService).updateSubState(any(), any());
@@ -100,7 +103,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_ENTER_FULL_NAME_SUB_STATE_and_entered_your_name() {
-        UserEntity user = generateTestUser(SubState.ENTER_FULL_NAME);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.ENTER_FULL_NAME);
         Mockito.when(message.getText()).thenReturn("Any string");
         doAnswer(invocation -> user.setSubState(SubState.ENTER_TAVERN_NAME))
                 .when(userService).updateSubState(any(), any());
@@ -125,7 +128,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         Mockito.when(tavernService.save(Mockito.any(TavernEntity.class))).thenReturn(tavern);
         Mockito.when(message.getText()).thenReturn(tavernName);
 
-        UserEntity user = generateTestUser(SubState.ENTER_TAVERN_NAME);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.ENTER_TAVERN_NAME);
 
         doAnswer(invocation -> user.setSubState(SubState.ENTER_TAVERN_DESCRIPTION))
                 .when(userService).updateSubState(any(), any());
@@ -154,7 +157,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         Mockito.when(tavernService.save(Mockito.any(TavernEntity.class))).thenReturn(new TavernEntity());
         Mockito.when(message.getText()).thenReturn("Какое-то описание");
 
-        UserEntity user = generateTestUser(SubState.ENTER_TAVERN_DESCRIPTION);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.ENTER_TAVERN_DESCRIPTION);
 
         doAnswer(invocation -> user.setSubState(SubState.CHOICE_CITY)).when(userService).updateSubState(any(), any());
 
@@ -178,7 +181,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         Mockito.when(tavernService.save(Mockito.any(TavernEntity.class))).thenReturn(new TavernEntity());
         Mockito.when(message.getText()).thenReturn(Button.WITHOUT_DESCRIPTION.getText());
 
-        UserEntity user = generateTestUser(SubState.ENTER_TAVERN_DESCRIPTION);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.ENTER_TAVERN_DESCRIPTION);
 
         doAnswer(invocation -> user.setSubState(SubState.CHOICE_CITY)).when(userService).updateSubState(any(), any());
 
@@ -204,7 +207,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         Mockito.when(tavernService.save(Mockito.any(TavernEntity.class))).thenReturn(new TavernEntity());
         Mockito.when(message.getText()).thenReturn("Что-то случайное");
 
-        UserEntity user = generateTestUser(SubState.CHOICE_CITY);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.CHOICE_CITY);
 
         SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
@@ -232,7 +235,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         Mockito.when(tavernService.save(Mockito.any(TavernEntity.class))).thenReturn(new TavernEntity());
         Mockito.when(message.getText()).thenReturn(YOSHKAR_OLA.getDescription());
 
-        UserEntity user = generateTestUser(SubState.CHOICE_CITY);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.CHOICE_CITY);
         doAnswer(invocation -> user.setSubState(SubState.ENTER_ADDRESS)).when(userService).updateSubState(any(), any());
 
         SendMessage sendMessage = registrationTavernHandler.handle(user, message, null);
@@ -250,7 +253,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         Mockito.when(tavernService.save(Mockito.any(TavernEntity.class))).thenReturn(new TavernEntity());
         Mockito.when(message.getText()).thenReturn("Улица Ульянова, д. 132");
 
-        UserEntity user = generateTestUser(SubState.ENTER_ADDRESS);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.ENTER_ADDRESS);
         doAnswer(invocation -> user.setSubState(SubState.ENTER_PHONE_NUMBER))
                 .when(userService).updateSubState(any(), any());
 
@@ -278,7 +281,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
     void client_in_ENTER_PHONE_NUMBER_SUB_STATE_and_entered_any_text() {
         Mockito.when(message.getText()).thenReturn("lkjljl");
 
-        UserEntity user = generateTestUser(SubState.ENTER_PHONE_NUMBER);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.ENTER_PHONE_NUMBER);
         user.getContacts().clear();
 
         SendMessage sendMessage = registrationTavernHandler.handle(user, message, null);
@@ -308,7 +311,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         Mockito.when(message.getContact()).thenReturn(contact);
 
         Mockito.when(validationService.isNotValidPhone(Mockito.any())).thenReturn(true);
-        UserEntity user = generateTestUser(SubState.ENTER_PHONE_NUMBER);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.ENTER_PHONE_NUMBER);
 
         SendMessage sendMessage = registrationTavernHandler.handle(user, message, null);
 
@@ -337,10 +340,15 @@ class RegistrationTavernHandlerTest extends AbstractTest {
         Mockito.when(message.getContact()).thenReturn(contact);
         Mockito.when(validationService.isNotValidPhone(Mockito.anyString())).thenReturn(false);
 
+        String newPhoneNumber = "89208595867";
+        when(contactService.preparePhoneNumber(any())).thenReturn(newPhoneNumber);
 
-        UserEntity user = generateTestUser(SubState.ENTER_PHONE_NUMBER);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.ENTER_PHONE_NUMBER);
         user.getContacts().clear();
-
+        when(contactService.findByUser(any())).thenReturn(user.getContacts());
+        doAnswer(invocation ->
+                user.getContacts().add(new ContactEntity(user.getTavern(), user, ContractType.MOBILE, newPhoneNumber)))
+                .when(contactService).save(any());
         doAnswer(invocation -> user.setSubState(SubState.REGISTRATION_APPROVING)).when(userService).updateSubState(any(), any());
 
         SendMessage sendMessage = registrationTavernHandler.handle(user, message, null);
@@ -350,7 +358,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
                 "Заведение: <i>Августин</i>" + System.lineSeparator() +
                 "Описание: <i>отсутствует</i>" + System.lineSeparator() +
                 "Адрес: <i>Почтовая 136, д. 12</i>" + System.lineSeparator() +
-                "Номер телефона: <i>79208595867</i>" + System.lineSeparator();
+                "Номер телефона: <i>" + newPhoneNumber +"</i>" + System.lineSeparator();
 
         assertEquals(State.REGISTRATION_TAVERN, user.getState());
         assertEquals(SubState.REGISTRATION_APPROVING, user.getSubState());
@@ -370,7 +378,8 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_REGISTRATION_APPROVING_SUB_STATE_and_entered_any_text() {
-        UserEntity user = generateTestUser(SubState.REGISTRATION_APPROVING);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.REGISTRATION_APPROVING);
+        when(contactService.findByUser(any())).thenReturn(user.getContacts());
 
         String expectedMessageText = "<b>Ваши данные</b>" + System.lineSeparator() +
                 "Имя: <i>Иванов Иван Иванович</i>" + System.lineSeparator() +
@@ -401,7 +410,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_REGISTRATION_APPROVING_SUB_STATE_and_click_approve_button() {
-        UserEntity user = generateTestUser(SubState.REGISTRATION_APPROVING);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.REGISTRATION_APPROVING);
         Mockito.when(telegramApiService.sendMessage(Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any())).thenReturn(Mono.never());
         Mockito.when(userService.findUsersByRole(Mockito.any(Role.class))).thenReturn(Collections.singletonList(user));
         Mockito.when(message.getText()).thenReturn(Button.APPROVE.getText());
@@ -415,7 +424,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_REGISTRATION_APPROVING_SUB_STATE_and_click_edit_button() {
-        UserEntity user = generateTestUser(SubState.REGISTRATION_APPROVING);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.REGISTRATION_APPROVING);
         Mockito.when(message.getText()).thenReturn(Button.EDIT.getText());
 
         SendMessage sendMessage = registrationTavernHandler.handle(
@@ -432,7 +441,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_PERSONAL_DATA_SUB_STATE_and_entered_any_text() {
-        UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_PERSONAL_DATA);
 
         SendMessage sendMessage = registrationTavernHandler.handle(
                 user,
@@ -446,7 +455,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_PERSONAL_DATA_SUB_STATE_and_click_edit_name() {
-        UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_PERSONAL_DATA);
         when(message.getText()).thenReturn(Button.NAME.getText());
         doAnswer(invocation -> user.setSubState(SubState.EDIT_NAME)).when(userService).updateSubState(any(), any());
 
@@ -468,7 +477,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_PERSONAL_DATA_SUB_STATE_and_click_edit_tavern_name() {
-        UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_PERSONAL_DATA);
         when(message.getText()).thenReturn(Button.TAVERN_NAME.getText());
         doAnswer(invocation -> user.setSubState(SubState.EDIT_TAVERN)).when(userService).updateSubState(any(), any());
 
@@ -491,7 +500,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_PERSONAL_DATA_SUB_STATE_and_click_edit_description() {
-        UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_PERSONAL_DATA);
         when(message.getText()).thenReturn(Button.DESCRIPTION.getText());
         doAnswer(invocation -> user.setSubState(SubState.EDIT_DESCRIPTION)).when(userService).updateSubState(any(), any());
 
@@ -513,7 +522,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_PERSONAL_DATA_SUB_STATE_and_click_edit_address() {
-        UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_PERSONAL_DATA);
         when(message.getText()).thenReturn(Button.TAVERN_ADDRESS.getText());
         doAnswer(invocation -> user.setSubState(SubState.EDIT_ADDRESS)).when(userService).updateSubState(any(), any());
 
@@ -535,7 +544,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_PERSONAL_DATA_SUB_STATE_and_click_complete_registration() {
-        UserEntity user = generateTestUser(SubState.EDIT_PERSONAL_DATA);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_PERSONAL_DATA);
         Mockito.when(message.getText()).thenReturn(Button.COMPLETE_REGISTRATION.getText());
         Mockito.when(telegramApiService.sendMessage(Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any())).thenReturn(Mono.never());
         Mockito.when(userService.findUsersByRole(Mockito.any(Role.class))).thenReturn(Collections.singletonList(user));
@@ -552,7 +561,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_NAME_SUB_STATE_and_entered_any_text() {
-        UserEntity user = generateTestUser(SubState.EDIT_NAME);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_NAME);
         Mockito.when(message.getText()).thenReturn("Some name");
 
         registrationTavernHandler.handle(user, message, null);
@@ -564,7 +573,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_NAME_SUB_STATE_and_press_menu_button() {
-        UserEntity user = generateTestUser(SubState.EDIT_NAME);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_NAME);
         Mockito.when(message.getText()).thenReturn(Button.EDIT_MENU.getText());
         doAnswer(invocation -> user.setSubState(SubState.EDIT_PERSONAL_DATA)).when(userService).updateSubState(any(), any());
 
@@ -589,7 +598,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_NAME_SUB_STATE_and_press_any_button() {
-        UserEntity user = generateTestUser(SubState.EDIT_NAME);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_NAME);
         Mockito.when(message.getText()).thenReturn(Button.REGISTRATION.getText());
 
         SendMessage sendMessage = registrationTavernHandler.handle(user, message, null);
@@ -609,7 +618,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_TAVERN_SUB_STATE_and_entered_any_text() {
-        UserEntity user = generateTestUser(SubState.EDIT_TAVERN);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_TAVERN);
         String newTavernName = "Some tavern name";
         Mockito.when(message.getText()).thenReturn(newTavernName);
 
@@ -622,7 +631,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_TAVERN_SUB_STATE_and_press_menu_button() {
-        UserEntity user = generateTestUser(SubState.EDIT_TAVERN);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_TAVERN);
         Mockito.when(message.getText()).thenReturn(Button.EDIT_MENU.getText());
         doAnswer(invocation -> user.setSubState(SubState.EDIT_PERSONAL_DATA)).when(userService).updateSubState(any(), any());
 
@@ -647,7 +656,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_DESCRIPTION_SUB_STATE_and_entered_any_text() {
-        UserEntity user = generateTestUser(SubState.EDIT_DESCRIPTION);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_DESCRIPTION);
         String newTavernDescription = "Some new tavern description";
         Mockito.when(message.getText()).thenReturn(newTavernDescription);
 
@@ -660,7 +669,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_DESCRIPTION_SUB_STATE_and_press_menu_button() {
-        UserEntity user = generateTestUser(SubState.EDIT_DESCRIPTION);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_DESCRIPTION);
         Mockito.when(message.getText()).thenReturn(Button.EDIT_MENU.getText());
         doAnswer(invocation -> user.setSubState(SubState.EDIT_PERSONAL_DATA)).when(userService).updateSubState(any(), any());
 
@@ -685,7 +694,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_ADDRESS_SUB_STATE_and_entered_any_text() {
-        UserEntity user = generateTestUser(SubState.EDIT_ADDRESS);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_ADDRESS);
         String newTavernAddress = "Some new tavern address";
         Mockito.when(message.getText()).thenReturn(newTavernAddress);
 
@@ -698,7 +707,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_ADDRESS_SUB_STATE_and_press_menu_button() {
-        UserEntity user = generateTestUser(SubState.EDIT_ADDRESS);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_ADDRESS);
         Mockito.when(message.getText()).thenReturn(Button.EDIT_MENU.getText());
         doAnswer(invocation -> user.setSubState(SubState.EDIT_PERSONAL_DATA)).when(userService).updateSubState(any(), any());
 
@@ -723,7 +732,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_EDIT_ADDRESS_SUB_STATE_and_press_complete_registration_button() {
-        UserEntity user = generateTestUser(SubState.EDIT_ADDRESS);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.EDIT_ADDRESS);
         Mockito.when(message.getText()).thenReturn(Button.COMPLETE_REGISTRATION.getText());
         Mockito.when(telegramApiService.sendMessage(Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any())).thenReturn(Mono.never());
         Mockito.when(userService.findUsersByRole(Mockito.any(Role.class))).thenReturn(Collections.singletonList(user));
@@ -739,7 +748,7 @@ class RegistrationTavernHandlerTest extends AbstractTest {
 
     @Test
     void client_in_WAITING_APPROVE_APPLICATION_SUB_STATE_and_entered_any_text() {
-        UserEntity user = generateTestUser(SubState.WAITING_APPROVE_APPLICATION);
+        UserEntity user = generateTestUser(State.REGISTRATION_TAVERN, SubState.WAITING_APPROVE_APPLICATION);
         Mockito.when(message.getText()).thenReturn("Some text");
 
         SendMessage sendMessage = registrationTavernHandler.handle(user, message, null);
@@ -749,8 +758,8 @@ class RegistrationTavernHandlerTest extends AbstractTest {
                 () -> assertEquals(CLAIM_APPROVE_WAIT, sendMessage.getText()));
     }
 
-    private UserEntity generateTestUser(SubState subState) {
-        UserEntity user = new UserEntity(1L, State.REGISTRATION_TAVERN, subState, UserType.CLIENT);
+    public static UserEntity generateTestUser(State state, SubState subState) {
+        UserEntity user = new UserEntity(1L, state, subState, UserType.CLIENT);
         user.setName("Иванов Иван Иванович");
         user.setRoles(Collections.singleton(Role.CLIENT_ADMIN));
         user.setTavern(new TavernEntity());

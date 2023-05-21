@@ -22,6 +22,7 @@ import ru.privetdruk.restorder.service.UserService;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static ru.privetdruk.restorder.model.consts.MessageText.SOMETHING_WENT_WRONG;
 import static ru.privetdruk.restorder.model.consts.MessageText.SUPPORT_MESSAGE;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
@@ -46,13 +47,13 @@ public class EventHandler implements MessageHandler {
         }
 
         if (command != Command.START || messageSplit.length != 2) {
-            return configureMessage(chatId, "Что-то пошло не так...");
+            return configureMessage(chatId, SOMETHING_WENT_WRONG);
         }
 
         EventEntity event = eventService.find(UUID.fromString(messageSplit[Command.MESSAGE_EVENT_ID_INDEX]));
 
         if (event == null) {
-            return configureMessage(chatId, "Что-то пошло не так...");
+            return configureMessage(chatId, SOMETHING_WENT_WRONG);
         }
 
         if (!event.getAvailable() || LocalDateTime.now().isAfter(event.getExpirationDate())) {
@@ -87,11 +88,11 @@ public class EventHandler implements MessageHandler {
                 eventService.complete(event);
 
                 return registrationEmployeeHandler.handle(user, message, callback);
-            } else if (user.getTavern() != null && user.getTavern() != tavern) {
+            } else if (user.getTavern() != tavern) {
                 return configureMessage(chatId, "Вы уже является владельцем/сотрудником другого заведения: " + tavern.getName() + ". Удалите в настройках ваш профиль и попробуйте повторно перейти по ссылке.");
             }
         }
 
-        return configureMessage(chatId, "Что-то пошло не так...");
+        return configureMessage(chatId, SOMETHING_WENT_WRONG);
     }
 }

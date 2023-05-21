@@ -82,8 +82,7 @@ public class TelegramApiService {
             sendMessage.setReplyMarkup(replyKeyboard);
 
             try {
-                String payload = objectMapper.writeValueAsString(sendMessage);
-                requestBodySpec.bodyValue(payload);
+                requestBodySpec.bodyValue(objectMapper.writeValueAsString(sendMessage));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
@@ -121,8 +120,7 @@ public class TelegramApiService {
         sendMessage.enableHtml(true);
 
         try {
-            String payload = new ObjectMapper().writeValueAsString(sendMessage);
-            requestBodySpec.bodyValue(payload);
+            requestBodySpec.bodyValue(objectMapper.writeValueAsString(sendMessage));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
