@@ -31,4 +31,8 @@ public interface MessageText {
     String INCORRECT_PHONE_NUMBER = "Некорректный номер телефона. Повторите попытку.";
     String SUPPORT_MESSAGE = "Если у Вас возникли какие-то проблемы, можете задать вопрос в нашу поддержку https://t.me/restorder_support";
     String CLAIM_APPROVE_WAIT = "Ваша заявка на модерации, ожидайте";
+    String SOMETHING_WENT_WRONG = "Что-то пошло не так...";
+    String APPLICATION_ALREADY_CONFIRMED = "Заявка уже подтверждена";
+    String APPLICATION_CONFIRMED = "Заявка подтверждена";
+    String USER_NOT_FOUND = "Не удалось найти пользователя";
 }

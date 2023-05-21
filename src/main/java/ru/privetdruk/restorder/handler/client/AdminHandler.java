@@ -17,6 +17,7 @@ import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.TelegramApiService;
 import ru.privetdruk.restorder.service.UserService;
 
+import static ru.privetdruk.restorder.model.consts.MessageText.*;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
 @Component
@@ -26,32 +27,31 @@ public class AdminHandler implements MessageHandler {
     private final UserService userService;
 
     @Override
-    public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
+    public SendMessage handle(UserEntity admin, Message message, CallbackQuery callback) {
         Long chatId = message.getChatId();
 
-        if (user.getSubState() == SubState.APPROVE_TAVERN) {
+        if (admin.getSubState() == SubState.APPROVE_TAVERN) {
             Long userId = Long.valueOf(callback.getData().split(" ")[1]);
 
-            UserEntity foundUser = userService.findByTelegramId(userId, UserType.CLIENT)
-                    .orElse(null);
+            UserEntity client = userService.findByTelegramId(userId, UserType.CLIENT).orElse(null);
 
-            if (foundUser == null) {
-                return configureMessageForAdmin(user, chatId, "Не удалось найти пользователя.");
+            if (client == null) {
+                return configureMessageForAdmin(admin, chatId, USER_NOT_FOUND);
             }
 
-            if (foundUser.getSubState() != SubState.WAITING_APPROVE_APPLICATION) {
-                return configureMessageForAdmin(user, chatId, "Заявка уже подтверждена.");
+            if (client.getSubState() != SubState.WAITING_APPROVE_APPLICATION) {
+                return configureMessageForAdmin(admin, chatId, APPLICATION_ALREADY_CONFIRMED);
             }
 
-            foundUser.setRegistered(true);
-            if (CollectionUtils.isEmpty(foundUser.getRoles())) {
-                foundUser.getRoles().add(Role.CLIENT_ADMIN);
+            client.setRegistered(true);
+            if (CollectionUtils.isEmpty(client.getRoles())) {
+                client.getRoles().add(Role.CLIENT_ADMIN);
             }
 
-            userService.updateState(foundUser, State.MAIN_MENU);
+            userService.updateState(client, State.MAIN_MENU);
 
             telegramApiService.sendMessage(
-                            foundUser.getTelegramId(),
+                            client.getTelegramId(),
                             "Добрый день. Ваша заявка подтверждена. Приятной работы!",
                             true,
                             KeyboardService.CLIENT_MAIN_MENU
@@ -59,14 +59,14 @@ public class AdminHandler implements MessageHandler {
                     .subscribeOn(Schedulers.boundedElastic())
                     .subscribe();
 
-            return configureMessageForAdmin(user, chatId, "Заявка подтверждена.");
+            return configureMessageForAdmin(admin, chatId, "Заявка подтверждена");
         }
 
-        return configureMessage(chatId, "Что-то пошло не так...");
+        return configureMessage(chatId, SOMETHING_WENT_WRONG);
     }
 
-    private SendMessage configureMessageForAdmin(UserEntity user, Long chatId, String s) {
+    private SendMessage configureMessageForAdmin(UserEntity user, Long chatId, String message) {
         userService.updateState(user, State.MAIN_MENU);
-        return configureMessage(chatId, s, KeyboardService.CLIENT_MAIN_MENU);
+        return configureMessage(chatId, message, KeyboardService.CLIENT_MAIN_MENU);
     }
 }

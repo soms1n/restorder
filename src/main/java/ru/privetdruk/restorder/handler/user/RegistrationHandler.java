@@ -19,6 +19,7 @@ import ru.privetdruk.restorder.service.KeyboardService;
 import ru.privetdruk.restorder.service.UserService;
 import ru.privetdruk.restorder.service.util.ValidationService;
 
+import static ru.privetdruk.restorder.model.consts.MessageText.SOMETHING_WENT_WRONG;
 import static ru.privetdruk.restorder.service.MessageService.configureMessage;
 
 @Component
@@ -103,6 +104,6 @@ public class RegistrationHandler implements MessageHandler {
             }
         }
 
-        return new SendMessage(chatId.toString(), "Что-то пошло не так...");
+        return new SendMessage(chatId.toString(), SOMETHING_WENT_WRONG);
     }
 }
