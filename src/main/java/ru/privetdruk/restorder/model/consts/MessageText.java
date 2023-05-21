@@ -30,13 +30,6 @@ public interface MessageText {
             """;
     String CHOICE_TAVERN_TYPE = "Выберите тип заведения";
     String NOTIFY_USER_RESERVE_CANCELLED = "Ваша бронь %s %s в заведение %s завершена (отменена).";
-    String NOTIFY_USER_BLOCK = """
-            Вы добавлены в чёрный список
-            Заведение: %s
-            Причина: %s
-            Дата блокировки: %s
-            Дата снятия блокировки: %s
-            """;
     String INCORRECT_PHONE_NUMBER = "Некорректный номер телефона. Повторите попытку.";
     String SUPPORT_MESSAGE = "Если у Вас возникли какие-то проблемы, можете задать вопрос в нашу поддержку https://t.me/restorder_support";
     String USER_NOT_FOUND = "Не удалось найти пользователя.";
@@ -65,6 +58,10 @@ public interface MessageText {
     String RESERVES_NOT_FOUND = "У Вас нет бронирований за выбранную дату.";
     String CHOICE_RESERVE_DATE_FOR_CONFIRMED = "Выберите дату, за которую хотите завершить бронирование.";
     String ENTER_RESERVE_DATE = "Введите дату в формате ДДММГГГГ <i>(пример: если хотите забронировать 24.05.2022, то введите 24052022)</i>:";
+    String UNLOCK_ENTER_RESERVE_DATE = """
+            Ваш срок блокировки истёк. Соблюдайте правила заведения, чтобы больше не попадать в черный список. Можете продолжить бронирование.
+                        
+            Введите дату в формате ДДММГГГГ <i>(пример: если хотите забронировать 24.05.2022, то введите 24052022)</i>:""";
     String ENTER_RESERVE_TIME = "Введите время в формате ЧЧММ <i>(пример: если хотите забронировать в 17:48, то введите 1748)</i>:";
     String ENTER_OR_CHOICE_PERSONS = "Введите или выберите кол-во персон:";
     String ACTIVE_RESERVES_NOT_FOUND = "У Вас нет активных бронирований.";

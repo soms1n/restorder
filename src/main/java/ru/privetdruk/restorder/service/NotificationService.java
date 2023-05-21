@@ -6,12 +6,10 @@ import ru.privetdruk.restorder.model.entity.BlacklistEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;
 
-import static java.lang.String.format;
-import static ru.privetdruk.restorder.model.consts.MessageText.NOTIFY_USER_BLOCK;
-
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
+    private final InfoService infoService;
     private final TelegramApiService telegramApiService;
 
     private final String UNLOCK = "Вы удалены из чёрного списка в заведении ";
@@ -23,13 +21,7 @@ public class NotificationService {
 
         telegramApiService.sendMessage(
                 blacklist.getUser().getTelegramId(),
-                format(
-                        NOTIFY_USER_BLOCK,
-                        blacklist.getTavern().getName(),
-                        blacklist.getReason(),
-                        blacklist.getLockDate(),
-                        blacklist.getUnlockDate()
-                ),
+                infoService.fillUserBlacklist(blacklist),
                 false
         );
     }

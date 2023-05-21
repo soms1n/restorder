@@ -6,7 +6,7 @@ spring:
       hibernate:
         show_sql: true
         format_sql: true
-        generate_statistics: true
+#        generate_statistics: true
         types:
           print:
             banner: false
@@ -20,8 +20,8 @@ spring:
 logging:
   level:
     org.springframework.orm.jpa.JpaTransactionManager: TRACE
-    ru.privetdruk: DEBUG
-    reactor.netty.http.client: DEBUG
+    ru.privetdruk: TRACE
+    reactor.netty.http.client: TRACE
     org.springframework.cache: TRACE
 bot:
   client:

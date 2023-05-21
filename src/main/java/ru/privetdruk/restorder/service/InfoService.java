@@ -78,6 +78,13 @@ public class InfoService {
             <b>\uD83D\uDCC5 График работы:</b>
             <pre>День Время       Вход
             %s</pre>""";
+    private final String BLACKLIST_USER_INFO = """
+            Вы добавлены в чёрный список
+            Заведение: %s
+            Причина: %s
+            Дата блокировки: %s
+            Дата снятия блокировки: %s
+            """;
     private final String NAME_PHONE = "%s %s";
     private final String TAVERN = "Заведение: <i>%s</i>";
     private final String BEFORE_TIME = lineSeparator() + "Примечание: <i>стол нужно будет освободить до %s</i>";
@@ -143,6 +150,16 @@ public class InfoService {
                 blacklist.getReason(),
                 blacklist.getLockDate().format(Constant.DD_MM_YYYY_FORMATTER),
                 blacklist.getUnlockDate().format(Constant.DD_MM_YYYY_FORMATTER)
+        );
+    }
+
+    public String fillUserBlacklist(BlacklistEntity blacklist) {
+        return format(
+                BLACKLIST_USER_INFO,
+                blacklist.getTavern().getName(),
+                blacklist.getReason(),
+                blacklist.getLockDate(),
+                blacklist.getUnlockDate()
         );
     }
 

@@ -47,6 +47,7 @@ public class BookingHandler implements MessageHandler {
     public static final String BEFORE = " до ";
     public static final String FREE_UP = ", освободить до ";
     public static final long FREE_UP_MINUTES = 10L;
+    private final BlacklistService blacklistService;
     private final ContactService contactService;
     private final InfoService infoService;
     private final MessageService messageService;
@@ -59,7 +60,7 @@ public class BookingHandler implements MessageHandler {
     private final Map<UserEntity, BookingDto> bookings = new HashMap<>();
 
     @Override
-    public SendMessage handle(UserEntity user, Message message, CallbackQuery callback) {
+    public SendMessage handle(UserEntity client, Message message, CallbackQuery callback) {
         String messageText = message.getText();
         Button button = Button.fromText(messageText)
                 .orElse(Button.NOTHING);
@@ -67,31 +68,56 @@ public class BookingHandler implements MessageHandler {
 
         // обработка функциональных клавиш
         switch (button) {
-            case BACK, CANCEL, NO -> userService.updateSubState(user, user.getSubState().getParentSubState());
-            case RETURN_MAIN_MENU -> returnToMainMenu(user);
+            case BACK, CANCEL, NO -> userService.updateSubState(client, client.getSubState().getParentSubState());
+            case RETURN_MAIN_MENU -> returnToMainMenu(client);
             case CANCEL_RESERVE -> {
-                return configureDeleteReserve(user, chatId);
+                return configureDeleteReserve(client, chatId);
             }
         }
 
         // обновление/обработка состояния
         if (button != Button.CANCEL && button != Button.NO) {
-            switch (user.getSubState()) {
+            switch (client.getSubState()) {
                 case VIEW_MAIN_MENU -> {
                     switch (button) {
-                        case MY_RESERVE -> userService.updateSubState(user, SubState.VIEW_RESERVE_LIST);
+                        case MY_RESERVE -> userService.updateSubState(client, SubState.VIEW_RESERVE_LIST);
                         case HOOKAH_BAR, CAFE_BAR_RESTAURANT, NIGHT_CLUB, BILLIARDS, BOWLING -> {
                             Category category = Category.fromButton(button);
-                            bookings.put(user, new BookingDto(category));
-                            userService.updateSubState(user, SubState.VIEW_TAVERN_LIST);
+                            bookings.put(client, new BookingDto(category));
+                            userService.updateSubState(client, SubState.VIEW_TAVERN_LIST);
                         }
                     }
                 }
                 case VIEW_TAVERN -> {
                     if (button == Button.RESERVE || button == Button.BACK) {
-                        userService.updateSubState(user, SubState.BOOKING_CHOICE_DATE);
+                        String phoneNumber = contactService.findByUser(client).stream()
+                                .filter(BookingHandler::isMobile)
+                                .findFirst()
+                                .map(ContactEntity::getValue)
+                                .orElse(null);
 
-                        return toMessage(chatId, MessageText.ENTER_RESERVE_DATE, KeyboardService.BOOKING_CHOICE_DATE_KEYBOARD);
+                        if (phoneNumber == null) {
+                            return toMessage(chatId, MessageText.SOMETHING_WENT_WRONG);
+                        }
+
+                        TavernEntity tavern = bookings.get(client).getTavern();
+
+                        String text = MessageText.ENTER_RESERVE_DATE;
+
+                        BlacklistEntity blacklist = blacklistService.findActiveByPhoneNumber(tavern, phoneNumber);
+
+                        if (blacklist != null) {
+                            if (blacklist.getUnlockDate().isAfter(LocalDateTime.now())) {
+                                return toMainMenu(client, infoService.fillUserBlacklist(blacklist));
+                            }
+
+                            text = MessageText.UNLOCK_ENTER_RESERVE_DATE;
+                            blacklistService.unlock(blacklist);
+                        }
+
+                        userService.updateSubState(client, SubState.BOOKING_CHOICE_DATE);
+
+                        return toMessage(chatId, text, KeyboardService.BOOKING_CHOICE_DATE_KEYBOARD);
                     }
                 }
                 case BOOKING_CHOICE_DATE -> {
@@ -109,11 +135,11 @@ public class BookingHandler implements MessageHandler {
                                 return toMessage(chatId, MessageText.INCORRECT_MORE_DATE_RETRY, KeyboardService.BOOKING_CHOICE_DATE_KEYBOARD);
                             }
 
-                            bookings.get(user)
+                            bookings.get(client)
                                     .setDate(date);
                         }
 
-                        userService.updateSubState(user, SubState.BOOKING_CHOICE_TIME);
+                        userService.updateSubState(client, SubState.BOOKING_CHOICE_TIME);
 
                         return toMessage(chatId, MessageText.ENTER_RESERVE_TIME, BOOKING_CHOICE_TIME_KEYBOARD);
                     } catch (Exception exception) {
@@ -125,7 +151,7 @@ public class BookingHandler implements MessageHandler {
                         if (button != Button.BACK) {
                             LocalTime time = LocalTime.parse(messageText, Constant.HH_MM_WITHOUT_DOT_FORMATTER);
 
-                            BookingDto booking = bookings.get(user);
+                            BookingDto booking = bookings.get(client);
 
                             DayWeek dayWeek = DayWeek.fromDate(booking.getDate());
 
@@ -151,7 +177,7 @@ public class BookingHandler implements MessageHandler {
                             booking.setTime(time);
                         }
 
-                        userService.updateSubState(user, SubState.BOOKING_CHOICE_PERSONS);
+                        userService.updateSubState(client, SubState.BOOKING_CHOICE_PERSONS);
 
                         return toMessage(chatId, MessageText.ENTER_NUMBER_PERSONS, KeyboardService.NUMBERS_KEYBOARD);
                     } catch (Exception exception) {
@@ -165,15 +191,15 @@ public class BookingHandler implements MessageHandler {
                             persons = Integer.parseInt(messageText);
                         }
 
-                        BookingDto booking = bookings.get(user);
+                        BookingDto booking = bookings.get(client);
                         booking.setPersons(persons);
 
                         if (StringUtils.hasText(booking.getTavern().getLinkTableLayout())) {
-                            userService.updateSubState(user, SubState.BOOKING_CHOICE_TABLE_ANSWER);
+                            userService.updateSubState(client, SubState.BOOKING_CHOICE_TABLE_ANSWER);
                             return toMessage(chatId, MessageText.MANUAL_OR_AUTO, KeyboardService.BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD);
                         }
 
-                        return choiceTableAutomatic(user, chatId, booking);
+                        return choiceTableAutomatic(client, chatId, booking);
                     } catch (Exception exception) {
                         if (!(exception instanceof NumberFormatException)) {
                             log.error(MessageText.UNEXPECTED_ERROR, exception);
@@ -184,16 +210,16 @@ public class BookingHandler implements MessageHandler {
                 }
                 case BOOKING_CHOICE_TABLE_ANSWER -> {
                     if (button == Button.MANUALLY) {
-                        return choiceTableManually(user, chatId, bookings.get(user));
+                        return choiceTableManually(client, chatId, bookings.get(client));
                     } else if (button == Button.AUTOMATIC) {
-                        return choiceTableAutomatic(user, chatId, bookings.get(user));
+                        return choiceTableAutomatic(client, chatId, bookings.get(client));
                     } else {
                         return toMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.BOOKING_CHOICE_TABLE_ANSWER_KEYBOARD);
                     }
                 }
                 case BOOKING_CHOICE_TABLE_MANUALLY -> {
                     Long tableId = messageService.parseId(messageText);
-                    BookingDto booking = bookings.get(user);
+                    BookingDto booking = bookings.get(client);
 
                     TableEntity reserveTable = booking.getTavern().getTables().stream()
                             .filter(table -> table.getId().equals(tableId))
@@ -201,7 +227,7 @@ public class BookingHandler implements MessageHandler {
                             .orElse(null);
 
                     if (reserveTable == null) {
-                        return toMainMenu(user, MessageText.INCORRECT_VALUE_CANCELLED);
+                        return toMainMenu(client, MessageText.INCORRECT_VALUE_CANCELLED);
                     }
 
                     int beforeIndex = messageText.indexOf(BEFORE);
@@ -211,27 +237,27 @@ public class BookingHandler implements MessageHandler {
 
                     booking.setTable(reserveTable);
 
-                    userService.updateSubState(user, SubState.BOOKING_APPROVE);
+                    userService.updateSubState(client, SubState.BOOKING_APPROVE);
 
-                    return toMessage(chatId, infoService.fillReserveInfo(bookings.get(user), true), KeyboardService.APPROVE_KEYBOARD);
+                    return toMessage(chatId, infoService.fillReserveInfo(bookings.get(client), true), KeyboardService.APPROVE_KEYBOARD);
                 }
                 case BOOKING_APPROVE_BEFORE -> {
                     if (button == Button.ACCEPT) {
-                        userService.updateSubState(user, SubState.BOOKING_APPROVE);
+                        userService.updateSubState(client, SubState.BOOKING_APPROVE);
 
-                        return toMessage(chatId, infoService.fillReserveInfo(bookings.get(user), true), KeyboardService.APPROVE_KEYBOARD);
+                        return toMessage(chatId, infoService.fillReserveInfo(bookings.get(client), true), KeyboardService.APPROVE_KEYBOARD);
                     } else {
-                        bookings.remove(user);
-                        return toMainMenu(user, MessageText.RESERVE_CANCEL);
+                        bookings.remove(client);
+                        return toMainMenu(client, MessageText.RESERVE_CANCEL);
                     }
                 }
                 case BOOKING_APPROVE -> {
                     if (button == Button.ACCEPT) {
-                        BookingDto booking = bookings.get(user);
-                        booking.setName(user.getName());
+                        BookingDto booking = bookings.get(client);
+                        booking.setName(client.getName());
 
                         booking.setPhoneNumber(
-                                contactService.findByUser(user).stream()
+                                contactService.findByUser(client).stream()
                                         .filter(ContactEntity::getActive)
                                         .map(ContactEntity::getValue)
                                         .findFirst()
@@ -239,8 +265,8 @@ public class BookingHandler implements MessageHandler {
                         );
 
                         ReserveEntity reserve = new ReserveEntity();
-                        reserve.setUser(user);
-                        reserve.setName(user.getName());
+                        reserve.setUser(client);
+                        reserve.setName(client.getName());
                         reserve.setPhoneNumber(booking.getPhoneNumber());
                         reserve.setDate(booking.getDate());
                         reserve.setTime(booking.getTime());
@@ -249,7 +275,7 @@ public class BookingHandler implements MessageHandler {
 
                         reserveService.save(reserve);
 
-                        bookings.remove(user);
+                        bookings.remove(client);
 
                         String messageForAdmin = "Только что забронировали новый столик."
                                 + System.lineSeparator() + System.lineSeparator()
@@ -264,34 +290,34 @@ public class BookingHandler implements MessageHandler {
                                 .subscribeOn(Schedulers.boundedElastic())
                                 .subscribe();
 
-                        return toMainMenu(user, MessageText.RESERVE_SUCCESS);
+                        return toMainMenu(client, MessageText.RESERVE_SUCCESS);
                     }
 
-                    bookings.remove(user);
+                    bookings.remove(client);
 
-                    return toMainMenu(user, MessageText.CANCEL_OPERATION_RETURN_TO_MENU);
+                    return toMainMenu(client, MessageText.CANCEL_OPERATION_RETURN_TO_MENU);
                 }
                 case CHOICE_TAVERN -> {
                     TavernEntity tavern;
                     if (button == Button.BACK) {
-                        tavern = bookings.get(user)
+                        tavern = bookings.get(client)
                                 .getTavern();
                     } else {
                         Long tavernId = messageService.parseId(messageText);
                         if (tavernId == null) {
-                            return toMainMenu(user, MessageText.YOU_DONT_CHOICE_TAVERN);
+                            return toMainMenu(client, MessageText.YOU_DONT_CHOICE_TAVERN);
                         }
 
                         tavern = tavernService.findWithAllData(tavernId);
                         if (tavern == null) {
-                            return toMainMenu(user, MessageText.CANT_MAKE_RESERVATION);
+                            return toMainMenu(client, MessageText.CANT_MAKE_RESERVATION);
                         }
 
-                        bookings.get(user)
+                        bookings.get(client)
                                 .setTavern(tavern);
                     }
 
-                    userService.updateSubState(user, SubState.VIEW_TAVERN);
+                    userService.updateSubState(client, SubState.VIEW_TAVERN);
 
                     return toMessage(chatId, infoService.fillGeneral(tavern), KeyboardService.TAVERN_INFO_KEYBOARD);
                 }
@@ -305,19 +331,23 @@ public class BookingHandler implements MessageHandler {
                     reserve.setStatus(ReserveStatus.CANCELLED);
                     reserveService.save(reserve);
 
-                    returnToMainMenu(user);
+                    returnToMainMenu(client);
                 }
             }
         }
 
         // отрисовка меню
-        return switch (user.getSubState()) {
-            case VIEW_MAIN_MENU -> configureMainMenu(chatId, user);
-            case VIEW_RESERVE_LIST -> toMessage(chatId, fillReserves(user), KeyboardService.USER_RESERVE_LIST_KEYBOARD);
-            case VIEW_TAVERN_LIST -> fillTaverns(user);
+        return switch (client.getSubState()) {
+            case VIEW_MAIN_MENU -> configureMainMenu(chatId, client);
+            case VIEW_RESERVE_LIST -> toMessage(chatId, fillReserves(client), KeyboardService.USER_RESERVE_LIST_KEYBOARD);
+            case VIEW_TAVERN_LIST -> fillTaverns(client);
 
             default -> new SendMessage();
         };
+    }
+
+    private static boolean isMobile(ContactEntity contact) {
+        return contact.getType() == ContractType.MOBILE;
     }
 
     private SendMessage configureMainMenu(Long chatId, UserEntity user) {
