@@ -270,10 +270,6 @@ public class SettingsHandler implements MessageHandler {
                     userService.updateSubState(user, user.getSubState().getParentSubState());
                 }
                 case ADD_GENERAL_SETTINGS_TAVERN_CONTACTS -> {
-                    if (!hasText(messageText)) {
-                        return toMessage(chatId, MessageText.ENTER_EMPTY_VALUE_RETRY);
-                    }
-
                     if (validationService.isNotValidPhone(messageText)) {
                         return toMessage(chatId, MessageText.INCORRECT_ENTER_PHONE_NUMBER);
                     }

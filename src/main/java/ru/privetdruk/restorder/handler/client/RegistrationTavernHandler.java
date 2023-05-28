@@ -8,6 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.Contact;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import ru.privetdruk.restorder.handler.MessageHandler;
+import ru.privetdruk.restorder.model.consts.Constant;
 import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.entity.AddressEntity;
 import ru.privetdruk.restorder.model.entity.ContactEntity;
@@ -26,8 +27,6 @@ import static java.util.List.of;
 import static org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton.builder;
 import static ru.privetdruk.restorder.model.consts.MessageText.*;
 import static ru.privetdruk.restorder.model.enums.Role.ADMIN;
-import static ru.privetdruk.restorder.model.enums.Button.COMPLETE_REGISTRATION;
-import static ru.privetdruk.restorder.model.enums.Button.EDIT_MENU;
 import static ru.privetdruk.restorder.model.enums.SubState.EDIT_PERSONAL_DATA;
 import static ru.privetdruk.restorder.service.KeyboardService.*;
 import static ru.privetdruk.restorder.service.MessageService.toMessage;
@@ -167,10 +166,6 @@ public class RegistrationTavernHandler implements MessageHandler {
                         sendMessage = toMessage(chatId, SubState.ENTER_TAVERN_DESCRIPTION, TAVERN_EDIT_REGISTRATION_KEYBOARD);
                         userService.updateSubState(user, SubState.EDIT_DESCRIPTION);
                     }
-                    case PHONE_NUMBER -> {
-                        sendMessage = toMessage(chatId, SubState.ENTER_PHONE_NUMBER, TAVERN_EDIT_REGISTRATION_KEYBOARD);
-                        userService.updateSubState(user, SubState.EDIT_PHONE_NUMBER);
-                    }
                     case TAVERN_ADDRESS -> {
                         sendMessage = toMessage(chatId, SubState.ENTER_ADDRESS, TAVERN_EDIT_REGISTRATION_KEYBOARD);
                         userService.updateSubState(user, SubState.EDIT_ADDRESS);
@@ -191,40 +186,28 @@ public class RegistrationTavernHandler implements MessageHandler {
                     }
                 }
             }
-            case EDIT_NAME -> {
+            case EDIT_NAME, EDIT_TAVERN, EDIT_DESCRIPTION, EDIT_ADDRESS -> {
                 if (isNotPressKeyboardElement(sendMessage, user, messageText, chatId)) {
-                    user.setName(messageText);
-                    userService.save(user);
-                }
-            }
-            case EDIT_TAVERN -> {
-                if (isNotPressKeyboardElement(sendMessage, user, messageText, chatId)) {
-                    tavern.setName(messageText);
-                    tavernService.save(tavern);
-                }
-            }
-            case EDIT_DESCRIPTION -> {
-                if (isNotPressKeyboardElement(sendMessage, user, messageText, chatId)) {
-                    tavern.setDescription(messageText);
-                    tavernService.save(tavern);
-                }
-            }
-            case EDIT_PHONE_NUMBER -> {
-                if (isNotPressKeyboardElement(sendMessage, user, messageText, chatId)) {
-                    final String finalMessageText = messageText;
+                    switch (subState) {
+                        case EDIT_NAME -> {
+                            user.setName(messageText);
+                            userService.save(user);
+                        }
+                        case EDIT_TAVERN -> {
+                            tavern.setName(messageText);
+                            tavernService.save(tavern);
+                        }
+                        case EDIT_DESCRIPTION -> {
+                            tavern.setDescription(messageText);
+                            tavernService.save(tavern);
+                        }
+                        case EDIT_ADDRESS -> {
+                            tavern.getAddress().setStreet(messageText);
+                            tavernService.save(tavern);
+                        }
+                    }
 
-                    user.getContacts().stream()
-                            .filter(contactEntity -> contactEntity.getType() == ContractType.MOBILE)
-                            .findFirst()
-                            .ifPresent(contact -> contact.setValue(finalMessageText));
-
-                    userService.save(user);
-                }
-            }
-            case EDIT_ADDRESS -> {
-                if (isNotPressKeyboardElement(sendMessage, user, messageText, chatId)) {
-                    tavern.getAddress().setStreet(messageText);
-                    tavernService.save(tavern);
+                    return toMessage(chatId, infoService.fillPersonalData(user), TAVERN_EDIT_REGISTRATION_KEYBOARD);
                 }
             }
             case WAITING_APPROVE_APPLICATION -> sendMessage = toMessage(chatId, CLAIM_APPROVE_WAIT);
@@ -236,7 +219,7 @@ public class RegistrationTavernHandler implements MessageHandler {
     private void sendClaimToApprove(UserEntity user) {
         InlineKeyboardMarkup approveKeyboard = InlineKeyboardMarkup.builder()
                 .keyboard(of(of(builder()
-                        .callbackData(Button.ACCEPT.getName() + " " + user.getTelegramId())
+                        .callbackData(Button.ACCEPT.getName() + Constant.SPACE + user.getTelegramId())
                         .text(Button.ACCEPT.getText())
                         .build())))
                 .build();

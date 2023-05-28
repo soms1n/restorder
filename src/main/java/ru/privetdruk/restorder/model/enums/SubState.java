@@ -164,12 +164,6 @@ public enum SubState {
             return State.REGISTRATION_TAVERN;
         }
     },
-    EDIT_PHONE_NUMBER() {
-        @Override
-        public State getState() {
-            return State.REGISTRATION_TAVERN;
-        }
-    },
     VIEW_SETTINGS() {
         @Override
         public State getState() {

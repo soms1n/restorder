@@ -144,7 +144,7 @@ public class KeyboardService {
         fillKeyboard(
                 TAVERN_REGISTRATION_KEYBOARD,
                 newKeyboardRow(Button.NAME, Button.TAVERN_NAME),
-                newKeyboardRow(Button.DESCRIPTION, Button.TAVERN_ADDRESS, Button.PHONE_NUMBER),
+                newKeyboardRow(Button.DESCRIPTION, Button.TAVERN_ADDRESS),
                 newKeyboardRow(Button.COMPLETE_REGISTRATION)
         );
 
