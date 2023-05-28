@@ -100,6 +100,7 @@ public interface MessageText {
     String YOU_DONT_CHOICE_TAVERN = "Вы не выбрали заведение. Операция отменяется.";
     String CANT_MAKE_RESERVATION = "Нельзя забронировать столик в выбранном заведении.";
     String DO_YOU_WANT_TO_REMOVE_PROFILE = "Вы действительно хотите удалить профиль?";
+    String START_AND_END_PERIOD_EQUALS = "Окончание периода не может равняться началу периода, повторите попытку.";
     String DO_YOU_WANT_TO_REMOVE_PROFILE_TAVERN = "Вы является владельцем заведения. Вместе с вашим профилем будет удалено и заведение. Продолжить удаление?";
     String CYRILLIC_INVALID = "Имя должно содержать только символы кириллицы. Повторите попытку.";
     String FOUND_MANY_CONTACTS = "Найдено больше одного номера! Операция отменяется. Обратитесь в поддержку.";

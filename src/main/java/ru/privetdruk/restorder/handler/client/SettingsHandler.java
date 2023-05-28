@@ -27,6 +27,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.Long.parseLong;
 import static java.lang.String.format;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
@@ -688,7 +689,7 @@ public class SettingsHandler implements MessageHandler {
 
                     LocalTime startPeriod = scheduleCache.get(user)
                             .getStartPeriod()
-                            .plusMinutes(Long.parseLong(messageText));
+                            .plusMinutes(parseLong(messageText));
 
                     scheduleCache.get(user).setStartPeriod(startPeriod);
 
@@ -721,10 +722,15 @@ public class SettingsHandler implements MessageHandler {
                         return toMessage(chatId, MessageText.INCORRECT_VALUE_TRY_AGAIN, KeyboardService.MINUTES_WITH_CANCEL_KEYBOARD);
                     }
 
-                    LocalTime endPeriod = scheduleCache.get(user)
-                            .getEndPeriod()
-                            .plusMinutes(Long.parseLong(messageText));
-                    scheduleCache.get(user).setEndPeriod(endPeriod);
+                    ScheduleDto schedule = scheduleCache.get(user);
+
+                    LocalTime endPeriod = schedule.getEndPeriod().plusMinutes(parseLong(messageText));
+
+                    if (schedule.getStartPeriod().equals(endPeriod)) {
+                        return toMessage(chatId, MessageText.START_AND_END_PERIOD_EQUALS);
+                    }
+
+                    schedule.setEndPeriod(endPeriod);
 
                     return toMessageWithCancel(
                             user,
