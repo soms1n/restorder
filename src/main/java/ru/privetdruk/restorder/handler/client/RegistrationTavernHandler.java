@@ -207,7 +207,7 @@ public class RegistrationTavernHandler implements MessageHandler {
                         }
                     }
 
-                    return toMessage(chatId, infoService.fillPersonalData(user), TAVERN_EDIT_REGISTRATION_KEYBOARD);
+                    return toMessage(chatId, infoService.fillPersonalData(user), TAVERN_REGISTRATION_KEYBOARD);
                 }
             }
             case WAITING_APPROVE_APPLICATION -> sendMessage = toMessage(chatId, CLAIM_APPROVE_WAIT);
