@@ -9,6 +9,7 @@ import ru.privetdruk.restorder.model.enums.Category;
 import ru.privetdruk.restorder.model.enums.City;
 import ru.privetdruk.restorder.repository.TavernRepository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -139,5 +140,19 @@ public class TavernService {
 
     public TavernEntity findWithSchedules(TavernEntity tavern) {
         return tavernRepository.findByIdWithSchedules(tavern.getId());
+    }
+
+    public Collection<TavernEntity> findAll() {
+        return (Collection<TavernEntity>) tavernRepository.findAll();
+    }
+
+    @Transactional
+    public TavernEntity findByNameAndCategory(String name, Category category) {
+        TavernEntity tavern = tavernRepository.findByNameAndCategory(name, category);
+        if (tavern == null) {
+            return null;
+        }
+
+        return findWithAllData(tavern.getId());
     }
 }

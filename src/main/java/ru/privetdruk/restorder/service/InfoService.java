@@ -3,6 +3,7 @@ package ru.privetdruk.restorder.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.privetdruk.restorder.model.consts.Constant;
+import ru.privetdruk.restorder.model.consts.MessageText;
 import ru.privetdruk.restorder.model.dto.BookingDto;
 import ru.privetdruk.restorder.model.entity.*;
 import ru.privetdruk.restorder.model.enums.Category;
@@ -72,7 +73,7 @@ public class InfoService {
             %s
             Дата: <i>%s</i>
             Время: <i>%s</i>
-            Кол-во персон: %s<i>""";
+            Кол-во персон: <i>%s</i>""";
 
     private final String SCHEDULE_INFO = """
             <b>\uD83D\uDCC5 График работы:</b>
@@ -122,7 +123,6 @@ public class InfoService {
     private final String TABLES_IS_NOT_SET = "Столы не добавлены.";
     private final String TABLES_INFO = "<b>Столы:</b>" + lineSeparator();
     private final String CATEGORY = "\uD83C\uDFA8 <b>Категория:</b> ";
-    private final String CATEGORY_IS_NOT_SET = "Категория не выбрана.";
     private final String EMPLOYEES_INFO = "<b>Сотрудники:</b>" + lineSeparator();
     private final String NAME_ROLE_ID = "Имя: <b>%s</b>, %s [%s]";
     private final String LINK_IS_NOT_SET = """
@@ -252,7 +252,7 @@ public class InfoService {
         return ofNullable(category)
                 .map(Category::getDescription)
                 .map(description -> CATEGORY + description)
-                .orElse(CATEGORY_IS_NOT_SET);
+                .orElse(MessageText.CATEGORY_IS_NOT_SET);
     }
 
     public String fillEmployee(TavernEntity tavern) {

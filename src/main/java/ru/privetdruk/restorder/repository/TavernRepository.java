@@ -38,4 +38,6 @@ public interface TavernRepository extends CrudRepository<TavernEntity, Long> {
     @EntityGraph(attributePaths = {"employees.roles"})
     @Query("SELECT t FROM TavernEntity t WHERE t.id = :id")
     TavernEntity findByIdWithEmployees(Long id);
+
+    TavernEntity findByNameAndCategory(String name, Category category);
 }

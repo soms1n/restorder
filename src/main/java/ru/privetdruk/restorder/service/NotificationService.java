@@ -1,7 +1,7 @@
 package ru.privetdruk.restorder.service;
 
 import lombok.RequiredArgsConstructor;
-import org.jvnet.hk2.annotations.Service;
+import org.springframework.stereotype.Service;
 import ru.privetdruk.restorder.model.entity.BlacklistEntity;
 import ru.privetdruk.restorder.model.entity.TavernEntity;
 import ru.privetdruk.restorder.model.entity.UserEntity;

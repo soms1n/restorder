@@ -3,6 +3,7 @@ package ru.privetdruk.restorder.handler.user;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -19,6 +20,7 @@ import ru.privetdruk.restorder.model.dto.BookingDto;
 import ru.privetdruk.restorder.model.entity.*;
 import ru.privetdruk.restorder.model.enums.*;
 import ru.privetdruk.restorder.service.*;
+import ru.privetdruk.restorder.service.util.CacheService;
 import ru.privetdruk.restorder.service.util.StringService;
 
 import java.time.LocalDate;
@@ -32,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.lang.System.lineSeparator;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.comparingInt;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -47,6 +50,7 @@ public class BookingHandler implements MessageHandler {
     public static final String BEFORE = " до ";
     public static final String FREE_UP = ", освободить до ";
     public static final long FREE_UP_MINUTES = 10L;
+    public static final String RESERVE_SUCCESS = "Только что забронировали новый столик." + lineSeparator() + lineSeparator();
     private final BlacklistService blacklistService;
     private final ContactService contactService;
     private final InfoService infoService;
@@ -277,9 +281,7 @@ public class BookingHandler implements MessageHandler {
 
                         bookings.remove(client);
 
-                        String messageForAdmin = "Только что забронировали новый столик."
-                                + System.lineSeparator() + System.lineSeparator()
-                                + infoService.fillReserveInfo(booking, false);
+                        String messageForAdmin = RESERVE_SUCCESS + infoService.fillReserveInfo(booking, false);
 
                         Flux.fromIterable(
                                         booking.getTavern().getEmployees().stream()
@@ -298,23 +300,34 @@ public class BookingHandler implements MessageHandler {
                     return toMainMenu(client, MessageText.CANCEL_OPERATION_RETURN_TO_MENU);
                 }
                 case CHOICE_TAVERN -> {
+                    BookingDto booking = bookings.get(client);
                     TavernEntity tavern;
+
                     if (button == Button.BACK) {
-                        tavern = bookings.get(client)
-                                .getTavern();
+                        tavern = booking.getTavern();
                     } else {
-                        Long tavernId = messageService.parseId(messageText);
+                        Map<String, Long> taverns = CacheService.TAVERNS
+                                .get(booking.getCategory());
+
+                        Long tavernId = CollectionUtils.isEmpty(taverns) ? null : taverns.get(messageText);
+
                         if (tavernId == null) {
-                            return toMainMenu(client, MessageText.YOU_DONT_CHOICE_TAVERN);
+                            tavern = tavernService.findByNameAndCategory(messageText, booking.getCategory());
+
+                            if (tavern == null) {
+                                return toMainMenu(client, MessageText.YOU_DONT_CHOICE_TAVERN);
+                            }
+
+                            taverns.put(tavern.getName(), tavern.getId());
+                        } else {
+                            tavern = tavernService.findWithAllData(tavernId);
                         }
 
-                        tavern = tavernService.findWithAllData(tavernId);
                         if (tavern == null) {
                             return toMainMenu(client, MessageText.CANT_MAKE_RESERVATION);
                         }
 
-                        bookings.get(client)
-                                .setTavern(tavern);
+                        booking.setTavern(tavern);
                     }
 
                     userService.updateSubState(client, SubState.VIEW_TAVERN);
@@ -506,7 +519,7 @@ public class BookingHandler implements MessageHandler {
                 .getCategory();
 
         if (category == null) {
-            return toMainMenu(user, "Категория не выбрана.");
+            return toMainMenu(user, MessageText.CATEGORY_IS_NOT_SET);
         }
 
         List<TavernEntity> taverns = tavernService.find(user.getCity(), category);
@@ -521,7 +534,7 @@ public class BookingHandler implements MessageHandler {
 
         List<KeyboardRow> keyboardRows = new ArrayList<>(
                 taverns.stream()
-                        .map(tavern -> new KeyboardButton(tavern.getName() + LEFT_SQUARE_BRACKET_WITH_SPACE + tavern.getId() + RIGHT_SQUARE_BRACKET))
+                        .map(tavern -> new KeyboardButton(tavern.getName()))
                         .collect(Collectors.groupingBy(button -> counter.getAndIncrement() / 2))
                         .values())
                 .stream()
@@ -601,6 +614,6 @@ public class BookingHandler implements MessageHandler {
                         reserve.getTime().format(HH_MM_FORMATTER),
                         reserve.getNumberPeople()
                 ))
-                .collect(Collectors.joining(System.lineSeparator() + System.lineSeparator()));
+                .collect(Collectors.joining(lineSeparator() + lineSeparator()));
     }
 }
