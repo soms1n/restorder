@@ -158,8 +158,8 @@ public class InfoService {
                 BLACKLIST_USER_INFO,
                 blacklist.getTavern().getName(),
                 blacklist.getReason(),
-                blacklist.getLockDate(),
-                blacklist.getUnlockDate()
+                blacklist.getLockDate().format(Constant.DD_MM_YYYY_TIME_FORMATTER),
+                blacklist.getUnlockDate().format(Constant.DD_MM_YYYY_TIME_FORMATTER)
         );
     }
 

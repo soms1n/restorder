@@ -18,6 +18,6 @@ public interface BlacklistRepository extends CrudRepository<BlacklistEntity, Lon
             """)
     List<BlacklistEntity> findActiveByTavern(TavernEntity tavern);
 
-    @EntityGraph(attributePaths = "user")
+    @EntityGraph(attributePaths = {"user", "tavern"})
     BlacklistEntity findByTavernAndPhoneNumberAndActive(TavernEntity tavern, String phoneNumber, boolean active);
 }
